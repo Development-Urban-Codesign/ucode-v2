@@ -11,9 +11,18 @@ defaults:
     shell: bash
 
 jobs:
+  
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Try to build containers
+        run: docker compose build
+
   build-and-deploy:
     runs-on: [self-hosted, linux, ucode]
-
+    if: ${{ github.event_name != 'pull_request' }}
+    needs: build
     steps:
       - name: List currently running containers
         run: docker compose ps
