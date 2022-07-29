@@ -2,7 +2,7 @@ name: "ucode ci/cd pipeline"
 
 on:
   push:
-    branches: ["master"]
+    branches: ["feat/*"]
   pull_request:
     branches: ["master"]
 
