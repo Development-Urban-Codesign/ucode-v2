@@ -8,3 +8,6 @@ Activate the virtual environment:
 `source .venv/bin/activate`
 
 If you later on want to deactivate the virtual environment, just execute `deactivate`.
+
+Install dependencies:
+`make install-dev`
