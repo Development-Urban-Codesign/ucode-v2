@@ -20,3 +20,7 @@ If you later on want to deactivate the virtual environment, just execute `deacti
 
 Install dependencies:
 `make install-dev`
+
+Run tests:
+Install dependencies:
+`make test`

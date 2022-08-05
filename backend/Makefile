@@ -6,3 +6,6 @@ init:
 
 install-dev:
 	pip install -r requirements-dev.txt
+
+test:
+	 python3 -m pytest -ra
