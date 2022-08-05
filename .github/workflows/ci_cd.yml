@@ -12,7 +12,18 @@ defaults:
 
 jobs:
   
+  test-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          cd backend
+          make install-dev
+          make test
+
   build:
+    name: "Build all containers"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
