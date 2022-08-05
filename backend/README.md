@@ -24,3 +24,6 @@ Install dependencies:
 Run tests:
 Install dependencies:
 `make test`
+
+Run the application locally:
+`make run`

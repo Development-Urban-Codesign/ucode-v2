@@ -9,3 +9,6 @@ install-dev:
 
 test:
 	 python3 -m pytest -ra
+
+run:
+	uvicorn main:app --reload
