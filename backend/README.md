@@ -1,6 +1,15 @@
 ### Ucode backend
 
 #### Dev setup
+
+##### Mac OS
+Install postgresql via brew because *psycopg* needs it as a dependency:
+`brew install postgresql`
+
+##### Linux
+Install postgresql via brew because *psycopg* needs it as a dependency:
+`sudo apt install postgresql`
+
 Create a [python virtual environment](https://docs.python.org/3/library/venv.html) in order to avoid version collision of third party libraries:
 `make init`
 
