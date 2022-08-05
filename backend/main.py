@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import json
 from db import get_table_names
@@ -22,15 +22,19 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    table_names = get_table_names()
-    if table_names:
-        result = []
-        for table in table_names:
-            d = dict()
-            d['id'] = table_names.index(table)
-            d['name'] = table[0]
-            result.append(d)
-        subjects = json.dumps(result)
-        return json.loads(subjects)
-    else:
-        return "json.loads(subjects)"
+    try: 
+        table_names = get_table_names()
+        if table_names:
+            result = []
+            for table in table_names:
+                d = dict()
+                d['id'] = table_names.index(table)
+                d['name'] = table[0]
+                result.append(d)
+            subjects = json.dumps(result)
+            return json.loads(subjects)
+    except BaseException as err:
+        print(f"Unexpected {err=}, {type(err)=}")
+        raise HTTPException(status_code=500, detail=f"Something went wrong: {err}")
+    
+    
