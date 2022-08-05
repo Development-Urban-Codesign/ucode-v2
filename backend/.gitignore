@@ -1,4 +1,9 @@
 venv/
 .venv/
 __pycache__/
-!.vscode
+
+# Include vscode plugin recommendations and settings
+!.vscode/
+
+# Exclude vscode plugin logs
+.vscode/*.log
