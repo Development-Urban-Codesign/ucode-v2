@@ -18,9 +18,11 @@
 </template>
 
 <script setup>
+import {useStore} from "vuex";
+const store = useStore();
 
 const sendBuildingRequest = (e)=>{
-    console.log(e)
+    e == "get" ? store.dispatch("aoi/getbuildingsFromOSM") : store.dispatch("aoi/getbuildingsFromDB")
 }
 </script>
 

@@ -26,3 +26,51 @@ def get_table_names():
   cur.close()
   conn.close()
   return tables
+
+
+def init_building_table():
+  connection = connect()
+  cursor = connection.cursor()
+  create_building_table_query =''' 
+        drop table if exists building;
+        create table building (id SERIAL PRIMARY KEY, wallcolor CHAR(7), wallmaterial VARCHAR(20), roofcolor CHAR(7), roofmaterial VARCHAR(20), roofshape VARCHAR(20), roofheight FLOAT(4), height FLOAT(4), floors FLOAT, estimatedheight FLOAT(4), geom geometry(Geometry, 4326));
+  '''
+  cursor.execute(create_building_table_query)
+
+  connection.commit()
+  cursor.close()
+  connection.close()
+  return "ok"
+
+def get_buildings_from_osm(wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom):
+  connection = connect()
+  cursor = connection.cursor()
+  
+  insert_query_building= '''
+        INSERT INTO building (wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
+
+  '''
+  cursor.execute(insert_query_building, (wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom,))
+
+  connection.commit()
+  cursor.close()
+  connection.close()
+  return "ok"
+
+def get_buildings_from_db():
+  connection = connect()
+  cursor = connection.cursor()
+  get_building_query =''' select json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(ST_AsGeoJSON(building.*)::json)
+        )
+        from building
+      ;
+  '''
+  cursor.execute(get_building_query)
+  building = cursor.fetchall()[0][0]
+  cursor.close()
+  connection.close()
+  return building
+
+
