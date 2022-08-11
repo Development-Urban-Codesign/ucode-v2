@@ -1,5 +1,5 @@
 import { HTTP } from '../../utils/http-common';
-import {GeoJsonLayer} from '@deck.gl/layers';
+import {GeoJsonLayer, PolygonLayer} from '@deck.gl/layers';
 import {MapboxLayer} from '@deck.gl/mapbox';
 
 const aoi = {
@@ -28,8 +28,9 @@ const aoi = {
                 console.log(response)
                 state.overpassBuildings = new MapboxLayer({
                     id: 'overpass_buildings',
-                    type: GeoJsonLayer,
+                    type: PolygonLayer,
                     data: response.data.features,
+                    getPolygon: d => d.geometry.coordinates,
                     opacity: 1,
                     stroked: false,
                     filled: true,
@@ -62,8 +63,9 @@ const aoi = {
                 console.log(response)
                 state.overpassGreenery = new MapboxLayer({
                     id: 'overpass_greenery',
-                    type: GeoJsonLayer,
+                    type: PolygonLayer,
                     data: response.data.features,
+                    getPolygon: d => d.geometry.coordinates,
                     opacity: 1,
                     stroked: false,
                     filled: true,
@@ -74,12 +76,12 @@ const aoi = {
                     
                 });
                 rootState.map.map.addLayer(state.overpassGreenery);
+                
                 // rootState.map.map.on('click', 'overpass_buildings', (e) => {
                 //     console.log(e)
                 // })
             })
         },
-        
 
     },
     getters:{

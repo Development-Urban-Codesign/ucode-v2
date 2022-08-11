@@ -11,11 +11,6 @@ origins = [
     "http://localhost",
     "http://localhost:8080"
 ]
-# origins = [
-#     "https://v2.urban-codesign.com",
-#     "http://localhost",
-#     "http://localhost:8080",
-# ]
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,11 +20,6 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],
 )
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=origins,
-    
-# )
 
 
 @app.get("/")
