@@ -42,6 +42,7 @@ def init_building_table():
   connection.close()
   return "ok"
 
+
 def get_buildings_from_osm(wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom):
   connection = connect()
   cursor = connection.cursor()
@@ -72,5 +73,50 @@ def get_buildings_from_db():
   cursor.close()
   connection.close()
   return building
+
+def init_greenery_table():
+  connection = connect()
+  cursor = connection.cursor()
+  create_greenery_table_query =''' 
+        drop table if exists greenery;
+        create table greenery (id SERIAL PRIMARY KEY, greentag VARCHAR(20), geom geometry(Geometry, 4326));
+  '''
+  cursor.execute(create_greenery_table_query)
+
+  connection.commit()
+  cursor.close()
+  connection.close()
+  return "ok"
+
+def get_greenery_from_osm(greentag, geom):
+  connection = connect()
+  cursor = connection.cursor()
+  print(greentag)
+  insert_query_greenery= '''
+        INSERT INTO greenery (greentag, geom) VALUES (%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
+
+  '''
+  cursor.execute(insert_query_greenery, (greentag, geom,))
+
+  connection.commit()
+  cursor.close()
+  connection.close()
+  return "ok"
+
+def get_greenery_from_db():
+  connection = connect()
+  cursor = connection.cursor()
+  get_greenery_query =''' select json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(ST_AsGeoJSON(greenery.*)::json)
+        )
+        from greenery
+      ;
+  '''
+  cursor.execute(get_greenery_query)
+  greenery = cursor.fetchall()[0][0]
+  cursor.close()
+  connection.close()
+  return greenery
 
 
