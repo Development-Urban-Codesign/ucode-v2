@@ -4,6 +4,7 @@ import { HTTP } from '../utils/http-common.js';
 
 export async function getbuildingsFromDB() {
   const response = await HTTP.get('get-buildings-from-db');
+  console.log(response);
   return new MapboxLayer({
     id: 'overpass_buildings',
     type: PolygonLayer,
@@ -26,5 +27,29 @@ export async function getbuildingsFromOSM(bbox) {
   HTTP
     .post('get-buildings-from-osm', {
       bbox: bbox
+    })
+}
+export async function getGreeneryFromDB() {
+  const response = await HTTP.get('get-greenery-from-db')
+  console.log(response);
+  return new MapboxLayer({
+    id: 'overpass_greenery',
+    type: PolygonLayer,
+    data: response.data.features,
+    getPolygon: d => d.geometry.coordinates,
+    opacity: 1,
+    stroked: false,
+    filled: true,
+    extruded: false,
+    wireframe: false,
+    getFillColor: [102, 158, 106, 255],
+    pickable: true,
+  })
+}
+export async function storeGreeneryFromOSM(bbox, usedTagsForGreenery) {
+  HTTP
+    .post('store-greenery-from-osm', {
+      bbox: bbox,
+      usedTagsForGreenery: usedTagsForGreenery
     })
 }

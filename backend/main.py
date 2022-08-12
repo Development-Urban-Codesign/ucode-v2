@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 import json
 import requests
-from db import get_table_names, get_buildings_from_osm, init_building_table, get_buildings_from_db, add_comment,init_greenery_table, get_greenery_from_osm, get_greenery_from_db
+from db import get_table_names, get_buildings_from_osm, init_building_table, get_buildings_from_db, add_comment, init_greenery_table, store_greenery_from_osm, get_greenery_from_db
 
 app = FastAPI()
 origins = [
@@ -39,8 +39,8 @@ async def root():
         print(f"Unexpected {err=}, {type(err)=}")
         raise HTTPException(status_code=500, detail=f"Something went wrong: {err}")
     
-@app.post("/get-greenery-from-osm")
-async def get_greenery_from_osm_api(request:Request):
+@app.post("/store-greenery-from-osm")
+async def store_greenery_from_osm_api(request:Request):
     data= await request.json()
     init_greenery_table()
     xmin = data['bbox']["xmin"]
@@ -76,10 +76,9 @@ async def get_greenery_from_osm_api(request:Request):
                 greentag = f['tags'][i.split(':')[0]]
         if greentag == None:
             greentag = "notFound"
-        #print(greentag)
         geom = json.dumps(f['geometry'])
-        get_greenery_from_osm(greentag, geom)
-
+        store_greenery_from_osm(greentag, geom)
+    #print("All greenery items in the are stored in db!")
     return "gg"
 
 @app.get("/get-greenery-from-db")
