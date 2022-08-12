@@ -12,7 +12,7 @@
         </v-btn>
       </v-row>
 
-      <AOI />
+      <AOI @addLayer="addLayerToMap" />
       <Contribution />
 
     </div>
@@ -59,7 +59,13 @@ onMounted(() => {
 
 // threejs layer
 const addThreejsShape = () => {
-  map?.addLayer(TreeModel(13.746470, 51.068646, 100));
+  addLayerToMap(TreeModel(13.746470, 51.068646, 100));
+}
+
+const addLayerToMap = (layer) => {
+  if (!layer)
+    return;
+  map?.addLayer(layer);
 }
 
 
@@ -77,7 +83,7 @@ const addDeckglShape = () => {
     _lighting: 'pbr'
 
   });
-  map?.addLayer(myDeckLayer);
+  addLayerToMap(myDeckLayer)
 }
 
 onUnmounted(() => {
