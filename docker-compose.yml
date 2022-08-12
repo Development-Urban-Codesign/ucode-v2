@@ -16,7 +16,7 @@ services:
     command: uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
   database:
-    image: pgrouting/pgrouting
+    build: ./database
     container_name: db_ucode
     volumes:
       - database_dumps:/var/lib/postgresql/dumps
