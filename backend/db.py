@@ -100,7 +100,6 @@ def init_greenery_table():
 def get_greenery_from_osm(greentag, geom):
   connection = connect()
   cursor = connection.cursor()
-  print(greentag)
   insert_query_greenery= '''
         INSERT INTO greenery (greentag, geom) VALUES (%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
 

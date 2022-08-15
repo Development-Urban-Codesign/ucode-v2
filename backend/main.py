@@ -79,7 +79,7 @@ async def get_greenery_from_osm_api(request:Request):
         #print(greentag)
         geom = json.dumps(f['geometry'])
         get_greenery_from_osm(greentag, geom)
-
+    
     return "gg"
 
 @app.get("/get-greenery-from-db")

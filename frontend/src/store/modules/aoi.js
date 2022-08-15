@@ -9,17 +9,28 @@ const aoi = {
         overpassBuildings: null,
         usedTagsForGreenery : {tags: ["leisure:garden", "leisure:park", "leisure:pitch" , "landuse:village_green", "landuse:grass", "landuse:garden", "landuse:cemetery", "landuse:allotments", "landuse:forest", "natural:scrub"] },
         overpassGreenery: null,
+        dataIsLoaded: false,
+        dataIsLoading: false,
 
     },
     mutations:{
 
     },
     actions:{
-        getbuildingsFromOSM({state}){
+        setDataIsLoaded({state}){
+            state.dataIsLoading = false;
+            state.dataIsLoaded = true;
+            setTimeout(() => state.dataIsLoaded = false, 3000)
+        },
+        setDataIsLoading({state}){
+            state.dataIsLoading = true;
+        },
+        getbuildingsFromOSM({state, dispatch}){
             HTTP
             .post('get-buildings-from-osm', {
                 bbox : state.bbox
             })
+            .then(() => dispatch("setDataIsLoaded"))
         },
         getbuildingsFromDB({state, rootState}){
             HTTP
@@ -49,12 +60,13 @@ const aoi = {
                 })
             })
         },
-        getGreeneryFromOSM({state}){
+        getGreeneryFromOSM({state, dispatch}){
             HTTP
             .post('get-greenery-from-osm',{
                 bbox : state.bbox,
-                usedTagsForGreenery: state.usedTagsForGreenery
+                usedTagsForGreenery : state.usedTagsForGreenery
             })
+            .then(() => dispatch("setDataIsLoaded"))
         },
         getGreeneryFromDB({state, rootState}){
             HTTP
