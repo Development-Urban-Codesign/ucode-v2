@@ -95,23 +95,39 @@ async def get_buildings_from_osm_api(request: Request):
     xmax = data['bbox']["xmax"]
     ymax = data['bbox']["ymax"]    
     overpass_url = "http://overpass-api.de/api/interpreter"
-    overpass_query_building = """
+    # overpass_query_building = """
+    #     [out:json];
+    #     way["building"](%s,%s,%s,%s);
+    #     convert item ::=::,::geom=geom(),_osm_type=type();
+    #     out geom;
+    # """ % ( ymin, xmin, ymax ,xmax )
+    overpass_query_building_parts = """
         [out:json];
-        way["building"](%s,%s,%s,%s);
+        (
+            (
+                way[building](%s,%s,%s,%s);
+                way["building:part"](%s,%s,%s,%s);
+            );
+            -
+            (
+                rel(bw:"outline");
+                way(r:"outline");
+            );
+        );
         convert item ::=::,::geom=geom(),_osm_type=type();
         out geom;
-    """ % ( ymin, xmin, ymax ,xmax )
-
+    """ % ( ymin, xmin, ymax ,xmax ,ymin, xmin, ymax ,xmax )
     response_building = requests.get(overpass_url, 
-                        params={'data': overpass_query_building})
+                        params={'data': overpass_query_building_parts})
     
     data_building = response_building.json()
-
+    
     for f in data_building["elements"]:
         f["geometry"]["type"] = "Polygon"
         f["geometry"]["coordinates"] = [f["geometry"]["coordinates"]]
     
     for f in data_building["elements"]:
+        
         wallcolor= None
         if 'building:colour' in f['tags']:  wallcolor = f['tags']['building:colour']
         wallmaterial= None
@@ -123,7 +139,9 @@ async def get_buildings_from_osm_api(request: Request):
         roofshape=None
         if 'roof:shape' in f['tags']: roofshape =f['tags']['roof:shape']
         roofheight=None
-        if 'roof:height' in f['tags']: roofheight =f['tags']['roof:height']
+        if 'roof:height' in f['tags']:
+            roofheight =f['tags']['roof:height']
+            if "," in roofheight: roofheight = roofheight.replace(",",".")
         height=None
         if 'height' in f['tags']: height =f['tags']['height']
         floors= None
@@ -139,7 +157,7 @@ async def get_buildings_from_osm_api(request: Request):
 
 
         geom=json.dumps(f['geometry'])
-
+        
         get_buildings_from_osm(wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom)
     
     
