@@ -48,6 +48,20 @@ export async function getGreeneryFromDB() {
     pickable: true,
   })
 }
+export async function getGreeneryFromDBTexture() {
+  const response = await HTTP.get('get-greenery-from-db')
+  console.log(response);
+  return ({
+    id: 'overpass_greenery',
+    type: "fill",
+    source: {
+      'type': 'geojson',
+      'data': response.data},
+    paint:{
+      'fill-pattern':  'https://raw.githubusercontent.com/KonstiDoll/ucode-v2/master/frontend/src/assets/grasspattern.png'
+    }
+  })
+}
 export async function storeGreeneryFromOSM(bbox, usedTagsForGreenery) {
   HTTP
     .post('store-greenery-from-osm', {

@@ -32,10 +32,11 @@ import {
   getbuildingsFromOSM,
   storeGreeneryFromOSM,
   getGreeneryFromDB,
+  getGreeneryFromDBTexture,
 } from "../service/backend.service";
 const store = useStore();
 
-const emit = defineEmits(["addLayer"]);
+const emit = defineEmits(["addLayer", "addImage"]);
 
 const sendBuildingRequest = async (mode) => {
   if (mode == "get") {
@@ -54,7 +55,7 @@ const sendGreeneryRequest = async (mode) => {
       store.state.aoi.usedTagsForGreenery
     );
   } else {
-    const newLayer = await getGreeneryFromDB();
+    const newLayer = await getGreeneryFromDBTexture();
     emit("addLayer", newLayer);
   }
 };
