@@ -12,6 +12,7 @@
 
       <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
       <Contribution />
+      <Quests />
     </div>
   </div>
 </template>
@@ -26,6 +27,8 @@ import { MapboxLayer } from "@deck.gl/mapbox";
 import { ScenegraphLayer } from "@deck.gl/mesh-layers";
 import AOI from "./AOI.vue";
 import Contribution from "./Contribution.vue";
+import Quests from "./Quests.vue";
+
 
 const store = useStore();
 
@@ -71,7 +74,7 @@ const addImageToMap = (ImgUrl) => {
   });
 };
 
-// deckgl layder
+// deckgl layer
 const addDeckglShape = () => {
   const myDeckLayer = new MapboxLayer({
     id: "hexagon2D",
