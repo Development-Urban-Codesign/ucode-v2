@@ -14,11 +14,15 @@
       :items="['get', 'retrieve']"
       label="greenery"
       variant="outlined"
-      @update:modelValue="sendGreeneryRequest_new"
+      @update:modelValue="sendGreeneryRequest"
     ></v-select>
-    
+    <v-alert type="success" v-if="store.state.aoi.dataIsLoaded">
+      stored
+    </v-alert>
+    <v-alert type="info" v-if="store.state.aoi.dataIsLoading">
+      getting data...
+    </v-alert>
   </v-col>
-  
 </template>
 
 <script setup>
@@ -35,27 +39,24 @@ const emit = defineEmits(["addLayer"]);
 
 const sendBuildingRequest = async (mode) => {
   if (mode == "get") {
+    store.dispatch("aoi/setDataIsLoading");
     await getbuildingsFromOSM(store.state.aoi.bbox);
   } else {
     const newLayer = await getbuildingsFromDB();
     emit("addLayer", newLayer);
   }
 };
-const sendGreeneryRequest_new = async (mode) => {
+const sendGreeneryRequest = async (mode) => {
   if (mode == "get") {
+    store.dispatch("aoi/setDataIsLoading");
     await storeGreeneryFromOSM(
       store.state.aoi.bbox,
       store.state.aoi.usedTagsForGreenery
-    ).then();
+    );
   } else {
     const newLayer = await getGreeneryFromDB();
     emit("addLayer", newLayer);
   }
-};
-const sendGreeneryRequest = (e) => {
-  e == "get"
-    ? store.dispatch("aoi/getGreeneryFromOSM")
-    : store.dispatch("aoi/getGreeneryFromDB");
 };
 </script>
 

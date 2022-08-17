@@ -1,6 +1,8 @@
 import { PolygonLayer } from '@deck.gl/layers';
 import { MapboxLayer } from '@deck.gl/mapbox';
 import { HTTP } from '../utils/http-common.js';
+import store from "../store/store";
+
 
 export async function getbuildingsFromDB() {
   const response = await HTTP.get('get-buildings-from-db');
@@ -27,7 +29,7 @@ export async function getbuildingsFromOSM(bbox) {
   HTTP
     .post('get-buildings-from-osm', {
       bbox: bbox
-    })
+    }).then(() => store.dispatch("aoi/setDataIsLoaded"))
 }
 export async function getGreeneryFromDB() {
   const response = await HTTP.get('get-greenery-from-db')
@@ -51,5 +53,5 @@ export async function storeGreeneryFromOSM(bbox, usedTagsForGreenery) {
     .post('store-greenery-from-osm', {
       bbox: bbox,
       usedTagsForGreenery: usedTagsForGreenery
-    })
+    }).then(() => store.dispatch("aoi/setDataIsLoaded"))
 }
