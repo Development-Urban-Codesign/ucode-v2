@@ -36,7 +36,7 @@ import {
 } from "../service/backend.service";
 const store = useStore();
 
-const emit = defineEmits(["addLayer", "addImage"]);
+const emit = defineEmits(["addLayer"]);
 
 const sendBuildingRequest = async (mode) => {
   if (mode == "get") {
