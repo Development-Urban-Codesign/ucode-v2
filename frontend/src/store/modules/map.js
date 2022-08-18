@@ -2,6 +2,7 @@ const apiKey = import.meta.env.VITE_MAPTILER_API_KEY;
 const map = {
     namespaced: true,
     state: {
+        layers: [],
         map: null,
         center: {
             lng: 13.749748,
@@ -13,16 +14,17 @@ const map = {
         maxPitch: 85,
         style: `https://api.maptiler.com/maps/pastel/style.json?key=${apiKey}`
     },
-    mutations:{
+    mutations: {
 
     },
-    actions:{
-
+    actions: {
+        addLayer({ state }, newLayer) {
+            state.layers = [...state.layers, newLayer]
+        }
     },
-    getters:{
+    getters: {
 
     }
-
 }
 
 export default map
