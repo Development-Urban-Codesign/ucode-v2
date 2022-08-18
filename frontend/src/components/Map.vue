@@ -33,6 +33,12 @@ const mapContainer = shallowRef(null);
 let map = {};
 const mapClicks = reactive({ clickedCoordinates: [] })
 
+let unsubscribeFromStore = () => { };
+
+onUnmounted(() => {
+  unsubscribeFromStore()
+})
+
 onMounted(() => {
   map = new Map({
     container: mapContainer.value,
@@ -51,6 +57,15 @@ onMounted(() => {
   map.on('click', function (mapClick) {
     mapClicks.clickedCoordinates = [mapClick.lngLat.lng, mapClick.lngLat.lat]
   });
+
+  unsubscribeFromStore = store.subscribe((mutation, state) => {
+    if (mutation.type === "map/addLayer") {
+      state.map.layers?.map(addLayerToMap)
+    }
+    if (mutation.type === "map/addSource") {
+      state.map.sources?.map(addSourceToMap)
+    }
+  });
 });
 
 // threejs layer
@@ -66,6 +81,25 @@ const addLayerToMap = (layer) => {
     }
   }
   map?.addLayer(layer);
+};
+
+const removeLayerFromMap = (layerId) => {
+  if (map.getLayer(layerId)) {
+    map.removeLayer(layerId);
+  }
+}
+
+const addSourceToMap = (source) => {
+  if (!source) return;
+  if (!map) return;
+  //TODO extract this as a function parameter
+  const sourceId = "comment";
+  if (map.getSource(sourceId)) {
+    map.removeSource(sourceId)
+    removeLayerFromMap(sourceId)
+  }
+
+  map.addSource(sourceId, source);
 };
 const addImageToMap = (ImgUrl) => {
   if (!ImgUrl) return;

@@ -3,6 +3,7 @@ const map = {
     namespaced: true,
     state: {
         layers: [],
+        sources: [],
         map: null,
         center: {
             lng: 13.749748,
@@ -15,12 +16,15 @@ const map = {
         style: `https://api.maptiler.com/maps/pastel/style.json?key=${apiKey}`
     },
     mutations: {
-
+        addLayer(state, newLayer) {
+            state.layers = [...state.layers, newLayer]
+        },
+        addSource(state, newSource) {
+            state.sources = [...state.sources, newSource]
+        }
     },
     actions: {
-        addLayer({ state }, newLayer) {
-            state.layers = [...state.layers, newLayer]
-        }
+
     },
     getters: {
 

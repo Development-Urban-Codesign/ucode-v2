@@ -32,18 +32,22 @@ const commentModeEnabled = ref(false)
 const emit = defineEmits(["addPopup"]);
 onBeforeUpdate(() => {
     if (commentModeEnabled.value == true && props.clickedCoordinates.length > 0) {
+
         console.log("Display popup");
         const commentPopup = new maplibregl.Popup()
             .setLngLat(props.clickedCoordinates)
             .setHTML('<div id="vue-popup-content"></div>')
         emit("addPopup", commentPopup)
 
-        const app = createApp(CommentPopupContent)
+        const app = createApp(CommentPopupContent, {
+            clickedCoordinates: props.clickedCoordinates,
+            closePopup: commentPopup.remove
+        })
         const vuetify = createVuetify()
         app.use(vuetify)
         app.use(store)
         app.mount('#vue-popup-content')
-//        commentModeEnabled.value = false
+        //        commentModeEnabled.value = false
     }
 })
 
