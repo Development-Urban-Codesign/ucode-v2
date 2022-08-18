@@ -18,6 +18,9 @@
 </template>
 <script setup>
 import { useStore } from "vuex";
+import getMap from "./Map.vue"
+const store = useStore();
+console.log(getMap)
 </script>
 
 <style scoped>

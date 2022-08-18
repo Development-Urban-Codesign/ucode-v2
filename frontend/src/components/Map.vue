@@ -55,8 +55,7 @@ onMounted(() => {
 // threejs layer
 const addThreejsShape = () => {
   addLayerToMap(TreeModel(13.74647, 51.068646, 100));
-};
-
+}
 const addLayerToMap = (layer) => {
   if (!layer) return;
   if (layer.paint) {
@@ -71,7 +70,7 @@ const addImageToMap = (ImgUrl) => {
   map?.loadImage(ImgUrl, (error, image) => {
     if (error) throw error;
     map?.addImage(ImgUrl, image);
-  });
+  }); 
 };
 
 // deckgl layer
