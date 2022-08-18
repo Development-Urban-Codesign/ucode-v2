@@ -1,8 +1,14 @@
+import json
+
+import requests
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-import json
-import requests
-from db import get_table_names, get_buildings_from_osm, init_building_table, get_buildings_from_db, add_comment,init_greenery_table, get_greenery_from_osm, get_greenery_from_db, add_drawn_line
+
+from db import (add_comment, add_drawn_line, get_buildings_from_db,
+                get_buildings_from_osm, get_greenery_from_db,
+                get_table_names, init_building_table,
+                init_greenery_table, store_greenery_from_osm)
+
 
 app = FastAPI()
 origins = [
@@ -39,8 +45,8 @@ async def root():
         print(f"Unexpected {err=}, {type(err)=}")
         raise HTTPException(status_code=500, detail=f"Something went wrong: {err}")
     
-@app.post("/get-greenery-from-osm")
-async def get_greenery_from_osm_api(request:Request):
+@app.post("/store-greenery-from-osm")
+async def store_greenery_from_osm_api(request:Request):
     data= await request.json()
     init_greenery_table()
     xmin = data['bbox']["xmin"]
@@ -76,10 +82,9 @@ async def get_greenery_from_osm_api(request:Request):
                 greentag = f['tags'][i.split(':')[0]]
         if greentag == None:
             greentag = "notFound"
-        #print(greentag)
         geom = json.dumps(f['geometry'])
-        get_greenery_from_osm(greentag, geom)
 
+        store_greenery_from_osm(greentag, geom)
     return "gg"
 
 @app.get("/get-greenery-from-db")
@@ -95,23 +100,39 @@ async def get_buildings_from_osm_api(request: Request):
     xmax = data['bbox']["xmax"]
     ymax = data['bbox']["ymax"]    
     overpass_url = "http://overpass-api.de/api/interpreter"
-    overpass_query_building = """
+    # overpass_query_building = """
+    #     [out:json];
+    #     way["building"](%s,%s,%s,%s);
+    #     convert item ::=::,::geom=geom(),_osm_type=type();
+    #     out geom;
+    # """ % ( ymin, xmin, ymax ,xmax )
+    overpass_query_building_parts = """
         [out:json];
-        way["building"](%s,%s,%s,%s);
+        (
+            (
+                way[building](%s,%s,%s,%s);
+                way["building:part"](%s,%s,%s,%s);
+            );
+            -
+            (
+                rel(bw:"outline");
+                way(r:"outline");
+            );
+        );
         convert item ::=::,::geom=geom(),_osm_type=type();
         out geom;
-    """ % ( ymin, xmin, ymax ,xmax )
-
+    """ % ( ymin, xmin, ymax ,xmax ,ymin, xmin, ymax ,xmax )
     response_building = requests.get(overpass_url, 
-                        params={'data': overpass_query_building})
+                        params={'data': overpass_query_building_parts})
     
     data_building = response_building.json()
-
+    
     for f in data_building["elements"]:
         f["geometry"]["type"] = "Polygon"
         f["geometry"]["coordinates"] = [f["geometry"]["coordinates"]]
     
     for f in data_building["elements"]:
+        
         wallcolor= None
         if 'building:colour' in f['tags']:  wallcolor = f['tags']['building:colour']
         wallmaterial= None
@@ -123,7 +144,9 @@ async def get_buildings_from_osm_api(request: Request):
         roofshape=None
         if 'roof:shape' in f['tags']: roofshape =f['tags']['roof:shape']
         roofheight=None
-        if 'roof:height' in f['tags']: roofheight =f['tags']['roof:height']
+        if 'roof:height' in f['tags']:
+            roofheight =f['tags']['roof:height']
+            if "," in roofheight: roofheight = roofheight.replace(",",".")
         height=None
         if 'height' in f['tags']: height =f['tags']['height']
         floors= None
@@ -139,7 +162,7 @@ async def get_buildings_from_osm_api(request: Request):
 
 
         geom=json.dumps(f['geometry'])
-
+        
         get_buildings_from_osm(wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom)
     
     
