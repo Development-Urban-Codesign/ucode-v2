@@ -127,3 +127,18 @@ def get_greenery_from_db():
   cursor.close()
   connection.close()
   return greenery
+
+
+def add_drawn_line(comment, width, color, geom):
+  connection = connect()
+  cursor = connection.cursor()
+  
+  insert_query_drawn_line= '''
+    INSERT INTO drawnline (comment, width, color, geom) VALUES (%s,%s,%s, ST_SetSRID(st_astext(st_geomfromgeojson(%s)), 4326));
+
+  '''
+  cursor.execute(insert_query_drawn_line, (comment, width, color, geom,))
+  connection.commit()
+  cursor.close()
+  connection.close()
+  

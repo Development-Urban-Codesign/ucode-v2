@@ -1,14 +1,26 @@
 <template>
-<div style="position:absolute; left: 20px; top:10px; z-index:999">
-    <v-btn
-        rounded="pill"
-        color="secondary"
-        @click="setCommentToggle(); createComment()"
+    <v-col
+        cols="1"
+        sm="1"
+        style="position:absolute; left: 0; top:0; z-index:999"
     >
+        <v-btn
+            rounded="pill"
+            color="secondary"
+            @click="setCommentToggle(); createComment()"
+        >
         Comment
     </v-btn>
-</div>
-   
+    <v-btn
+            rounded="pill"
+            color="primary"
+            @click="setLineDrawToggle(); drawLine()"
+            class="mt-2"
+        >
+        Draw Line
+        </v-btn>
+    </v-col>
+       
 </template>
 
 <script setup>
@@ -26,6 +38,14 @@ const createComment = ()=>{
         store.dispatch("contribution/createComment")
     }
 }
+const setLineDrawToggle = ()=>{
+    store.commit("contribution/setLineDrawToggle")
+}
+const drawLine = ()=>{
+    store.dispatch("contribution/drawLine")
+}
+
+
 
 
 

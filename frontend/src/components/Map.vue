@@ -22,6 +22,8 @@
         </v-btn>
       </v-row>
 
+      <AOI @addLayer="addLayerToMap" />
+      <Contribution />
 
       <AOI />
       <Contribution />
@@ -72,7 +74,6 @@ const addThreejsShape = ()=>{
   store.state.map.map.addLayer(TreeModel(13.746470, 51.068646, 100));
 }
 
-
 // deckgl layder
 const addDeckglShape = ()=>{
   const myDeckLayer = new MapboxLayer({
@@ -89,13 +90,6 @@ const addDeckglShape = ()=>{
   });
   store.state.map.map.addLayer(myDeckLayer);
 }
-
-
-
-
-
-
-
 
 
 onUnmounted(() => {
