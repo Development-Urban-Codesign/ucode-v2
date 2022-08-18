@@ -11,19 +11,19 @@
       </v-row>
 
       <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
-      <Contribution />
+      <Contribution @addPopup="addPopupToMap" :clickedCoordinates="mapClicks.clickedCoordinates" />
     </div>
   </div>
 </template>
 
 <script setup>
+import { MapboxLayer } from "@deck.gl/mapbox";
+import { ScenegraphLayer } from "@deck.gl/mesh-layers";
 import { Map } from "maplibre-gl";
-import { shallowRef, onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, reactive, shallowRef } from "vue";
 import { useStore } from "vuex";
 import { HTTP } from "../utils/http-common";
 import { TreeModel } from "../utils/TreeModel";
-import { MapboxLayer } from "@deck.gl/mapbox";
-import { ScenegraphLayer } from "@deck.gl/mesh-layers";
 import AOI from "./AOI.vue";
 import Contribution from "./Contribution.vue";
 
@@ -31,6 +31,7 @@ const store = useStore();
 
 const mapContainer = shallowRef(null);
 let map = {};
+const mapClicks = reactive({ clickedCoordinates: [] })
 
 onMounted(() => {
   map = new Map({
@@ -46,6 +47,9 @@ onMounted(() => {
     HTTP.get("").then((response) => {
       console.log(response);
     });
+  });
+  map.on('click', function (mapClick) {
+    mapClicks.clickedCoordinates = [mapClick.lngLat.lng, mapClick.lngLat.lat]
   });
 });
 
@@ -87,6 +91,10 @@ const addDeckglShape = () => {
   });
   addLayerToMap(myDeckLayer);
 };
+
+const addPopupToMap = (popup) => {
+  popup?.addTo(map)
+}
 
 onUnmounted(() => {
   map?.remove();
