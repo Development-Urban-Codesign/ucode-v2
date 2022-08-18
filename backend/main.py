@@ -175,7 +175,6 @@ async def get_buildings_from_db_api():
 @app.post("/add-comment")
 async def add_comment_api(request: Request):
     data = await request.json()
-
     add_comment(data["comment"], float(data["position"][0]), float(data["position"][1]))
     return "added"
 

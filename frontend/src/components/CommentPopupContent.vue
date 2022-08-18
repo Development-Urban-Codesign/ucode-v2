@@ -26,7 +26,7 @@ const submitComment = () => {
   HTTP
     .post('add-comment', {
       comment: commentText.value,
-      position: store.state.contribution.commentPosition
+      position: props.clickedCoordinates
     })
 
   store.state.contribution.commentToggle = false
