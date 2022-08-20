@@ -22,7 +22,7 @@ export async function getbuildingsFromDB() {
     getLineColor: [0, 0, 0],
     wireframe: true,
     pickable: true,
-  }, "overpass_greenery")
+  })
 }
 
 export async function getbuildingsFromOSM(bbox) {

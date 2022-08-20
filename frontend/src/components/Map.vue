@@ -81,6 +81,14 @@ const addLayerToMap = (layer) => {
     }
   }
   map?.addLayer(layer);
+  
+  const buildinglayer = map.getLayer("overpass_buildings")
+  const greenerylayer = map.getLayer("overpass_greenery")
+  if(typeof buildinglayer !== 'undefined' && typeof greenerylayer !== 'undefined'){
+    map?.moveLayer("overpass_greenery", "overpass_buildings" )
+  }
+
+   
 };
 
 const removeLayerFromMap = (layerId) => {
