@@ -24,10 +24,10 @@ let commentText = ref("")
 
 const submitComment = () => {
   HTTP
-    .post('add-comment', {
-      comment: commentText.value,
-      position: props.clickedCoordinates
-    })
+  .post('add-comment', {
+    comment: commentText.value,
+    position: props.clickedCoordinates
+  })
 
   store.state.contribution.commentToggle = false
   let marker = {
@@ -37,9 +37,10 @@ const submitComment = () => {
       coordinates: props.clickedCoordinates
     }
   }
-
+  let uniqueId= (Date.now() + Math.random() ).toString();
+  console.log(uniqueId)
   store.commit("map/addSource", {
-    id: "comment",
+    id: uniqueId,
     geojson: {
       "type": "geojson",
       "data": marker
@@ -48,9 +49,9 @@ const submitComment = () => {
   })
 
   store.commit("map/addLayer", {
-    'id': 'comment',
+    'id': uniqueId,
     'type': 'circle',
-    'source': 'comment',
+    'source': uniqueId,
     'paint': {
       'circle-color': 'green',
     }

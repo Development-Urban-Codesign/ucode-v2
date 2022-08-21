@@ -60,10 +60,10 @@ onMounted(() => {
 
   unsubscribeFromStore = store.subscribe((mutation, state) => {
     if (mutation.type === "map/addLayer") {
-      state.map.layers?.map(addLayerToMap)
+      state.map.layers?.slice(-1).map(addLayerToMap)
     }
     if (mutation.type === "map/addSource") {
-      state.map.sources?.map(addSourceToMap)
+      state.map.sources?.slice(-1).map(addSourceToMap)
     }
   });
 });
@@ -98,14 +98,16 @@ const removeLayerFromMap = (layerId) => {
 }
 
 const addSourceToMap = (source) => {
+  console.log(source)
   if (!source) return;
   if (!map) return;
   //TODO extract this as a function parameter
-  const sourceId = source.id;
-  if (map.getSource(sourceId)) {
+  let sourceId = source.id;
+  console.log(sourceId)
+  /*if (map.getSource(sourceId)) {
     map.removeSource(sourceId)
     removeLayerFromMap(sourceId)
-  }
+  }*/
 
   map.addSource(sourceId, source.geojson);
 };
