@@ -1,6 +1,5 @@
 <template>
-    Clicked coordinates: {{ clickedCoordinates }}
-    commentModeEnabled: {{ commentModeEnabled }}
+    
     <v-col cols="1" sm="1" style="position:absolute; left: 0; top:0; z-index:999">
         <v-btn rounded="pill" color="secondary" @click="toggleCommentPopup">
             Comment
@@ -10,8 +9,7 @@
         </v-btn>
     </v-col>
 
-    <div v-if="commentModeEnabled === true && clickedCoordinates.length > 0">SHOWN</div>
-    <div v-else> NOT SHOWN</div>
+   
 
 </template>
 
@@ -47,7 +45,7 @@ onBeforeUpdate(() => {
         app.use(vuetify)
         app.use(store)
         app.mount('#vue-popup-content')
-        //        commentModeEnabled.value = false
+        commentModeEnabled.value = false
     }
 })
 
