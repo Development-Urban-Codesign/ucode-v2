@@ -39,8 +39,12 @@ const submitComment = () => {
   }
 
   store.commit("map/addSource", {
-    "type": "geojson",
-    "data": marker
+    id: "comment",
+    geojson: {
+      "type": "geojson",
+      "data": marker
+    }
+    
   })
 
   store.commit("map/addLayer", {

@@ -101,13 +101,13 @@ const addSourceToMap = (source) => {
   if (!source) return;
   if (!map) return;
   //TODO extract this as a function parameter
-  const sourceId = "comment";
+  const sourceId = source.id;
   if (map.getSource(sourceId)) {
     map.removeSource(sourceId)
     removeLayerFromMap(sourceId)
   }
 
-  map.addSource(sourceId, source);
+  map.addSource(sourceId, source.geojson);
 };
 const addImageToMap = (ImgUrl) => {
   if (!ImgUrl) return;
