@@ -22,6 +22,7 @@
     <v-alert type="info" v-if="store.state.aoi.dataIsLoading">
       getting data...
     </v-alert>
+    
   </v-col>
 </template>
 
