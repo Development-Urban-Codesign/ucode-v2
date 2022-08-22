@@ -15,19 +15,34 @@
 
 <script setup>
 import CommentPopupContent from '@/components/CommentPopupContent.vue'
-import { ref, createApp, onBeforeUpdate } from "vue"
+import LinePopupContent from '@/components/LinePopupContent.vue'
+import { ref, reactive, createApp, onBeforeUpdate } from "vue"
 import { useStore } from "vuex";
 import maplibregl from 'maplibre-gl'
 import { createVuetify } from 'vuetify'
+import MapboxDraw from "@mapbox/mapbox-gl-draw";
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
+import {PathLayer} from '@deck.gl/layers';
+import {MapboxLayer} from '@deck.gl/mapbox';
 
 const store = useStore();
 const props =
     defineProps({
-        clickedCoordinates: Array
+        clickedCoordinates: Array,
+        lineDrawCreated: Number
     })
 
 const commentModeEnabled = ref(false)
-const emit = defineEmits(["addPopup"]);
+const lineDrawToggle =  ref(false)
+let draw = reactive (null)
+let drawnLineGeometry = reactive (null)
+let drawnPathlayer = reactive (null)
+let drawnPathlayerId = ref (null)
+
+
+const emit = defineEmits(["addPopup", "addDrawControl", "addDrawnLine", "addLinePopup"]);
+//const emit = defineEmits(["addDrawControl"]);
+
 onBeforeUpdate(() => {
     if (commentModeEnabled.value == true && props.clickedCoordinates.length > 0) {
 
@@ -47,7 +62,44 @@ onBeforeUpdate(() => {
         app.mount('#vue-popup-content')
         commentModeEnabled.value = false
     }
+    if (lineDrawToggle.value == true && props.lineDrawCreated==1){
+        drawnPathlayer=null
+        drawnLineGeometry = draw.getAll()
+        console.log(draw)
+        drawnPathlayerId = 'id' + (new Date()).getTime();
+        drawnPathlayer = new MapboxLayer({
+            id:drawnPathlayerId,
+            type: PathLayer,
+            data: drawnLineGeometry.features,
+            pickable: true,
+            widthScale: 1,
+            widthMinPixels: 2,
+            getPath: d => d.geometry.coordinates,
+            getColor: [150,150,150,255],
+            getWidth: 1
+        });
+        console.log(drawnPathlayer)
+        const linePopup = new maplibregl.Popup({ closeOnClick: false, closeButton: false, })
+            .setLngLat([drawnLineGeometry?.features[0]?.geometry?.coordinates?.slice(-1)[0][0], drawnLineGeometry?.features[0]?.geometry?.coordinates?.slice(-1)[0][1]])
+            .setHTML('<div id="draw-line-popup-content">fff</div>')
+        
+        emit("addDrawnLine", drawnLineGeometry, drawnPathlayerId, drawnPathlayer, linePopup)
+        
+        document.getElementsByClassName('mapboxgl-popup-content maplibregl-popup-content')[0].style.width="400px"
+
+        const app = createApp(LinePopupContent)
+        const vuetify = createVuetify()
+        app.use(vuetify)
+        app.use(store)
+        app.mount('#draw-line-popup-content')
+        lineDrawToggle.value = false
+        
+    }
+
+    
+    
 })
+
 
 const toggleCommentPopup = () => {
     commentModeEnabled.value = !commentModeEnabled.value;
@@ -59,10 +111,25 @@ const createComment = () => {
     }
 }
 const setLineDrawToggle = () => {
-    store.commit("contribution/setLineDrawToggle")
+     lineDrawToggle.value=true
+     if (lineDrawToggle.value == true ){
+        console.log("enabled")
+        if (draw==null){
+            draw = new MapboxDraw({
+                displayControlsDefault: false,
+                controls: {
+                    line_string: true,
+                    trash: true,
+                },
+                defaultMode: 'draw_line_string'
+            });
+            emit("addDrawControl", draw)
+        }
+    }
 }
 const drawLine = () => {
-    store.dispatch("contribution/drawLine")
+    //store.dispatch("contribution/drawLine")
+    
 }
 
 

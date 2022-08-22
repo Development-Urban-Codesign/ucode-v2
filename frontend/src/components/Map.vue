@@ -11,7 +11,7 @@
       </v-row>
 
       <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
-      <Contribution @addPopup="addPopupToMap" :clickedCoordinates="mapClicks.clickedCoordinates" />
+      <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine" :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
     </div>
   </div>
 </template>
@@ -20,7 +20,7 @@
 import { MapboxLayer } from "@deck.gl/mapbox";
 import { ScenegraphLayer } from "@deck.gl/mesh-layers";
 import { Map } from "maplibre-gl";
-import { onMounted, onUnmounted, reactive, shallowRef } from "vue";
+import { onMounted, onUnmounted, reactive, shallowRef, ref } from "vue";
 import { useStore } from "vuex";
 import { HTTP } from "../utils/http-common";
 import { TreeModel } from "../utils/TreeModel";
@@ -32,6 +32,8 @@ const store = useStore();
 const mapContainer = shallowRef(null);
 let map = {};
 const mapClicks = reactive({ clickedCoordinates: [] })
+let lineDrawCreated = ref(0)
+
 
 let unsubscribeFromStore = () => { };
 
@@ -58,6 +60,10 @@ onMounted(() => {
     mapClicks.clickedCoordinates = [mapClick.lngLat.lng, mapClick.lngLat.lat]
   });
 
+  map.on('draw.create', ()=> {
+      console.log(lineDrawCreated.value)
+      lineDrawCreated.value = 1
+  })
   unsubscribeFromStore = store.subscribe((mutation, state) => {
     if (mutation.type === "map/addLayer") {
       state.map.layers?.slice(-1).map(addLayerToMap)
@@ -119,6 +125,7 @@ const addImageToMap = (ImgUrl) => {
   });
 };
 
+
 // deckgl layder
 const addDeckglShape = () => {
   const myDeckLayer = new MapboxLayer({
@@ -139,6 +146,18 @@ const addDeckglShape = () => {
 const addPopupToMap = (popup) => {
   popup?.addTo(map)
 }
+
+const addDrawControl = (draw)=>{
+  map?.addControl(draw, 'bottom-right');
+}
+
+const addDrawnLine = (drawnLineGeometry, drawnPathlayerId, drawnPathlayer, linePopup)=>{
+  console.log(drawnLineGeometry)
+  addLayerToMap(drawnPathlayer)    
+  linePopup?.addTo(map)
+      
+}
+
 
 onUnmounted(() => {
   map?.remove();
