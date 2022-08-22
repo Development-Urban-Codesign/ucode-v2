@@ -159,9 +159,11 @@ const addDrawnLine = (drawnLineGeometry, drawnPathlayerId, drawnPathlayer, lineP
 }
 
 const removeDrawnLine = (draw, drawnPathlayerId)=>{
+
   removeLayerFromMap(drawnPathlayerId)
 }
 const removeDrawControl= (draw, drawnPathlayerId)=>{
+  lineDrawCreated.value = 0
   map.removeControl(draw)
 }
 onUnmounted(() => {
