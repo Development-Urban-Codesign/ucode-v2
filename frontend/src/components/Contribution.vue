@@ -65,7 +65,6 @@ onBeforeUpdate(() => {
     if (lineDrawToggle.value == true && props.lineDrawCreated==1){
         drawnPathlayer=null
         drawnLineGeometry = draw.getAll()
-        console.log(draw)
         drawnPathlayerId = 'id' + (new Date()).getTime();
         drawnPathlayer = new MapboxLayer({
             id:drawnPathlayerId,
@@ -87,7 +86,14 @@ onBeforeUpdate(() => {
         
         document.getElementsByClassName('mapboxgl-popup-content maplibregl-popup-content')[0].style.width="400px"
 
-        const app = createApp(LinePopupContent)
+        const app = createApp(LinePopupContent, {
+            closeLinePopup: linePopup.remove,
+            drawnLineGeometry: drawnLineGeometry,
+            changeColor:(r,g,b)=>{drawnPathlayer.setProps({getColor: [r,g,b,255]})},
+            changeWidth:(width)=>{drawnPathlayer.setProps({getWidth: width})} 
+
+        })
+        
         const vuetify = createVuetify()
         app.use(vuetify)
         app.use(store)
@@ -99,6 +105,7 @@ onBeforeUpdate(() => {
     
     
 })
+
 
 
 const toggleCommentPopup = () => {
@@ -131,6 +138,7 @@ const drawLine = () => {
     //store.dispatch("contribution/drawLine")
     
 }
+
 
 
 </script>

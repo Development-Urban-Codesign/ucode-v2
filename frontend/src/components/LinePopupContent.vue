@@ -47,10 +47,18 @@
 
 <script setup>
 import {useStore} from "vuex";
-import { ref } from 'vue';
+import { ref, defineProps } from 'vue';
 const store = useStore();
 import { HTTP } from '../utils/http-common';
 
+const props =
+  defineProps({
+    closeLinePopup: Function,
+    drawnLineGeometry: Array,
+    changeColor: Function,
+    changeWidth: Function
+  })
+const emit = defineEmits(["closeLinePopup"]);
 
 let tab = ref(null)
 let drawnLineComment= ref("")
@@ -58,20 +66,19 @@ let drawnLineWidth= ref(1)
 let drawnLineColor= ref("#969696")
 
 const updateDrwanLineWidth = ()=>{
-    console.log(drawnLineWidth.value)
-    store.state.contribution.drawnPathlayer.setProps({getWidth: drawnLineWidth.value})
+    props.changeWidth(drawnLineWidth.value)
 }
+
 const updateDrwanLineColor = ()=>{
-    console.log(drawnLineColor.value)
     const r = parseInt(drawnLineColor.value.substr(1,2), 16)
     const g = parseInt(drawnLineColor.value.substr(3,2), 16)
     const b = parseInt(drawnLineColor.value.substr(5,2), 16)
-    store.state.contribution.drawnPathlayer.setProps({getColor: [r,g,b,255]})
-    
+    props.changeColor(r,g,b)
 }
 
 const discardDrawnLine = ()=>{
-    store.dispatch("contribution/discardDrawnLine")
+  props.closeLinePopup();
+  //store.dispatch("contribution/discardDrawnLine")
 }
 
 const submitDrawnLine = ()=>{
@@ -81,8 +88,9 @@ const submitDrawnLine = ()=>{
         comment: drawnLineComment.value,
         width: drawnLineWidth.value,
         color: drawnLineColor.value,
-        geometry: store.state.contribution.drawnLineGeometry
+        geometry: props.drawnLineGeometry
     })
+    props.closeLinePopup();
     if (store.state.contribution.linePopup?.isOpen()){
         store.state.contribution.linePopup?.remove()
     }
