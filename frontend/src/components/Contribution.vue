@@ -40,7 +40,7 @@ let drawnPathlayer = reactive (null)
 let drawnPathlayerId = ref (null)
 
 
-const emit = defineEmits(["addPopup", "addDrawControl", "addDrawnLine", "addLinePopup"]);
+const emit = defineEmits(["addPopup", "addDrawControl", "addDrawnLine", "addLinePopup", "test"]);
 //const emit = defineEmits(["addDrawControl"]);
 
 onBeforeUpdate(() => {
@@ -87,11 +87,24 @@ onBeforeUpdate(() => {
         document.getElementsByClassName('mapboxgl-popup-content maplibregl-popup-content')[0].style.width="400px"
 
         const app = createApp(LinePopupContent, {
-            closeLinePopup: linePopup.remove,
+            
             drawnLineGeometry: drawnLineGeometry,
-            changeColor:(r,g,b)=>{drawnPathlayer.setProps({getColor: [r,g,b,255]})},
-            changeWidth:(width)=>{drawnPathlayer.setProps({getWidth: width})} 
+            changeColor:(r,g,b)=>{
+                drawnPathlayer.setProps({getColor: [r,g,b,255]})
+            },
+            changeWidth:(width)=>{
+                drawnPathlayer.setProps({getWidth: width})
+            },
+            removeDrawnLineAction:()=>{
+                emit("removeDrawnLine", draw, drawnPathlayerId)
+            },
+            removeDrawControlAction:()=>{
+                emit("removeDrawControl", draw, drawnPathlayerId)
+            },
+            closeLinePopup: ()=>{
+                linePopup.remove(); drawnLineGeometry=null; lineDrawToggle.value = false; drawnPathlayer = null;
 
+            },
         })
         
         const vuetify = createVuetify()
@@ -120,7 +133,7 @@ const createComment = () => {
 const setLineDrawToggle = () => {
      lineDrawToggle.value=true
      if (lineDrawToggle.value == true ){
-        console.log("enabled")
+        draw = null
         if (draw==null){
             draw = new MapboxDraw({
                 displayControlsDefault: false,

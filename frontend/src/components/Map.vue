@@ -11,7 +11,7 @@
       </v-row>
 
       <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
-      <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine" :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
+      <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine" @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl" :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
     </div>
   </div>
 </template>
@@ -158,7 +158,12 @@ const addDrawnLine = (drawnLineGeometry, drawnPathlayerId, drawnPathlayer, lineP
       
 }
 
-
+const removeDrawnLine = (draw, drawnPathlayerId)=>{
+  removeLayerFromMap(drawnPathlayerId)
+}
+const removeDrawControl= (draw, drawnPathlayerId)=>{
+  map.removeControl(draw)
+}
 onUnmounted(() => {
   map?.remove();
 });

@@ -39,7 +39,7 @@
 
       </v-window>
       <v-btn flat size="small" color="success" @click="submitDrawnLine">sumbit</v-btn>
-      <v-btn flat size="small" color="error" class="ml-2" @click="discardDrawnLine">cancel</v-btn>
+      <v-btn flat size="small" color="error" class="ml-2"  @click="discardDrawnLine">cancel</v-btn>
   </v-card>
 
   </div>
@@ -54,11 +54,12 @@ import { HTTP } from '../utils/http-common';
 const props =
   defineProps({
     closeLinePopup: Function,
-    drawnLineGeometry: Array,
+    drawnLineGeometry: Object,
     changeColor: Function,
-    changeWidth: Function
+    changeWidth: Function,
+    removeDrawnLineAction: Function,
+    removeDrawControlAction: Function
   })
-const emit = defineEmits(["closeLinePopup"]);
 
 let tab = ref(null)
 let drawnLineComment= ref("")
@@ -66,19 +67,20 @@ let drawnLineWidth= ref(1)
 let drawnLineColor= ref("#969696")
 
 const updateDrwanLineWidth = ()=>{
-    props.changeWidth(drawnLineWidth.value)
+  props.changeWidth(drawnLineWidth.value)
 }
 
 const updateDrwanLineColor = ()=>{
-    const r = parseInt(drawnLineColor.value.substr(1,2), 16)
-    const g = parseInt(drawnLineColor.value.substr(3,2), 16)
-    const b = parseInt(drawnLineColor.value.substr(5,2), 16)
-    props.changeColor(r,g,b)
+  const r = parseInt(drawnLineColor.value.substr(1,2), 16)
+  const g = parseInt(drawnLineColor.value.substr(3,2), 16)
+  const b = parseInt(drawnLineColor.value.substr(5,2), 16)
+  props.changeColor(r,g,b)
 }
 
 const discardDrawnLine = ()=>{
   props.closeLinePopup();
-  //store.dispatch("contribution/discardDrawnLine")
+  props.removeDrawnLineAction()
+  props.removeDrawControlAction()
 }
 
 const submitDrawnLine = ()=>{
@@ -91,12 +93,8 @@ const submitDrawnLine = ()=>{
         geometry: props.drawnLineGeometry
     })
     props.closeLinePopup();
-    if (store.state.contribution.linePopup?.isOpen()){
-        store.state.contribution.linePopup?.remove()
-    }
-    store.state.contribution.drawnLineGeometry=null
-    store.state.contribution.draw= null
-    store.state.contribution.lineDrawToggle = false
+    props.removeDrawControlAction()
+    
 }
 </script>
 
