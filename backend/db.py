@@ -82,6 +82,9 @@ def add_comment(comment, lng, lat):
 
   '''
   cursor.execute(insert_query_comment, (comment, lng, lat,))
+  connection.commit()
+  cursor.close()
+  connection.close()
 
 def init_greenery_table():
   connection = connect()
