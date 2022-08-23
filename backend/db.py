@@ -133,6 +133,7 @@ def add_drawn_line(comment, width, color, geom):
   cursor = connection.cursor()
   
   insert_query_drawn_line= '''
+    create table if not exists drawnline (id SERIAL PRIMARY KEY, comment VARCHAR (300), color CHAR(7), width FLOAT(2),geom geometry(LINESTRING, 4326));
     INSERT INTO drawnline (comment, width, color, geom) VALUES (%s,%s,%s, ST_SetSRID(st_astext(st_geomfromgeojson(%s)), 4326));
 
   '''
