@@ -77,7 +77,6 @@ onBeforeUpdate(() => {
             getColor: [150,150,150,255],
             getWidth: 1
         });
-        console.log(drawnPathlayer)
         const linePopup = new maplibregl.Popup({ closeOnClick: false, closeButton: false, })
             .setLngLat([drawnLineGeometry?.features[0]?.geometry?.coordinates?.slice(-1)[0][0], drawnLineGeometry?.features[0]?.geometry?.coordinates?.slice(-1)[0][1]])
             .setHTML('<div id="draw-line-popup-content">fff</div>')

@@ -19,8 +19,6 @@
         >
         </v-textarea>
 
-       
-         
         </v-window-item>
 
         <v-window-item value="two">

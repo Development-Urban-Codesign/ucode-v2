@@ -61,7 +61,6 @@ onMounted(() => {
   });
 
   map.on('draw.create', ()=> {
-      console.log(lineDrawCreated.value)
       lineDrawCreated.value = 1
   })
   unsubscribeFromStore = store.subscribe((mutation, state) => {
@@ -152,7 +151,6 @@ const addDrawControl = (draw)=>{
 }
 
 const addDrawnLine = (drawnLineGeometry, drawnPathlayerId, drawnPathlayer, linePopup)=>{
-  console.log(drawnLineGeometry)
   addLayerToMap(drawnPathlayer)    
   linePopup?.addTo(map)
       
