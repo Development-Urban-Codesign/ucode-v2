@@ -1,27 +1,30 @@
 <template>
 <div> 
-  <v-card>
+  <v-card >
     <v-tabs
       v-model="tab"
       fixed-tabs
-      background-color="primary"
+      background-color="#418df2"
+      color="white"
     >
       <v-tab value="one" prepend-icon="mdi-comment">comment</v-tab>
       <v-tab value="two" prepend-icon="mdi-palette">style</v-tab>
     </v-tabs>
-
       <v-window v-model="tab">
         <v-window-item value="one">
           <v-textarea
-            color="transparent"
-            label="description"
+            
+          label="description"
             v-model="drawnLineComment"
         >
         </v-textarea>
+
+       
+         
         </v-window-item>
 
         <v-window-item value="two">
-            <div class="text-caption">width: {{drawnLineWidth}} m</div>
+            <div class="text-caption ml-2">width: {{drawnLineWidth}} m</div>
 
             <v-slider
                 v-model="drawnLineWidth"
@@ -29,18 +32,20 @@
                 max="10"
                 step="1"
                 @update:modelValue="updateDrwanLineWidth"
+                class="ml-2"
             ></v-slider>
 
-            <div class="text-caption">color</div>
+            <div class="text-caption ml-2">color</div>
 
-           <input type="color" v-model="drawnLineColor" @update:modelValue="updateDrwanLineColor">
+           <input class="ml-2" type="color" v-model="drawnLineColor" @update:modelValue="updateDrwanLineColor">
 
         </v-window-item>
 
       </v-window>
-      <v-btn flat size="small" color="success" @click="submitDrawnLine">sumbit</v-btn>
-      <v-btn flat size="small" color="error" class="ml-2"  @click="discardDrawnLine">cancel</v-btn>
   </v-card>
+
+    <v-btn class="mt-2" flat variant="outlined" size="small" color="success" @click="submitDrawnLine">sumbit</v-btn>
+    <v-btn class="mt-2 ml-2" flat variant="outlined" size="small" color="error"  @click="discardDrawnLine">cancel</v-btn>
 
   </div>
 </template>
