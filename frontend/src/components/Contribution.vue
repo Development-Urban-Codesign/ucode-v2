@@ -34,9 +34,9 @@ const props =
 
 const commentModeEnabled = ref(false)
 const lineDrawToggle =  ref(false)
-let draw = reactive (null)
-let drawnLineGeometry = reactive (null)
-let drawnPathlayer = reactive (null)
+let draw = reactive ({})
+let drawnLineGeometry = reactive ({})
+let drawnPathlayer = reactive ({})
 let drawnPathlayerId = ref (null)
 
 
