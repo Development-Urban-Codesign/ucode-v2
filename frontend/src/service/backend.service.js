@@ -1,4 +1,5 @@
 import { PolygonLayer } from '@deck.gl/layers';
+import { ScenegraphLayer } from "@deck.gl/mesh-layers";
 import { MapboxLayer } from '@deck.gl/mapbox';
 import { HTTP } from '../utils/http-common.js';
 import store from "../store/store";
@@ -68,4 +69,33 @@ export async function storeGreeneryFromOSM(bbox, usedTagsForGreenery) {
       bbox: bbox,
       usedTagsForGreenery: usedTagsForGreenery
     }).then(() => store.dispatch("aoi/setDataIsLoaded"))
+}
+
+
+export async function getCommentsFromDB() {
+  const response = await HTTP.get('get-cooments')
+  const iconlayer = new MapboxLayer({
+    id: 'comments',
+    type: ScenegraphLayer,
+    data:response.data.features,
+    pickable: true,
+    scenegraph:
+    "https://raw.githubusercontent.com/QSafariallahkheili/ligfinder_refactor/master/Icon3d.glb",
+    getPosition: d => d.geometry.coordinates,
+    getOrientation: (d) => [0, Math.random() * 180, 90],
+    sizeScale: 15,
+    _lighting: "pbr",
+    onClick: ({ x, y, object }) => {
+      console.log(object)
+    },
+    onHover: (e) => {
+      if (e.object) {
+        changeScale()
+      }
+    }
+
+  })
+
+  return iconlayer
+  
 }

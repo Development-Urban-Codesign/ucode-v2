@@ -26,6 +26,7 @@ import { HTTP } from "../utils/http-common";
 import { TreeModel } from "../utils/TreeModel";
 import AOI from "./AOI.vue";
 import Contribution from "./Contribution.vue";
+import {getCommentsFromDB} from "../service/backend.service";
 
 const store = useStore();
 
@@ -55,6 +56,8 @@ onMounted(() => {
     HTTP.get("").then((response) => {
       console.log(response);
     });
+    getCommentData()
+    
   });
   map.on('click', function (mapClick) {
     mapClicks.clickedCoordinates = [mapClick.lngLat.lng, mapClick.lngLat.lat]
@@ -72,6 +75,8 @@ onMounted(() => {
     }
   });
 });
+
+
 
 // threejs layer
 const addThreejsShape = () => {
@@ -124,7 +129,10 @@ const addImageToMap = (ImgUrl) => {
   });
 };
 
-
+const getCommentData = async () => {
+  const commentLayer = await getCommentsFromDB()
+  addLayerToMap(commentLayer)
+};
 // deckgl layder
 const addDeckglShape = () => {
   const myDeckLayer = new MapboxLayer({
@@ -164,6 +172,9 @@ const removeDrawControl= (draw, drawnPathlayerId)=>{
   lineDrawCreated.value = 0
   map.removeControl(draw)
 }
+
+
+
 onUnmounted(() => {
   map?.remove();
 });
