@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from db import (add_comment, add_drawn_line, get_buildings_from_db,
                 get_buildings_from_osm, get_greenery_from_db,
                 get_table_names, init_building_table,
-                init_greenery_table, store_greenery_from_osm)
+                init_greenery_table, store_greenery_from_osm,get_comments)
 
 
 app = FastAPI()
@@ -185,3 +185,7 @@ async def add_drawn_line_api(request: Request):
     print(data)
     return "added"
 
+
+@app.get("/get-cooments")
+async def get_comments_api():
+    return get_comments()

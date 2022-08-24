@@ -144,4 +144,20 @@ def add_drawn_line(comment, width, color, geom):
   connection.commit()
   cursor.close()
   connection.close()
+
+def get_comments():
+  connection = connect()
+  cursor = connection.cursor()
+  get_comment_query =''' select json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(ST_AsGeoJSON(comment.*)::json)
+        )
+        from comment
+      ;
+  '''
+  cursor.execute(get_comment_query)
+  comments = cursor.fetchall()[0][0]
+  cursor.close()
+  connection.close()
+  return comments
   
