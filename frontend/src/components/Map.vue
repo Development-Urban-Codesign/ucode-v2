@@ -12,6 +12,7 @@
 
       <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine" @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl" :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
+      <Comment />
     </div>
   </div>
 </template>
@@ -27,6 +28,7 @@ import { TreeModel } from "../utils/TreeModel";
 import AOI from "./AOI.vue";
 import Contribution from "./Contribution.vue";
 import {getCommentsFromDB} from "../service/backend.service";
+import Comment from "./Comment.vue";
 
 const store = useStore();
 
@@ -66,6 +68,10 @@ onMounted(() => {
   map.on('draw.create', ()=> {
       lineDrawCreated.value = 1
   })
+
+ 
+
+
   unsubscribeFromStore = store.subscribe((mutation, state) => {
     if (mutation.type === "map/addLayer") {
       state.map.layers?.slice(-1).map(addLayerToMap)
