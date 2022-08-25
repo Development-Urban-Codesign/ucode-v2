@@ -1,8 +1,14 @@
+import json
+
+import requests
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-import json
-import requests
-from db import get_table_names, get_buildings_from_osm, init_building_table, get_buildings_from_db, add_comment, init_greenery_table, store_greenery_from_osm, get_greenery_from_db
+
+from db import (add_comment, add_drawn_line, get_buildings_from_db,
+                get_buildings_from_osm, get_greenery_from_db,
+                get_table_names, init_building_table,
+                init_greenery_table, store_greenery_from_osm)
+
 
 app = FastAPI()
 origins = [
@@ -169,6 +175,13 @@ async def get_buildings_from_db_api():
 @app.post("/add-comment")
 async def add_comment_api(request: Request):
     data = await request.json()
-
     add_comment(data["comment"], float(data["position"][0]), float(data["position"][1]))
     return "added"
+
+@app.post("/add-drawn-line")
+async def add_drawn_line_api(request: Request):
+    data = await request.json()
+    add_drawn_line(data["comment"], data["width"], data["color"], json.dumps(data["geometry"]["features"][0]["geometry"]))
+    print(data)
+    return "added"
+

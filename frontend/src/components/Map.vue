@@ -11,20 +11,20 @@
       </v-row>
 
       <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
-      <Contribution />
       <Quests />
+      <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine" @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl" :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
     </div>
   </div>
 </template>
 
 <script setup>
+import { MapboxLayer } from "@deck.gl/mapbox";
+import { ScenegraphLayer } from "@deck.gl/mesh-layers";
 import { Map } from "maplibre-gl";
-import { shallowRef, onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, reactive, shallowRef, ref } from "vue";
 import { useStore } from "vuex";
 import { HTTP } from "../utils/http-common";
 import { TreeModel } from "../utils/TreeModel";
-import { MapboxLayer } from "@deck.gl/mapbox";
-import { ScenegraphLayer } from "@deck.gl/mesh-layers";
 import AOI from "./AOI.vue";
 import Contribution from "./Contribution.vue";
 import Quests from "./Quests.vue";
@@ -34,6 +34,15 @@ const store = useStore();
 
 const mapContainer = shallowRef(null);
 let map = {};
+const mapClicks = reactive({ clickedCoordinates: [] })
+let lineDrawCreated = ref(0)
+
+
+let unsubscribeFromStore = () => { };
+
+onUnmounted(() => {
+  unsubscribeFromStore()
+})
 
 onMounted(() => {
   map = new Map({
@@ -50,6 +59,21 @@ onMounted(() => {
       console.log(response);
     });
   });
+  map.on('click', function (mapClick) {
+    mapClicks.clickedCoordinates = [mapClick.lngLat.lng, mapClick.lngLat.lat]
+  });
+
+  map.on('draw.create', ()=> {
+      lineDrawCreated.value = 1
+  })
+  unsubscribeFromStore = store.subscribe((mutation, state) => {
+    if (mutation.type === "map/addLayer") {
+      state.map.layers?.slice(-1).map(addLayerToMap)
+    }
+    if (mutation.type === "map/addSource") {
+      state.map.sources?.slice(-1).map(addSourceToMap)
+    }
+  });
 });
 
 // threejs layer
@@ -64,6 +88,35 @@ const addLayerToMap = (layer) => {
     }
   }
   map?.addLayer(layer);
+  
+  const buildinglayer = map.getLayer("overpass_buildings")
+  const greenerylayer = map.getLayer("overpass_greenery")
+  if(typeof buildinglayer !== 'undefined' && typeof greenerylayer !== 'undefined'){
+    map?.moveLayer("overpass_greenery", "overpass_buildings" )
+  }
+
+   
+};
+
+const removeLayerFromMap = (layerId) => {
+  if (map.getLayer(layerId)) {
+    map.removeLayer(layerId);
+  }
+}
+
+const addSourceToMap = (source) => {
+  console.log(source)
+  if (!source) return;
+  if (!map) return;
+  //TODO extract this as a function parameter
+  let sourceId = source.id;
+  console.log(sourceId)
+  /*if (map.getSource(sourceId)) {
+    map.removeSource(sourceId)
+    removeLayerFromMap(sourceId)
+  }*/
+
+  map.addSource(sourceId, source.geojson);
 };
 const addImageToMap = (ImgUrl) => {
   if (!ImgUrl) return;
@@ -73,7 +126,7 @@ const addImageToMap = (ImgUrl) => {
   }); 
 };
 
-// deckgl layer
+// deckgl layder
 const addDeckglShape = () => {
   const myDeckLayer = new MapboxLayer({
     id: "hexagon2D",
@@ -90,6 +143,28 @@ const addDeckglShape = () => {
   addLayerToMap(myDeckLayer);
 };
 
+const addPopupToMap = (popup) => {
+  popup?.addTo(map)
+}
+
+const addDrawControl = (draw)=>{
+  map?.addControl(draw, 'bottom-right');
+}
+
+const addDrawnLine = (drawnLineGeometry, drawnPathlayerId, drawnPathlayer, linePopup)=>{
+  addLayerToMap(drawnPathlayer)    
+  linePopup?.addTo(map)
+      
+}
+
+const removeDrawnLine = (draw, drawnPathlayerId)=>{
+
+  removeLayerFromMap(drawnPathlayerId)
+}
+const removeDrawControl= (draw, drawnPathlayerId)=>{
+  lineDrawCreated.value = 0
+  map.removeControl(draw)
+}
 onUnmounted(() => {
   map?.remove();
 });
