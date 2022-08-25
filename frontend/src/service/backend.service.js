@@ -86,15 +86,25 @@ export async function getCommentsFromDB() {
     sizeScale: 15,
     _lighting: "pbr",
     onClick: ({ x, y, object }) => {
-      console.log(object)
+      // TODO: change the color of clicked icon
+      getClickedCommentObject(object)
     },
+    
     onHover: (e) => {
       if (e.object) {
-        changeScale()
+        
+        
       }
     }
 
   })
+  
+  const getClickedCommentObject = (object)=>{
+    //iconlayer.setProps({sizeScale: 20})
+    store.commit("comment/setCommentToggle")
+    store.commit("comment/getClickedCommentObject", object)
+
+  }
 
   return iconlayer
   
