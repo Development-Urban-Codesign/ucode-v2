@@ -4,11 +4,13 @@ import requests
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-from db import (add_comment, add_drawn_line, get_buildings_from_db,
-                get_buildings_from_osm, get_greenery_from_db,
-                get_table_names, init_building_table,
-                init_greenery_table, store_greenery_from_osm,get_comments, like_comment, unlike_comment, dislike_comment, undislike_comment)
+from db import (add_comment, add_drawn_line, dislike_comment,
+                get_buildings_from_db, get_buildings_from_osm, get_comments,
+                get_greenery_from_db, get_table_names, like_comment, store_greenery_from_osm,
+                undislike_comment, unlike_comment)
+from db_migrations import run_database_migrations
 
+run_database_migrations()
 
 app = FastAPI()
 origins = [
@@ -94,7 +96,6 @@ async def get_greenery_from_db_api():
 @app.post("/get-buildings-from-osm")
 async def get_buildings_from_osm_api(request: Request):
     data = await request.json()
-    init_building_table()
     xmin = data['bbox']["xmin"]
     ymin = data['bbox']["ymin"]
     xmax = data['bbox']["xmax"]
