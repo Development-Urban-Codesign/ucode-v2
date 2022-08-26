@@ -4,13 +4,13 @@
       <v-card align="center" v-if="true">
         <v-card-title>Welcome</v-card-title>
         <v-card-text> {{ introtext }} </v-card-text>
-        <v-card v-for="item in quests" :key="item.name">
-          <v-banner lines="auto" color="black" id=item.name>
+        <v-card v-for="(item, i) in quests" :key="i">
+          <v-banner lines="auto" color="black" :id="i" style="margin:5px; background-color:{{this.clicked}} ? red : green;"> 
             <v-banner-text>
               {{ item.name }}
             </v-banner-text>
             <v-banner-actions>
-              <v-btn @click="startQuest(item)">Start</v-btn>
+              <v-btn @click="startQuest(i)">Start</v-btn>
               <v-btn>Leave</v-btn>
               <v-btn>Fulfill</v-btn>
             </v-banner-actions>
@@ -32,6 +32,7 @@
               </tr>
             </tbody>
           </v-table> -->
+          <!-- {{clicked}}? 'red' : 'green' -->
         </v-card>
       </v-card>
     </v-row>
@@ -47,6 +48,8 @@ const store = useStore();
 export default {
   data() {
     return {
+      clicked: false,
+      selectionColor: '#1c87c9',
       introtext: "Hi this is the Greetings Text!",
       quests: [
         {
@@ -60,8 +63,8 @@ export default {
   },
 };
 function startQuest(quest){
-  console.log(quest.name);
-  this.quest.style.backgroundColor = 'dark';
+  console.log(quest)
+  this.selectionColor = '#1c87c9'
 }
 
 </script>
