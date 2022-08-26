@@ -160,4 +160,47 @@ def get_comments():
   cursor.close()
   connection.close()
   return comments
+
+def like_comment(commentid):
+  connection = connect()
+  cursor = connection.cursor()
+  add_like_query =''' UPDATE comment SET likes = likes + 1 where id = %s  ;'''
+  cursor.execute(add_like_query, (commentid,))
   
+  connection.commit()
+  cursor.close()
+  connection.close()
+  return "ok"
+
+def unlike_comment(commentid):
+  connection = connect()
+  cursor = connection.cursor()
+  add_unlike_query =''' UPDATE comment SET likes = likes - 1 where id = %s  ;'''
+  cursor.execute(add_unlike_query, (commentid,))
+  
+  connection.commit()
+  cursor.close()
+  connection.close()
+  return "ok"
+
+def dislike_comment(commentid):
+  connection = connect()
+  cursor = connection.cursor()
+  add_dislike_query =''' UPDATE comment SET dislikes = dislikes + 1 where id = %s  ;'''
+  cursor.execute(add_dislike_query, (commentid,))
+  
+  connection.commit()
+  cursor.close()
+  connection.close()
+  return "ok"
+
+def undislike_comment(commentid):
+  connection = connect()
+  cursor = connection.cursor()
+  add_undislike_query =''' UPDATE comment SET dislikes = dislikes - 1 where id = %s  ;'''
+  cursor.execute(add_undislike_query, (commentid,))
+  
+  connection.commit()
+  cursor.close()
+  connection.close()
+  return "ok"

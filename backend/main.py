@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from db import (add_comment, add_drawn_line, get_buildings_from_db,
                 get_buildings_from_osm, get_greenery_from_db,
                 get_table_names, init_building_table,
-                init_greenery_table, store_greenery_from_osm,get_comments)
+                init_greenery_table, store_greenery_from_osm,get_comments, like_comment, unlike_comment, dislike_comment, undislike_comment)
 
 
 app = FastAPI()
@@ -189,3 +189,27 @@ async def add_drawn_line_api(request: Request):
 @app.get("/get-cooments")
 async def get_comments_api():
     return get_comments()
+
+@app.post("/like-comment")
+async def like_comment_api(request: Request):
+    data = await request.json()
+    like_comment(data["id"])
+    return "added"
+
+@app.post("/unlike-comment")
+async def unlike_comment_api(request: Request):
+    data = await request.json()
+    unlike_comment(data["id"])
+    return "added"
+
+@app.post("/dislike-comment")
+async def dislike_comment_api(request: Request):
+    data = await request.json()
+    dislike_comment(data["id"])
+    return "added"
+
+@app.post("/undislike-comment")
+async def undislike_comment_api(request: Request):
+    data = await request.json()
+    undislike_comment(data["id"])
+    return "added"
