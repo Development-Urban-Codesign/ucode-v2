@@ -7,43 +7,75 @@
         class="comment-content"
         width="400"
     >
-        <v-row no-gutters>
-            <v-col md="10">
-                <v-card-title >
-                    {{store.state.comment?.commentData?.properties?.comment}}
-                </v-card-title>
-            </v-col>
+      <v-row no-gutters>
+        <v-col md="10">
+              <v-card-title >
+                  {{store.state.comment?.commentData?.properties?.comment}}
+              </v-card-title>
+        </v-col>
 
-            <v-col
-                md="2"
+        <v-col
+            md="2"
+        >
+
+            <v-btn
+                icon="mdi-close-circle-outline"
+                @click.stop="store.state.comment.toggle=false"
+                class="ma-2"
+                variant="text"
+                color="blue-lighten-2"
             >
     
-                <v-btn
-                    icon="mdi-close-circle-outline"
-                    @click.stop="store.state.comment.toggle=false"
-                    class="ma-2"
-                    variant="text"
-                    color="blue-lighten-2"
-                >
-        
-                </v-btn>
-            </v-col>
-        </v-row>
-       <v-card-subtitle>
-        created at: {{store.state.comment?.commentData?.properties?.created_at}}
+            </v-btn>
+        </v-col>
+      </v-row>
 
-        </v-card-subtitle>
-        <v-card-subtitle>
-        {{store.state.comment?.commentData?.properties?.likes}} likes
-        {{store.state.comment?.commentData?.properties?.dislikes}} dislikes
+      <v-card-subtitle>
 
-        </v-card-subtitle>
+      created at: {{store.state.comment?.commentData?.properties?.created_at}}
+      
+      </v-card-subtitle>
 
-        <v-card-text>
-            {{store.state.comment?.commentData?.properties?.comment}}
-        </v-card-text>
-        
-        <v-divider class="mx-4"></v-divider>
+      <v-card-text>
+        {{store.state.comment?.commentData?.properties?.comment}}
+      </v-card-text>
+
+      <div>
+        <v-btn
+          size="small"
+          class="ma-2"
+          variant="text"
+          icon="mdi-thumb-up-outline"
+          :color="store.state.comment.likedCommentIds.includes(store.state.comment?.commentData?.properties?.id) ? 'green' : 'black'"
+          @click="likeComment(store.state.comment?.commentData?.properties?.id)"
+        >
+        </v-btn>
+        <span
+          v-if="store.state.comment.likedCommentIds.includes(store.state.comment?.commentData?.properties?.id) || store.state.comment.unlikedCommentIds.includes(store.state.comment?.commentData?.properties?.id)"
+          style="word-break: normal !important;"
+        >
+          {{store.state.comment?.commentData?.properties?.likes}}
+        </span>
+
+
+        <v-btn
+          size="small"
+          class="ma-2"
+          variant="text"
+          icon="mdi-thumb-down-outline"
+          :color="store.state.comment.unlikedCommentIds.includes(store.state.comment?.commentData?.properties?.id) ? 'red' : 'black'"
+          @click="dislikeComment(store.state.comment?.commentData?.properties?.id)"
+        >
+        </v-btn>
+        <span
+          v-if="store.state.comment.likedCommentIds.includes(store.state.comment?.commentData?.properties?.id) || store.state.comment.unlikedCommentIds.includes(store.state.comment?.commentData?.properties?.id)"
+          style="word-break: normal !important;"
+        >
+          {{store.state.comment?.commentData?.properties?.dislikes}}
+        </span>
+      </div>
+      
+      <v-divider class="mx-4"></v-divider>
     
         
     </v-card>
@@ -60,6 +92,13 @@
 import { useStore } from "vuex";
 const store = useStore();
 
+const likeComment = (id)=>{
+  store.dispatch("comment/likeComment", id)
+}
+
+const dislikeComment = (id)=>{
+  store.dispatch("comment/dislikeComment", id)
+}
 </script>
 
 <style scoped>
