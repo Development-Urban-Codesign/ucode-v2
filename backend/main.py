@@ -6,11 +6,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from db import (add_comment, add_drawn_line, dislike_comment,
                 get_buildings_from_db, get_buildings_from_osm, get_comments,
-                get_greenery_from_db, get_table_names, like_comment, store_greenery_from_osm,
-                undislike_comment, unlike_comment)
+                get_greenery_from_db, get_table_names, like_comment,
+                store_greenery_from_osm, undislike_comment, unlike_comment)
 from db_migrations import run_database_migrations
 
-run_database_migrations()
+try:
+    run_database_migrations()
+except Exception as err:
+    print("Could not run database migrations", err)
 
 app = FastAPI()
 origins = [
