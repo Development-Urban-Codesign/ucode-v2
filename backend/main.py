@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from db import (add_comment, add_drawn_line, get_buildings_from_db,
                 get_buildings_from_osm, get_greenery_from_db,
                 get_table_names, init_building_table,
-                init_greenery_table, store_greenery_from_osm,get_comments, like_comment, unlike_comment, dislike_comment, undislike_comment)
+                init_greenery_table, store_greenery_from_osm,get_comments, like_comment, unlike_comment, dislike_comment, undislike_comment, connect)
 
 
 app = FastAPI()
@@ -73,6 +73,12 @@ async def store_greenery_from_osm_api(request:Request):
                         params= {'data': overpass_query_greenery})
     data_greenery = response_greenery.json()
 
+    connection = connect()
+    cursor = connection.cursor()
+    insert_query_greenery= '''
+        INSERT INTO greenery (greentag, geom) VALUES (%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
+
+    '''
     for f in data_greenery["elements"]:
         f["geometry"]["type"] = "Polygon"
         f["geometry"]["coordinates"] = [f["geometry"]["coordinates"]]
@@ -84,7 +90,12 @@ async def store_greenery_from_osm_api(request:Request):
             greentag = "notFound"
         geom = json.dumps(f['geometry'])
 
-        store_greenery_from_osm(greentag, geom)
+        #store_greenery_from_osm(greentag, geom)
+        cursor.execute(insert_query_greenery, (greentag, geom,))
+    
+    connection.commit()
+    cursor.close()
+    connection.close()
     return "gg"
 
 @app.get("/get-greenery-from-db")
@@ -126,7 +137,14 @@ async def get_buildings_from_osm_api(request: Request):
                         params={'data': overpass_query_building_parts})
     
     data_building = response_building.json()
-    
+
+    connection = connect()
+    cursor = connection.cursor()
+
+    insert_query_building= '''
+        INSERT INTO building (wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
+
+    '''
     for f in data_building["elements"]:
         f["geometry"]["type"] = "Polygon"
         f["geometry"]["coordinates"] = [f["geometry"]["coordinates"]]
@@ -163,8 +181,12 @@ async def get_buildings_from_osm_api(request: Request):
 
         geom=json.dumps(f['geometry'])
         
-        get_buildings_from_osm(wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom)
+        #get_buildings_from_osm(wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom)
+        cursor.execute(insert_query_building, (wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom,))
     
+    connection.commit()
+    cursor.close()
+    connection.close()
     
     return "fine"
 
