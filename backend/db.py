@@ -131,6 +131,37 @@ def get_greenery_from_db():
   return greenery
 
 
+def init_tree_table():
+  connection = connect()
+  cursor = connection.cursor()
+  create_tree_table_query =''' 
+        drop table if exists tree;
+        create table tree (id SERIAL PRIMARY KEY, geom geometry(Point, 4326));
+  '''
+  cursor.execute(create_tree_table_query)
+
+  connection.commit()
+  cursor.close()
+  connection.close()
+  return "ok"
+
+def get_trees_from_db():
+  connection = connect()
+  cursor = connection.cursor()
+  get_trees_query =''' select json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(ST_AsGeoJSON(tree.*)::json)
+        )
+        from tree
+      ;
+  '''
+  cursor.execute(get_trees_query)
+  trees = cursor.fetchall()[0][0]
+  cursor.close()
+  connection.close()
+  return trees
+
+
 def add_drawn_line(comment, width, color, geom):
   connection = connect()
   cursor = connection.cursor()
