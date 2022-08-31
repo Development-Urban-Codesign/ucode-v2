@@ -4,7 +4,6 @@ import { MapboxLayer } from '@deck.gl/mapbox';
 import { HTTP } from '../utils/http-common.js';
 import store from "../store/store";
 
-
 export async function getbuildingsFromDB() {
   const response = await HTTP.get('get-buildings-from-db');
   console.log(response);
@@ -74,38 +73,48 @@ export async function storeGreeneryFromOSM(bbox, usedTagsForGreenery) {
 
 export async function getCommentsFromDB() {
   const response = await HTTP.get('get-cooments')
+
   const iconlayer = new MapboxLayer({
     id: 'comments',
     type: ScenegraphLayer,
     data:response.data.features,
     pickable: true,
-    scenegraph:
-    "https://raw.githubusercontent.com/QSafariallahkheili/ligfinder_refactor/master/Icon3d.glb",
+    pickingRadius: 100,
+    scenegraph: "https://raw.githubusercontent.com/QSafariallahkheili/ligfinder_refactor/master/Icon3d.glb",
     getPosition: d => d.geometry.coordinates,
-    getOrientation: (d) => [0, Math.random() * 180, 90],
+    getOrientation: (d) => [0, 0, 90],
     sizeScale: 15,
     _lighting: "pbr",
     onClick: ({ x, y, object }) => {
       // TODO: change the color of clicked icon
-      getClickedCommentObject(object)
-    },
+      /*store.commit("map/addLayer", new MapboxLayer({
+        id: 'pulse-layerr',
+        type: ScatterplotLayer,
+        data : object.geometry.coordinates,
+        pickable: true,
+        stroked: false,
+        filled: true,
+        radiusUnits : 'meters',
+        antialiasing: true,
+        getPosition: object.geometry.coordinates,
+        getRadius: 0,
+        radiusScale: 1,
+        getFillColor: d => [0, 255, 0, 255],
+        getLineColor: d => [0, 0, 0],
+      }))*/
+      store.commit("pulse/pulsedata", object)
+      store.commit("comment/setCommentToggle")
+      store.commit("comment/getClickedCommentObject", object)
     
+      //getClickedCommentObject(object)
+    },
+  
     onHover: (e) => {
       if (e.object) {
-        
         
       }
     }
 
   })
-  
-  const getClickedCommentObject = (object)=>{
-    //iconlayer.setProps({sizeScale: 20})
-    store.commit("comment/setCommentToggle")
-    store.commit("comment/getClickedCommentObject", object)
-
-  }
-
   return iconlayer
-  
 }
