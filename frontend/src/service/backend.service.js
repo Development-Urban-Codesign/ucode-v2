@@ -109,3 +109,27 @@ export async function getCommentsFromDB() {
   return iconlayer
   
 }
+
+export async function getTreesFromOSM(bbox) {
+  HTTP
+    .post('get-trees-from-osm', {
+      bbox: bbox
+    })
+}
+
+export async function getTreesFromDB() {
+  const response = await HTTP.get('get-trees-from-db');
+  const treeLayer = new MapboxLayer({
+    id: 'trees',
+    type: ScenegraphLayer,
+    data:response.data.features,
+    pickable: false,
+    scenegraph: "https://raw.githubusercontent.com/QSafariallahkheili/ligfinder_refactor/master/GenericNewTree.glb",
+    getPosition: d => d.geometry.coordinates,
+    getOrientation: (d) => [0, 0, 90],
+    sizeScale: 7,
+    _lighting: "pbr",
+  })
+
+  return treeLayer
+}
