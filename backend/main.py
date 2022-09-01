@@ -7,8 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from db import (add_comment, add_drawn_line, get_buildings_from_db,
                 get_buildings_from_osm, get_greenery_from_db,
                 get_table_names, init_building_table,
-                init_greenery_table, store_greenery_from_osm,get_comments, like_comment, unlike_comment, dislike_comment, undislike_comment, connect)
-
+                init_greenery_table, store_greenery_from_osm,get_comments, like_comment, unlike_comment, dislike_comment, undislike_comment, init_tree_table, connect, get_trees_from_db, connect)
 
 app = FastAPI()
 origins = [
@@ -193,6 +192,46 @@ async def get_buildings_from_osm_api(request: Request):
 @app.get("/get-buildings-from-db")
 async def get_buildings_from_db_api():
     return get_buildings_from_db()
+
+@app.post("/get-trees-from-osm")
+async def get_trees_from_osm_api(request: Request):
+    init_tree_table()
+    data = await request.json()
+    xmin = data['bbox']["xmin"]
+    ymin = data['bbox']["ymin"]
+    xmax = data['bbox']["xmax"]
+    ymax = data['bbox']["ymax"]
+    overpass_url = "http://overpass-api.de/api/interpreter"
+    overpass_query_trees = """
+         [out:json];
+         node["natural"="tree"](%s,%s,%s,%s);
+         convert item ::=::,::geom=geom(),_osm_type=type();
+         out geom;
+     """ % ( ymin, xmin, ymax ,xmax )
+    
+    response_tree = requests.get(overpass_url, 
+                        params={'data': overpass_query_trees})
+    
+    data_tree = response_tree.json()
+    connection = connect()
+    cursor = connection.cursor()
+    insert_query_tree= '''
+            INSERT INTO tree (geom) VALUES (ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
+
+    '''
+    for f in data_tree["elements"]:
+       
+        geom = json.dumps(f['geometry'])
+        cursor.execute(insert_query_tree, (geom,))
+
+    connection.commit()
+    cursor.close()
+    connection.close()
+    return "ok"
+
+@app.get("/get-trees-from-db")
+async def get_trees_from_db_api():
+    return get_trees_from_db()
 
 @app.post("/add-comment")
 async def add_comment_api(request: Request):
