@@ -20,7 +20,7 @@
 
             <v-btn
                 icon="mdi-close-circle-outline"
-                @click.stop="store.state.comment.toggle=false"
+                @click="store.state.comment.toggle=false; removePulseLayer()"
                 class="ma-2"
                 variant="text"
                 color="blue-lighten-2"
@@ -91,6 +91,8 @@
 <script setup>
 import { useStore } from "vuex";
 const store = useStore();
+const emit = defineEmits(["removePulseLayer"]);
+
 
 const likeComment = (id)=>{
   store.dispatch("comment/likeComment", id)
@@ -98,6 +100,11 @@ const likeComment = (id)=>{
 
 const dislikeComment = (id)=>{
   store.dispatch("comment/dislikeComment", id)
+}
+
+const removePulseLayer = ()=>{
+  emit("removePulseLayer", 'pulse-layer')
+  
 }
 </script>
 

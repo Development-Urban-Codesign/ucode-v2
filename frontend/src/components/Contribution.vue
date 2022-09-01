@@ -36,7 +36,7 @@ const commentModeEnabled = ref(false)
 const lineDrawToggle =  ref(false)
 let draw = reactive ({})
 let drawnLineGeometry = reactive ({})
-let drawnPathlayer = reactive ({})
+let drawnPathlayer = null
 let drawnPathlayerId = ref (null)
 
 
