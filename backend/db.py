@@ -237,3 +237,17 @@ def undislike_comment(commentid):
   cursor.close()
   connection.close()
   return "ok"
+
+def init_driving_lane_table():
+  connection = connect()
+  cursor = connection.cursor()
+  create_driving_lane_table_query =''' 
+        drop table if exists driving_lane;
+        create table driving_lane (id SERIAL PRIMARY KEY, lanes text, length float, maxspeed text, width float null, geom geometry(LINESTRING, 4326));
+  '''
+  cursor.execute(create_driving_lane_table_query)
+
+  connection.commit()
+  cursor.close()
+  connection.close()
+  return "ok"

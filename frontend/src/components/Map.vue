@@ -32,6 +32,7 @@ import Comment from "./Comment.vue";
 import { pulseLayer } from "../utils/pulseLayer";
 
 
+
 const store = useStore();
 
 const mapContainer = shallowRef(null);
@@ -167,9 +168,9 @@ const addDeckglShape = () => {
     data: [13.755453, 51.067814],
     pickable: true,
     scenegraph:
-      "https://raw.githubusercontent.com/QSafariallahkheili/ligfinder_refactor/master/GenericNewTree.glb",
+      "./GenericNewTree.glb",
     getPosition: [13.755453, 51.067814],
-    getOrientation: (d) => [0, Math.random() * 180, 90],
+    getOrientation: (d) => [0, 0, 90],
     sizeScale: 50,
     _lighting: "pbr",
   });

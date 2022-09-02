@@ -1,13 +1,15 @@
 import json
 
 import requests
+import osmnx as ox
+import geopandas
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from db import (add_comment, add_drawn_line, get_buildings_from_db,
                 get_buildings_from_osm, get_greenery_from_db,
                 get_table_names, init_building_table,
-                init_greenery_table, store_greenery_from_osm,get_comments, like_comment, unlike_comment, dislike_comment, undislike_comment, init_tree_table, connect, get_trees_from_db, connect)
+                init_greenery_table, store_greenery_from_osm,get_comments, like_comment, unlike_comment, dislike_comment, undislike_comment, init_tree_table, connect, get_trees_from_db, connect, init_driving_lane_table)
 
 app = FastAPI()
 origins = [
@@ -274,3 +276,37 @@ async def undislike_comment_api(request: Request):
     data = await request.json()
     undislike_comment(data["id"])
     return "added"
+
+@app.post("/get-driving-lane-from-osm")
+async def get_driving_lane_from_osm_api(request: Request):
+    init_driving_lane_table()
+    data = await request.json()
+    xmin = data['bbox']["xmin"]
+    ymin = data['bbox']["ymin"]
+    xmax = data['bbox']["xmax"]
+    ymax = data['bbox']["ymax"] 
+    G = ox.graph_from_bbox(ymin, ymax, xmin, xmax, network_type='drive')
+    gdf = ox.graph_to_gdfs(G, nodes=False, edges=True)
+    road = json.loads(gdf.to_json())
+    print(road['features'][10]["geometry"])
+    
+    connection = connect()
+    cursor = connection.cursor()
+
+    insert_query_driving_lane= '''
+        INSERT INTO driving_lane (lanes, geom) VALUES (%s, ST_SetSRID(st_astext(st_geomfromgeojson(%s)), 4326));
+
+    '''
+    for f in road['features']:
+       
+        geom = json.dumps(f['geometry'])
+        lanes=None
+        if 'lanes' in f['properties']: lanes =f['properties']['lanes']
+        cursor.execute(insert_query_driving_lane, (lanes, geom,))
+    
+    connection.commit()
+    cursor.close()
+    connection.close()
+    
+    return "true"
+

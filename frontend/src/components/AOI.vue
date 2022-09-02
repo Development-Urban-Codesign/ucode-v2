@@ -22,6 +22,12 @@
       variant="outlined"
       @update:modelValue="sendTreeyRequest"
     ></v-select>
+    <v-select
+      :items="['get', 'retrieve']"
+      label="driving lane"
+      variant="outlined"
+      @update:modelValue="sendDrivingLaneRequest"
+    ></v-select>
     <v-alert type="success" v-if="store.state.aoi.dataIsLoaded">
       stored
     </v-alert>
@@ -40,7 +46,8 @@ import {
   getGreeneryFromDB,
   getGreeneryFromDBTexture,
   getTreesFromOSM,
-  getTreesFromDB
+  getTreesFromDB,
+  getDrivingLaneFromOSM
 } from "../service/backend.service";
 const store = useStore();
 
@@ -74,6 +81,14 @@ const sendTreeyRequest= async (mode)=>{
   } else {
     const treeLayer = await getTreesFromDB();
     emit("addLayer", treeLayer);
+  }
+}
+
+const sendDrivingLaneRequest = async (mode)=>{
+  if (mode == "get") {
+   await getDrivingLaneFromOSM(store.state.aoi.bbox);
+  } else {
+    console.log("ok")
   }
 }
 </script>
