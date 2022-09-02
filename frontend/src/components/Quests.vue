@@ -1,11 +1,16 @@
 <template >
-  <v-layout justify="center" align="center">
+  <v-layout align="center">
     <v-row justify="center">
       <v-card align="center" v-if="true">
         <v-card-title>Welcome</v-card-title>
-        <v-card-text> {{ introtext }} </v-card-text>
+        <v-card-text> {{ introText }} </v-card-text>
         <v-card v-for="(item, i) in quests" :key="i">
-          <v-banner lines="auto" color="black" :id="i" style="margin:5px; background-color:{{this.clicked}} ? red : green;"> 
+          <v-banner
+            lines="auto"
+            color="black"
+            :id="i"
+            :style="{backgroundColor: 'item.bgColor'}"
+          >
             <v-banner-text>
               {{ item.name }}
             </v-banner-text>
@@ -39,36 +44,29 @@
   </v-layout>
 </template>
 
-
 <script setup>
 import { useStore } from "vuex";
 import { HTTP } from "../utils/http-common";
 
 const store = useStore();
-</script>
-<script>
-export default {
-  data() {
-    return {
-      clicked: false,
-      selectionColor: '#1c87c9',
-      introtext: "Hi this is the Greetings Text!",
-      quests: [
-        {
-          name: "At first, place three Comments on the map to show your most favorite places in the city!",
-        },
-        {
-          name: "And then, place three Comments on the map to show your most favorite places in the city!",
-        },
-      ],
-    };
+let quests = [
+  {
+    name: "At first, place three Comments on the map to show your most favorite places in the city!",
+    isFulfilled: false,
+    bgColor: 'white'
   },
-};
+  {
+    name: "And second, place three Comments on the map to show your most favorite places in the city!",
+    isFulfilled: false,
+    bgColor: 'white'
+  },
+];
+let introText = "Hi this is the greetings text, this project is about your participation and the goal is to change the city!"
+
 function startQuest(quest){
   console.log(quest)
   this.selectionColor = '#1c87c9'
 }
-
 function fulfillQuest(quest){
   console.log(quest)
   this.selectionColor = '#1c87c9'
