@@ -1,4 +1,6 @@
 import json
+from hashlib import sha256
+from typing import Any
 
 import requests
 from fastapi import FastAPI, HTTPException, Request
@@ -7,9 +9,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from db import (
     add_comment,
     add_drawn_line,
+    connect,
     dislike_comment,
     get_buildings_from_db,
-    connect,
     get_comments,
     get_greenery_from_db,
     get_table_names,
@@ -41,6 +43,18 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],
 )
+
+
+def create_user_id_from_meta_data(request_headers) -> Any:
+    string_to_hash = f"UserAgent:{request_headers['user-agent']}##Host:{request_headers['host']}##AcceptedLanguage:{request_headers['accept-language']}"
+    print(f"Will hash: {string_to_hash}")
+    return sha256(string_to_hash.encode()).hexdigest()
+
+
+@app.get("/hash")
+def hash(request: Request) -> str:
+    print(request.headers)
+    return create_user_id_from_meta_data(request.headers)
 
 
 @app.get("/")
@@ -304,7 +318,8 @@ async def get_trees_from_db_api():
 @app.post("/add-comment")
 async def add_comment_api(request: Request):
     data = await request.json()
-    add_comment(data["comment"], float(data["position"][0]), float(data["position"][1]))
+    user_id = create_user_id_from_meta_data(request.headers)
+    add_comment(user_id, data["comment"], float(data["position"][0]), float(data["position"][1]))
     return "added"
 
 
