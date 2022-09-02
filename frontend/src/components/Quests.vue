@@ -12,7 +12,7 @@
             <v-banner-actions>
               <v-btn @click="startQuest(i)">Start</v-btn>
               <v-btn>Leave</v-btn>
-              <v-btn>Fulfill</v-btn>
+              <v-btn @click="fulfillQuest(i)">Fulfill</v-btn>
             </v-banner-actions>
           </v-banner>
         </v-card>
@@ -42,6 +42,8 @@
 
 <script setup>
 import { useStore } from "vuex";
+import { HTTP } from "../utils/http-common";
+
 const store = useStore();
 </script>
 <script>
@@ -65,6 +67,21 @@ export default {
 function startQuest(quest){
   console.log(quest)
   this.selectionColor = '#1c87c9'
+}
+
+function fulfillQuest(quest){
+  console.log(quest)
+  this.selectionColor = '#1c87c9'
+
+// 1. Schritt: Unser klickt auf "Fulfill"
+  // /add-quest-fullfilment" mit dem Wert der quest-ID als POST-Parameter
+  // wie wird das gemacht?
+  HTTP
+    .post('add-quest-fulfillment', {
+      questid: quest
+    }).then((response)=>{
+      console.log(response)
+    })
 }
 
 </script>

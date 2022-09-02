@@ -86,6 +86,36 @@ def add_comment(comment, lng, lat):
   cursor.close()
   connection.close()
 
+# TH Hier wird die Zahl der Fulfillments aus der db gelesen und hochgesetzt und dieser Wert zurückgesendet
+
+def add_fulfillment(quest_id):
+
+  connection = connect()
+  cursor = connection.cursor()
+
+  ## Setup table
+  insert_query_setup_table ='''
+    create table if not exists quests (id serial primary key, fulfillment integer);
+  '''
+  cursor.execute(insert_query_setup_table)
+
+  insert_query_quests_fulfillment= f'''
+    
+    update quests set fulfillment = fulfillment + 1 where id={quest_id};
+  '''
+
+  # create table if not exists quests (id serial primary key, fulfillment integer);
+
+  cursor.execute(insert_query_quests_fulfillment, (quest_id,))
+
+
+
+  connection.commit()
+  cursor.close()
+  connection.close()
+
+
+
 def init_greenery_table():
   connection = connect()
   cursor = connection.cursor()
