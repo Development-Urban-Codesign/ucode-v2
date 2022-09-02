@@ -60,8 +60,6 @@ let quests = [
   },
 ];
 let introText = "Hi this is the greetings text, this project is about your participation and the goal is to change the city!"
-</script>
-<script>
 function startQuest(id) {
   console.log(this.quests[id].bgColor)
   this.quests[id].bgColor = 'lightblue'
