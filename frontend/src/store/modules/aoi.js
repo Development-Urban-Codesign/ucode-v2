@@ -5,7 +5,7 @@ import { MapboxLayer } from '@deck.gl/mapbox';
 const aoi = {
     namespaced: true,
     state: {
-        bbox: { xmin: 13.742725, ymin: 51.059803, xmax: 13.756758, ymax: 51.066950 },
+        bbox: { xmin: 13.723167, ymin:51.053100, xmax: 13.770031, ymax: 51.079799 },
         overpassBuildings: null,
         usedTagsForGreenery : {tags: ["leisure:garden", "leisure:park", "leisure:pitch" , "landuse:village_green", "landuse:grass", "landuse:garden", "landuse:cemetery", "landuse:allotments", "landuse:forest", "natural:scrub"] },
         overpassGreenery: null,

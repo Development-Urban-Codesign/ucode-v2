@@ -12,7 +12,7 @@
 
       <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine" @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl" :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
-      <Comment />
+      <Comment @removePulseLayer="removePulseLayerFromMap"/>
     </div>
   </div>
 </template>
@@ -29,6 +29,8 @@ import AOI from "./AOI.vue";
 import Contribution from "./Contribution.vue";
 import {getCommentsFromDB} from "../service/backend.service";
 import Comment from "./Comment.vue";
+import { pulseLayer } from "../utils/pulseLayer";
+
 
 const store = useStore();
 
@@ -57,12 +59,21 @@ onMounted(() => {
   map.on("load", function () {
     HTTP.get("").then((response) => {
       console.log(response);
-    });
+    })
+    
     getCommentData()
     
   });
   map.on('click', function (mapClick) {
     mapClicks.clickedCoordinates = [mapClick.lngLat.lng, mapClick.lngLat.lat]
+
+    if(store.state.comment.toggle){
+      addLayerToMap(pulseLayer(
+        store.state.pulse.pulseCoordinates.geometry.coordinates,
+        store.state.pulse.pulseAnimationActivation
+      ))
+    }
+   
   });
 
   map.on('draw.create', ()=> {
@@ -90,6 +101,11 @@ const addThreejsShape = () => {
 };
 
 const addLayerToMap = (layer) => {
+  const addedlayer = map.getLayer(layer.id)
+  if(typeof addedlayer !== 'undefined' ){
+   removeLayerFromMap(layer.id)
+  }
+
   if (!layer) return;
   if (layer.paint) {
     if (layer.paint["fill-pattern"]) {
@@ -100,8 +116,12 @@ const addLayerToMap = (layer) => {
   
   const buildinglayer = map.getLayer("overpass_buildings")
   const greenerylayer = map.getLayer("overpass_greenery")
+  const commenlayer = map.getLayer("comments")
   if(typeof buildinglayer !== 'undefined' && typeof greenerylayer !== 'undefined'){
     map?.moveLayer("overpass_greenery", "overpass_buildings" )
+  }
+  if(typeof commenlayer !== 'undefined' && typeof greenerylayer !== 'undefined'){
+    map?.moveLayer("overpass_greenery", "comments" )
   }
 
    
@@ -179,6 +199,11 @@ const removeDrawControl= (draw, drawnPathlayerId)=>{
   map.removeControl(draw)
 }
 
+const removePulseLayerFromMap= (layerid)=>{
+  removeLayerFromMap(layerid)
+  cancelAnimationFrame(store.state.pulse.pulseAnimationActivation)
+  
+}
 
 
 onUnmounted(() => {

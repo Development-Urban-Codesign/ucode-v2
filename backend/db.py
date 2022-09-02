@@ -27,7 +27,6 @@ def get_table_names():
   return tables
 
 
-
 def get_buildings_from_osm(wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom):
   connection = connect()
   cursor = connection.cursor()
@@ -65,7 +64,6 @@ def add_comment(comment, lng, lat):
   
   insert_query_comment= '''
     INSERT INTO comment (comment, geom) VALUES (%s, ST_SetSRID(ST_MakePoint(%s, %s), 4326));
-
   '''
   cursor.execute(insert_query_comment, (comment, lng, lat,))
   connection.commit()
@@ -101,6 +99,23 @@ def get_greenery_from_db():
   cursor.close()
   connection.close()
   return greenery
+
+
+def get_trees_from_db():
+  connection = connect()
+  cursor = connection.cursor()
+  get_trees_query =''' select json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(ST_AsGeoJSON(tree.*)::json)
+        )
+        from tree
+      ;
+  '''
+  cursor.execute(get_trees_query)
+  trees = cursor.fetchall()[0][0]
+  cursor.close()
+  connection.close()
+  return trees
 
 
 def add_drawn_line(comment, width, color, geom):
