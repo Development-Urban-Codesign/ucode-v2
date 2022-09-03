@@ -47,7 +47,8 @@ import {
   getGreeneryFromDBTexture,
   getTreesFromOSM,
   getTreesFromDB,
-  getDrivingLaneFromOSM
+  getDrivingLaneFromOSM,
+  getDrivingLaneFromDB
 } from "../service/backend.service";
 const store = useStore();
 
@@ -87,8 +88,52 @@ const sendTreeyRequest= async (mode)=>{
 const sendDrivingLaneRequest = async (mode)=>{
   if (mode == "get") {
    await getDrivingLaneFromOSM(store.state.aoi.bbox);
-  } else {
-    console.log("ok")
+  }
+  else {
+    
+    const drivingLanedata = await getDrivingLaneFromDB();
+    console.log(drivingLanedata)
+    
+
+
+     store.commit("map/addSource", {
+      id: "driving_lane_polygon",
+      geojson: {
+        "type": "geojson",
+        "data": drivingLanedata.data.polygon
+      }
+    })
+    store.commit("map/addLayer", {
+      'id': "driving_lane_polygon",
+      'type': 'fill',
+      'source': "driving_lane_polygon",
+      'paint': {
+        'fill-color': '#888',
+        'fill-opacity': 0.8
+      }
+    })
+
+    store.commit("map/addSource", {
+      id: "driving_lane",
+      geojson: {
+        "type": "geojson",
+        "data": drivingLanedata.data.lane
+      }
+    })
+    store.commit("map/addLayer", {
+      'id': "driving_lane",
+      'type': 'line',
+      'source': "driving_lane",
+      'layout': {
+        'line-join': 'round',
+        'line-cap': 'round'
+      },
+      'paint': {
+        'line-color': '#FFFFFF',
+        'line-width': 1,
+        'line-dasharray': [10,20]
+      }
+    })
   }
 }
 </script>
