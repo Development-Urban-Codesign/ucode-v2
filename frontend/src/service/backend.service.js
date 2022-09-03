@@ -150,3 +150,8 @@ export async function getDrivingLaneFromOSM(bbox) {
       bbox: bbox
     })
 }
+
+export async function getDrivingLaneFromDB() {
+  const response = await HTTP.get('get-driving-lane-from-db');
+  return response
+}
