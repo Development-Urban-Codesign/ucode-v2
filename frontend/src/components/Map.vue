@@ -104,7 +104,7 @@ const addThreejsShape = () => {
 const addLayerToMap = (layer) => {
   const addedlayer = map.getLayer(layer.id)
   if(typeof addedlayer !== 'undefined' ){
-   removeLayerFromMap(layer.id)
+    removeLayerFromMap(layer.id)
   }
 
   if (!layer) return;
@@ -118,11 +118,19 @@ const addLayerToMap = (layer) => {
   const buildinglayer = map.getLayer("overpass_buildings")
   const greenerylayer = map.getLayer("overpass_greenery")
   const commenlayer = map.getLayer("comments")
+  const drivinglanelayer = map.getLayer("driving_lane_polygon")
+  const drivinglane = map.getLayer("driving_lane")
   if(typeof buildinglayer !== 'undefined' && typeof greenerylayer !== 'undefined'){
     map?.moveLayer("overpass_greenery", "overpass_buildings" )
   }
   if(typeof commenlayer !== 'undefined' && typeof greenerylayer !== 'undefined'){
     map?.moveLayer("overpass_greenery", "comments" )
+  }
+  if(typeof drivinglanelayer !== 'undefined' && typeof commenlayer !== 'undefined'){
+    map?.moveLayer("driving_lane_polygon", "comments")
+  }
+  if(typeof drivinglane !== 'undefined' && typeof commenlayer !== 'undefined'){
+    map?.moveLayer("driving_lane", "comments")
   }
 
    
