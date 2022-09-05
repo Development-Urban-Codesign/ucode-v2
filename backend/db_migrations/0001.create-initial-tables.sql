@@ -7,3 +7,7 @@ create table if not exists building (id SERIAL PRIMARY KEY, wallcolor CHAR(70), 
 create table if not exists greenery (id SERIAL PRIMARY KEY, greentag VARCHAR(20), geom geometry(Geometry, 4326));
 
 create table if not exists tree (id SERIAL PRIMARY KEY, geom geometry(Point, 4326));
+
+create table if not exists driving_lane (id SERIAL PRIMARY KEY, lanes text, length float, maxspeed text, width text null,highway text, geom geometry(LINESTRING, 4326));
+
+create table if not exists driving_lane_polygon (id SERIAL PRIMARY KEY, lanes text, length float, maxspeed text, width text null,highway text, geom geometry(Geometry, 4326));

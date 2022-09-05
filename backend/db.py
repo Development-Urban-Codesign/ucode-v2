@@ -222,4 +222,51 @@ def undislike_comment(commentid):
   cursor.close()
   connection.close()
   return "ok"
-  
+
+def init_driving_lane_table():
+  connection = connect()
+  cursor = connection.cursor()
+  create_driving_lane_table_query =''' 
+        drop table if exists driving_lane;
+        drop table if exists driving_lane_polygon;
+        create table driving_lane (id SERIAL PRIMARY KEY, lanes text, length float, maxspeed text, width text null,highway text, geom geometry(LINESTRING, 4326));
+        create table driving_lane_polygon (id SERIAL PRIMARY KEY, lanes text, length float, maxspeed text, width text null,highway text, geom geometry(Geometry, 4326));
+  '''
+  cursor.execute(create_driving_lane_table_query)
+
+  connection.commit()
+  cursor.close()
+  connection.close()
+  return "ok"
+
+def get_driving_lane_from_db():
+  connection = connect()
+  cursor = connection.cursor()
+  get_driving_lane_query =''' select json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(ST_AsGeoJSON(driving_lane.*)::json)
+        )
+        from driving_lane
+      ;
+  '''
+  cursor.execute(get_driving_lane_query)
+  driving_lane = cursor.fetchall()[0][0]
+  cursor.close()
+  connection.close()
+  return driving_lane
+
+def get_driving_lane_polygon_from_db():
+  connection = connect()
+  cursor = connection.cursor()
+  get_driving_lane_polygon_query =''' select json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(ST_AsGeoJSON(driving_lane_polygon.*)::json)
+        )
+        from driving_lane_polygon
+      ;
+  '''
+  cursor.execute(get_driving_lane_polygon_query)
+  driving_lane_polygon = cursor.fetchall()[0][0]
+  cursor.close()
+  connection.close()
+  return driving_lane_polygon

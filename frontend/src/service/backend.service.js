@@ -58,7 +58,7 @@ export async function getGreeneryFromDBTexture() {
       'type': 'geojson',
       'data': response.data},
     paint:{
-      'fill-pattern':  'https://raw.githubusercontent.com/KonstiDoll/ucode-v2/master/frontend/src/assets/grasspattern.png'
+      'fill-pattern':  'grasspattern.png'
     }
   })
 }
@@ -80,7 +80,7 @@ export async function getCommentsFromDB() {
     data:response.data.features,
     pickable: true,
     pickingRadius: 100,
-    scenegraph: "https://raw.githubusercontent.com/QSafariallahkheili/ligfinder_refactor/master/Icon3d.glb",
+    scenegraph: "./Icon3d.glb",
     getPosition: d => d.geometry.coordinates,
     getOrientation: (d) => [0, 0, 90],
     sizeScale: 15,
@@ -124,7 +124,7 @@ export async function getTreesFromOSM(bbox) {
   HTTP
     .post('get-trees-from-osm', {
       bbox: bbox
-    })
+    }).then(() => store.dispatch("aoi/setDataIsLoaded"))
 }
 
 export async function getTreesFromDB() {
@@ -134,7 +134,7 @@ export async function getTreesFromDB() {
     type: ScenegraphLayer,
     data:response.data.features,
     pickable: false,
-    scenegraph: "https://raw.githubusercontent.com/QSafariallahkheili/ligfinder_refactor/master/GenericNewTree.glb",
+    scenegraph: "./GenericNewTree.glb",
     getPosition: d => d.geometry.coordinates,
     getOrientation: (d) => [0, 0, 90],
     sizeScale: 7,
@@ -142,4 +142,16 @@ export async function getTreesFromDB() {
   })
 
   return treeLayer
+}
+
+export async function getDrivingLaneFromOSM(bbox) {
+  HTTP
+    .post('get-driving-lane-from-osm', {
+      bbox: bbox
+    }).then(() => store.dispatch("aoi/setDataIsLoaded"))
+}
+
+export async function getDrivingLaneFromDB() {
+  const response = await HTTP.get('get-driving-lane-from-db');
+  return response
 }

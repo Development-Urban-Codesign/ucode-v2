@@ -1,6 +1,8 @@
 import json
 
 import requests
+import osmnx as ox
+import geopandas
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -15,8 +17,11 @@ from db import (
     get_table_names,
     get_trees_from_db,
     like_comment,
+    dislike_comment,
     undislike_comment,
     unlike_comment,
+    get_driving_lane_from_db,
+    get_driving_lane_polygon_from_db,
     add_fulfillment
 )
 from db_migrations import run_database_migrations
@@ -363,3 +368,82 @@ async def undislike_comment_api(request: Request):
     data = await request.json()
     undislike_comment(data["id"])
     return "added"
+
+@app.post("/get-driving-lane-from-osm")
+async def get_driving_lane_from_osm_api(request: Request):
+    data = await request.json()
+    xmin = data['bbox']["xmin"]
+    ymin = data['bbox']["ymin"]
+    xmax = data['bbox']["xmax"]
+    ymax = data['bbox']["ymax"] 
+    G = ox.graph_from_bbox(ymin, ymax, xmin, xmax, network_type='drive')
+    gdf = ox.graph_to_gdfs(G, nodes=False, edges=True)
+    road = json.loads(gdf.to_json())
+    """
+    mylist =[]
+    for i in road['features']: 
+        if i["properties"]["highway"] in mylist: 
+            continue
+        else:
+            mylist.append(i["properties"]["highway"])
+    print(mylist)
+    """
+    
+    connection = connect()
+    cursor = connection.cursor()
+
+    insert_query_driving_lane= '''
+        INSERT INTO driving_lane (lanes,length,maxspeed,width, highway, geom) VALUES (%s,%s,%s,%s,%s, ST_SetSRID(st_astext(st_geomfromgeojson(%s)), 4326));
+
+    '''
+    insert_query_driving_lane_polygon= '''
+        
+        INSERT INTO driving_lane_polygon (lanes,length,maxspeed,width,highway, geom) VALUES (%s,%s,%s,%s,%s,
+        st_buffer(
+            ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326)::geography,
+            (%s::double precision)/2 ,
+            'endcap=round join=round')::geometry
+        );
+        
+
+    '''
+    for f in road['features']:
+       
+        geom = json.dumps(f['geometry'])
+        lanes=None
+        if 'lanes' in f['properties']: lanes =f['properties']['lanes']
+        length=None
+        if 'length' in f['properties']: length =f['properties']['length']
+        maxspeed=None
+        if 'maxspeed' in f['properties']: maxspeed =f['properties']['maxspeed']
+
+        highway=None
+        if 'highway' in f['properties']: highway =f['properties']['highway']
+
+        width=None
+        if 'width' in f['properties'] and f['properties']["width"] is not None and isinstance(f['properties']["width"], str):
+            width =f['properties']['width']
+        elif f['properties']["highway"]== 'primary':
+            width =10
+        elif f['properties']["highway"]== 'secondary' or f['properties']["highway"]== 'secondary_link':
+            width =8
+        elif f['properties']["highway"]== 'tertiary' or f['properties']["highway"]== 'tertiary_link':
+            width =6
+        elif f['properties']["highway"]== 'residential' or f['properties']["highway"]== 'living_street':
+            width =4
+        else:
+            width =4
+        cursor.execute(insert_query_driving_lane, (lanes,length,maxspeed,width,highway, geom,))
+        cursor.execute(insert_query_driving_lane_polygon, (lanes,length,maxspeed,width,highway, geom,width))
+    
+    connection.commit()
+    cursor.close()
+    connection.close()
+    
+    return "true"
+
+@app.get("/get-driving-lane-from-db")
+async def get_driving_lane_from_db_api():
+    
+    return {"lane": get_driving_lane_from_db(), "polygon": get_driving_lane_polygon_from_db()}
+
