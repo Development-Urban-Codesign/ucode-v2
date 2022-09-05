@@ -237,3 +237,39 @@ def get_driving_lane_polygon_from_db():
   cursor.close()
   connection.close()
   return driving_lane_polygon
+
+def drop_greenery_table():
+  connection = connect()
+  cursor = connection.cursor()
+  drop_greenery_table_query =''' delete from greenery;'''
+  cursor.execute(drop_greenery_table_query)
+  connection.commit()
+  cursor.close()
+  connection.close()
+  
+def drop_building_table():
+  connection = connect()
+  cursor = connection.cursor()
+  drop_building_table_query =''' delete from building;'''
+  cursor.execute(drop_building_table_query)
+  connection.commit()
+  cursor.close()
+  connection.close()
+
+def drop_tree_table():
+  connection = connect()
+  cursor = connection.cursor()
+  drop_tree_table_query =''' delete from tree;'''
+  cursor.execute(drop_tree_table_query)
+  connection.commit()
+  cursor.close()
+  connection.close()
+
+def drop_driving_lane_table():
+  connection = connect()
+  cursor = connection.cursor()
+  drop_driving_lane_table_query =''' delete from driving_lane tree; delete from driving_lane_polygon'''
+  cursor.execute(drop_driving_lane_table_query)
+  connection.commit()
+  cursor.close()
+  connection.close()
