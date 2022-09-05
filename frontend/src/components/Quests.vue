@@ -1,7 +1,6 @@
 <template >
-  <v-layout align="center">
-    <v-row justify="center">
-      <v-card align="center" v-if="true">
+ 
+      <v-card style="z-index:999; max-width:50vw; margin: auto; padding:auto;"  v-if="true">
         <v-card-title>Welcome</v-card-title>
         <v-card-text> {{ introText }} </v-card-text>
         <v-card v-for="(item, i) in quests" :key="i">
@@ -9,14 +8,14 @@
             lines="auto"
             color="black"
             :id="i"
-            :style="{backgroundColor: 'item.bgColor'}"
+            :style="{backgroundColor: item.bgColor}"
           >
             <v-banner-text>
               {{ item.name }}
             </v-banner-text>
             <v-banner-actions>
               <v-btn @click="startQuest(i)">Start</v-btn>
-              <v-btn>Leave</v-btn>
+              <v-btn @click="stopQuest(i)">Cancel</v-btn>
               <v-btn @click="fulfillQuest(i)">Fulfill</v-btn>
             </v-banner-actions>
           </v-banner>
@@ -40,16 +39,17 @@
           <!-- {{clicked}}? 'red' : 'green' -->
         </v-card>
       </v-card>
-    </v-row>
-  </v-layout>
+    
 </template>
 
 <script setup>
 import { useStore } from "vuex";
 import { HTTP } from "../utils/http-common";
 
+import {reactive} from "vue"
+
 const store = useStore();
-let quests = [
+let quests = reactive([
   {
     name: "At first, place three Comments on the map to show your most favorite places in the city!",
     isFulfilled: false,
@@ -60,23 +60,30 @@ let quests = [
     isFulfilled: false,
     bgColor: 'white'
   },
-];
+]);
 let introText = "Hi this is the greetings text, this project is about your participation and the goal is to change the city!"
 
 function startQuest(id) {
-  console.log(this.quests[id].bgColor)
-  this.quests[id].bgColor = 'lightblue'
+  for (let j = 0; j < quests.length; j++) {
+    if(j!=id){
+      quests[j].bgColor = 'white'
+    }
+    else{
+      quests[j].bgColor = 'lightblue'
+    }
+  }
 }
-function fulfillQuest(quest){
-  console.log(quest)
-  this.selectionColor = '#1c87c9'
-
+function stopQuest(id){
+  quests[id].bgColor = 'white'
+}
+function fulfillQuest(id){
+  quests[id].bgColor = 'lightgreen'
 // 1. Schritt: Unser klickt auf "Fulfill"
   // /add-quest-fullfilment" mit dem Wert der quest-ID als POST-Parameter
   // wie wird das gemacht?
   HTTP
     .post('add-quest-fulfillment', {
-      questid: quest
+      questid: id
     }).then((response)=>{
       console.log(response)
     })
