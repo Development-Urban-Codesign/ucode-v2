@@ -94,8 +94,6 @@ def add_fulfillment(quest_id):
 
   cursor.execute(insert_query_quests_fulfillment, (quest_id,))
 
-
-
   connection.commit()
   cursor.close()
   connection.close()

@@ -17,6 +17,7 @@ from db import (
     like_comment,
     undislike_comment,
     unlike_comment,
+    add_fulfillment
 )
 from db_migrations import run_database_migrations
 try:

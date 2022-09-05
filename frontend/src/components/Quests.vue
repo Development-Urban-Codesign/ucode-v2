@@ -78,9 +78,6 @@ function stopQuest(id){
 }
 function fulfillQuest(id){
   quests[id].bgColor = 'lightgreen'
-// 1. Schritt: Unser klickt auf "Fulfill"
-  // /add-quest-fullfilment" mit dem Wert der quest-ID als POST-Parameter
-  // wie wird das gemacht?
   HTTP
     .post('add-quest-fulfillment', {
       questid: id
