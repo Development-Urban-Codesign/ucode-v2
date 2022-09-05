@@ -78,6 +78,7 @@ const sendGreeneryRequest = async (mode) => {
 
 const sendTreeyRequest= async (mode)=>{
   if (mode == "get") {
+    store.dispatch("aoi/setDataIsLoading");
     await getTreesFromOSM(store.state.aoi.bbox);
   } else {
     const treeLayer = await getTreesFromDB();
@@ -87,6 +88,7 @@ const sendTreeyRequest= async (mode)=>{
 
 const sendDrivingLaneRequest = async (mode)=>{
   if (mode == "get") {
+  store.dispatch("aoi/setDataIsLoading");
    await getDrivingLaneFromOSM(store.state.aoi.bbox);
   }
   else {

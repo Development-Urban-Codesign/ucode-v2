@@ -124,7 +124,7 @@ export async function getTreesFromOSM(bbox) {
   HTTP
     .post('get-trees-from-osm', {
       bbox: bbox
-    })
+    }).then(() => store.dispatch("aoi/setDataIsLoaded"))
 }
 
 export async function getTreesFromDB() {
@@ -148,7 +148,7 @@ export async function getDrivingLaneFromOSM(bbox) {
   HTTP
     .post('get-driving-lane-from-osm', {
       bbox: bbox
-    })
+    }).then(() => store.dispatch("aoi/setDataIsLoaded"))
 }
 
 export async function getDrivingLaneFromDB() {
