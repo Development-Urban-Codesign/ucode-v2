@@ -13,6 +13,7 @@
       <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
       <Quests />
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine" @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl" :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
+      <Comment @removePulseLayer="removePulseLayerFromMap"/>
     </div>
   </div>
 </template>
@@ -27,6 +28,9 @@ import { HTTP } from "../utils/http-common";
 import { TreeModel } from "../utils/TreeModel";
 import AOI from "./AOI.vue";
 import Contribution from "./Contribution.vue";
+import {getCommentsFromDB} from "../service/backend.service";
+import Comment from "./Comment.vue";
+import { pulseLayer } from "../utils/pulseLayer";
 import Quests from "./Quests.vue";
 
 
@@ -57,15 +61,30 @@ onMounted(() => {
   map.on("load", function () {
     HTTP.get("").then((response) => {
       console.log(response);
-    });
+    })
+    
+    getCommentData()
+    
   });
   map.on('click', function (mapClick) {
     mapClicks.clickedCoordinates = [mapClick.lngLat.lng, mapClick.lngLat.lat]
+
+    if(store.state.comment.toggle){
+      addLayerToMap(pulseLayer(
+        store.state.pulse.pulseCoordinates.geometry.coordinates,
+        store.state.pulse.pulseAnimationActivation
+      ))
+    }
+   
   });
 
   map.on('draw.create', ()=> {
       lineDrawCreated.value = 1
   })
+
+ 
+
+
   unsubscribeFromStore = store.subscribe((mutation, state) => {
     if (mutation.type === "map/addLayer") {
       state.map.layers?.slice(-1).map(addLayerToMap)
@@ -76,11 +95,18 @@ onMounted(() => {
   });
 });
 
+
+
 // threejs layer
 const addThreejsShape = () => {
   addLayerToMap(TreeModel(13.74647, 51.068646, 100));
 }
 const addLayerToMap = (layer) => {
+  const addedlayer = map.getLayer(layer.id)
+  if(typeof addedlayer !== 'undefined' ){
+   removeLayerFromMap(layer.id)
+  }
+
   if (!layer) return;
   if (layer.paint) {
     if (layer.paint["fill-pattern"]) {
@@ -91,8 +117,12 @@ const addLayerToMap = (layer) => {
   
   const buildinglayer = map.getLayer("overpass_buildings")
   const greenerylayer = map.getLayer("overpass_greenery")
+  const commenlayer = map.getLayer("comments")
   if(typeof buildinglayer !== 'undefined' && typeof greenerylayer !== 'undefined'){
     map?.moveLayer("overpass_greenery", "overpass_buildings" )
+  }
+  if(typeof commenlayer !== 'undefined' && typeof greenerylayer !== 'undefined'){
+    map?.moveLayer("overpass_greenery", "comments" )
   }
 
    
@@ -126,6 +156,10 @@ const addImageToMap = (ImgUrl) => {
   }); 
 };
 
+const getCommentData = async () => {
+  const commentLayer = await getCommentsFromDB()
+  addLayerToMap(commentLayer)
+};
 // deckgl layder
 const addDeckglShape = () => {
   const myDeckLayer = new MapboxLayer({
@@ -165,6 +199,14 @@ const removeDrawControl= (draw, drawnPathlayerId)=>{
   lineDrawCreated.value = 0
   map.removeControl(draw)
 }
+
+const removePulseLayerFromMap= (layerid)=>{
+  removeLayerFromMap(layerid)
+  cancelAnimationFrame(store.state.pulse.pulseAnimationActivation)
+  
+}
+
+
 onUnmounted(() => {
   map?.remove();
 });

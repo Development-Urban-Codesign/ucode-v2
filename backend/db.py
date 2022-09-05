@@ -27,20 +27,6 @@ def get_table_names():
   return tables
 
 
-def init_building_table():
-  connection = connect()
-  cursor = connection.cursor()
-  create_building_table_query =''' 
-        drop table if exists building;
-        create table building (id SERIAL PRIMARY KEY, wallcolor CHAR(7), wallmaterial VARCHAR(20), roofcolor CHAR(7), roofmaterial VARCHAR(20), roofshape VARCHAR(20), roofheight FLOAT(4), height FLOAT(4), floors FLOAT, estimatedheight FLOAT(4), geom geometry(Geometry, 4326));
-  '''
-  cursor.execute(create_building_table_query)
-
-  connection.commit()
-  cursor.close()
-  connection.close()
-  return "ok"
-
 
 def get_buildings_from_osm(wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom):
   connection = connect()
@@ -116,19 +102,6 @@ def add_fulfillment(quest_id):
 
 
 
-def init_greenery_table():
-  connection = connect()
-  cursor = connection.cursor()
-  create_greenery_table_query =''' 
-        drop table if exists greenery;
-        create table greenery (id SERIAL PRIMARY KEY, greentag VARCHAR(20), geom geometry(Geometry, 4326));
-  '''
-  cursor.execute(create_greenery_table_query)
-
-  connection.commit()
-  cursor.close()
-  connection.close()
-  return "ok"
 
 def store_greenery_from_osm(greentag, geom):
   connection = connect()
@@ -161,12 +134,28 @@ def get_greenery_from_db():
   return greenery
 
 
+def get_trees_from_db():
+  connection = connect()
+  cursor = connection.cursor()
+  get_trees_query =''' select json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(ST_AsGeoJSON(tree.*)::json)
+        )
+        from tree
+      ;
+  '''
+  cursor.execute(get_trees_query)
+  trees = cursor.fetchall()[0][0]
+  cursor.close()
+  connection.close()
+  return trees
+
+
 def add_drawn_line(comment, width, color, geom):
   connection = connect()
   cursor = connection.cursor()
   
   insert_query_drawn_line= '''
-    create table if not exists drawnline (id SERIAL PRIMARY KEY, comment VARCHAR (300), color CHAR(7), width FLOAT(2),geom geometry(LINESTRING, 4326));
     INSERT INTO drawnline (comment, width, color, geom) VALUES (%s,%s,%s, ST_SetSRID(st_astext(st_geomfromgeojson(%s)), 4326));
 
   '''
@@ -174,4 +163,65 @@ def add_drawn_line(comment, width, color, geom):
   connection.commit()
   cursor.close()
   connection.close()
+
+
+def get_comments():
+  connection = connect()
+  cursor = connection.cursor()
+  get_comment_query =''' select json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(ST_AsGeoJSON(comment.*)::json)
+        )
+        from comment
+      ;
+  '''
+  cursor.execute(get_comment_query)
+  comments = cursor.fetchall()[0][0]
+  cursor.close()
+  connection.close()
+  return comments
+
+def like_comment(commentid):
+  connection = connect()
+  cursor = connection.cursor()
+  add_like_query =''' UPDATE comment SET likes = likes + 1 where id = %s  ;'''
+  cursor.execute(add_like_query, (commentid,))
+  
+  connection.commit()
+  cursor.close()
+  connection.close()
+  return "ok"
+
+def unlike_comment(commentid):
+  connection = connect()
+  cursor = connection.cursor()
+  add_unlike_query =''' UPDATE comment SET likes = likes - 1 where id = %s  ;'''
+  cursor.execute(add_unlike_query, (commentid,))
+  
+  connection.commit()
+  cursor.close()
+  connection.close()
+  return "ok"
+
+def dislike_comment(commentid):
+  connection = connect()
+  cursor = connection.cursor()
+  add_dislike_query =''' UPDATE comment SET dislikes = dislikes + 1 where id = %s  ;'''
+  cursor.execute(add_dislike_query, (commentid,))
+  
+  connection.commit()
+  cursor.close()
+  connection.close()
+  return "ok"
+
+def undislike_comment(commentid):
+  connection = connect()
+  cursor = connection.cursor()
+  add_undislike_query =''' UPDATE comment SET dislikes = dislikes - 1 where id = %s  ;'''
+  cursor.execute(add_undislike_query, (commentid,))
+  
+  connection.commit()
+  cursor.close()
+  connection.close()
+  return "ok"
   

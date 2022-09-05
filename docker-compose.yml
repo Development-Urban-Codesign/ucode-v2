@@ -20,6 +20,7 @@ services:
     container_name: db_ucode
     volumes:
       - database_dumps:/var/lib/postgresql/dumps
+      - database_data:/var/lib/postgresql/data
     ports:
       - 5432:5432
     environment:
@@ -46,3 +47,9 @@ services:
 volumes:
   caddy_config:
   database_dumps:
+  database_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: "$PWD/database/container-data"
+      o: bind
