@@ -11,21 +11,39 @@ export async function getQuestsFromDB(){
 }
 export async function getbuildingsFromDB() {
   const response = await HTTP.get('get-buildings-from-db');
-  console.log(response);
+  const emptygeom = d => d.geometry.coordinates.length== 1;
+  const nonEmptyFeatures = response.data.features.filter(emptygeom);
+  const colorPalette = [[123, 222, 242, 255], [178, 247, 239, 255],[239, 247, 246,255], [247, 214, 224, 255], [242, 181, 211,255]];
+
   return new MapboxLayer({
     id: 'overpass_buildings',
     type: PolygonLayer,
-    data: response.data.features,
+    data: nonEmptyFeatures,
     getPolygon: d => d.geometry.coordinates,
-    opacity: 1,
     stroked: false,
     filled: true,
     extruded: true,
-    wireframe: false,
     getElevation: f => f.properties.estimatedheight,
-    getFillColor: [235, 148, 35, 255],
-    getLineColor: [0, 0, 0],
-    wireframe: true,
+    getFillColor: d => {
+      if (d.properties.estimatedheight<=4){
+        return colorPalette[0]
+      }
+      else if (d.properties.estimatedheight>4 && d.properties.estimatedheight<=8){
+        return colorPalette[1]
+      }
+      else if (d.properties.estimatedheight>8 && d.properties.estimatedheight<=12){
+        return colorPalette[2]
+      }
+      else if (d.properties.estimatedheight>12 && d.properties.estimatedheight<=16){
+        return colorPalette[3]
+      }
+      else {
+        return colorPalette[4]
+      }
+      
+    },
+    getLineColor: [0, 0, 0, 0],
+    wireframe: false,
     pickable: true,
   })
 }

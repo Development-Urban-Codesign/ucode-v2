@@ -23,7 +23,13 @@ from db import (
     get_driving_lane_from_db,
     get_driving_lane_polygon_from_db,
     add_fulfillment,
-    get_quests_from_db
+    get_quests_from_db,
+    get_driving_lane_polygon_from_db,
+    drop_greenery_table,
+    drop_building_table,
+    drop_tree_table,
+    drop_driving_lane_table
+
 )
 from db_migrations import run_database_migrations
 try:
@@ -81,6 +87,7 @@ async def add_fulfillment_api(request: Request):
     
 @app.post("/store-greenery-from-osm")
 async def store_greenery_from_osm_api(request: Request):
+    drop_greenery_table()
     data = await request.json()
     xmin = data["bbox"]["xmin"]
     ymin = data["bbox"]["ymin"]
@@ -151,6 +158,7 @@ async def get_greenery_from_db_api():
 
 @app.post("/get-buildings-from-osm")
 async def get_buildings_from_osm_api(request: Request):
+    drop_building_table()
     data = await request.json()
     xmin = data["bbox"]["xmin"]
     ymin = data["bbox"]["ymin"]
@@ -196,10 +204,9 @@ async def get_buildings_from_osm_api(request: Request):
 
     connection = connect()
     cursor = connection.cursor()
-
+       # INSERT INTO building (wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
     insert_query_building = """
-        INSERT INTO building (wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
-
+        INSERT INTO building (wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s, (st_buffer(st_buffer(ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326)::geography, 1,'side=right'),1)::geography)::geometry);
     """
     for f in data_building["elements"]:
         f["geometry"]["type"] = "Polygon"
@@ -277,6 +284,7 @@ async def get_quests_from_db_api():
 
 @app.post("/get-trees-from-osm")
 async def get_trees_from_osm_api(request: Request):
+    drop_tree_table()
     data = await request.json()
     xmin = data["bbox"]["xmin"]
     ymin = data["bbox"]["ymin"]
@@ -301,7 +309,7 @@ async def get_trees_from_osm_api(request: Request):
     connection = connect()
     cursor = connection.cursor()
     insert_query_tree = """
-            INSERT INTO tree (geom) VALUES (ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
+        INSERT INTO tree (geom) VALUES (ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
 
     """
     for f in data_tree["elements"]:
@@ -374,6 +382,7 @@ async def undislike_comment_api(request: Request):
 
 @app.post("/get-driving-lane-from-osm")
 async def get_driving_lane_from_osm_api(request: Request):
+    drop_driving_lane_table()
     data = await request.json()
     xmin = data['bbox']["xmin"]
     ymin = data['bbox']["ymin"]
