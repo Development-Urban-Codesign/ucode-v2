@@ -75,13 +75,7 @@ async def root():
    # TH: Hier empfängt das Backend den Request aus dem Frontend, den Wert für die Quest-ID X um einen Zähler hochzusetzen 
 @app.post("/add-quest-fulfillment")
 async def add_fulfillment_api(request: Request):
-    
-    #data = await request.json() # ? ist es ein json oder nur eine Zahl?
-    #new_fulfillment_rate = add_fulfillment(data["quest_id"])
-    #return new_fulfillment_rate
-    # data = await request.txt()
     data = await request.json()
-    print(data)
     add_fulfillment(data["questid"])
     return "fulfillment has been updated"
     
