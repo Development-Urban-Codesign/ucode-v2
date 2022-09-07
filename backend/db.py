@@ -270,3 +270,16 @@ def get_driving_lane_polygon_from_db():
   cursor.close()
   connection.close()
   return driving_lane_polygon
+
+def get_quests_from_db():
+  connection = connect()
+  cursor = connection.cursor()
+  get_quests_from_db_query='''
+  select * from quests;
+  '''
+  cursor.execute(get_quests_from_db_query)
+  quests = cursor.fetchall()
+  
+  cursor.close()
+  connection.close()
+  return quests

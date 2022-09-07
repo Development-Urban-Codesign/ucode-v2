@@ -22,7 +22,8 @@ from db import (
     unlike_comment,
     get_driving_lane_from_db,
     get_driving_lane_polygon_from_db,
-    add_fulfillment
+    add_fulfillment,
+    get_quests_from_db
 )
 from db_migrations import run_database_migrations
 try:
@@ -205,7 +206,6 @@ async def get_buildings_from_osm_api(request: Request):
         f["geometry"]["coordinates"] = [f["geometry"]["coordinates"]]
 
     for f in data_building["elements"]:
-
         wallcolor = None
         if "building:colour" in f["tags"]:
             wallcolor = f["tags"]["building:colour"]
@@ -271,6 +271,9 @@ async def get_buildings_from_osm_api(request: Request):
 async def get_buildings_from_db_api():
     return get_buildings_from_db()
 
+@app.get("/get-quests-from-db")
+async def get_quests_from_db_api():
+    return get_quests_from_db()
 
 @app.post("/get-trees-from-osm")
 async def get_trees_from_osm_api(request: Request):

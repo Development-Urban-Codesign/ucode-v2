@@ -4,6 +4,11 @@ import { MapboxLayer } from '@deck.gl/mapbox';
 import { HTTP } from '../utils/http-common.js';
 import store from "../store/store";
 
+export async function getQuestsFromDB(){
+  const response = await HTTP.get('get-quests-from-db');
+  // console.log(response.data);
+  return response.data
+}
 export async function getbuildingsFromDB() {
   const response = await HTTP.get('get-buildings-from-db');
   console.log(response);
@@ -134,10 +139,10 @@ export async function getTreesFromDB() {
     type: ScenegraphLayer,
     data:response.data.features,
     pickable: false,
-    scenegraph: "./GenericNewTree.glb",
+    scenegraph: "Tree1.glb",
     getPosition: d => d.geometry.coordinates,
     getOrientation: (d) => [0, 0, 90],
-    sizeScale: 7,
+    sizeScale: 1,
     _lighting: "pbr",
   })
 
