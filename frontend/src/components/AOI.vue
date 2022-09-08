@@ -47,6 +47,8 @@ import {
   getGreeneryFromDBTexture,
   getTreesFromOSM,
   getTreesFromDB,
+  getTreesFromDBobj,
+  getTreesFromDBply,
   getDrivingLaneFromOSM,
   getDrivingLaneFromDB
 } from "../service/backend.service";
@@ -81,7 +83,7 @@ const sendTreeyRequest= async (mode)=>{
     store.dispatch("aoi/setDataIsLoading");
     await getTreesFromOSM(store.state.aoi.bbox);
   } else {
-    const treeLayer = await getTreesFromDB();
+    const treeLayer = await getTreesFromDBobj();
     emit("addLayer", treeLayer);
   }
 }

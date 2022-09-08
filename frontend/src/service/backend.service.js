@@ -1,8 +1,10 @@
 import { PolygonLayer } from '@deck.gl/layers';
-import { ScenegraphLayer } from "@deck.gl/mesh-layers";
+import { ScenegraphLayer, SimpleMeshLayer} from "@deck.gl/mesh-layers";
 import { MapboxLayer } from '@deck.gl/mapbox';
 import { HTTP } from '../utils/http-common.js';
 import store from "../store/store";
+import { PLYLoader } from '@loaders.gl/ply';
+import { OBJLoader } from '@loaders.gl/obj';
 
 export async function getQuestsFromDB(){
   const response = await HTTP.get('get-quests-from-db');
@@ -162,6 +164,43 @@ export async function getTreesFromDB() {
     getOrientation: (d) => [0, 0, 90],
     sizeScale: 1,
     _lighting: "pbr",
+  })
+
+  return treeLayer
+}
+
+export async function getTreesFromDBply() {
+  const response = await HTTP.get('get-trees-from-db');
+  const treeLayer = new MapboxLayer({
+    id: 'trees',
+    type: SimpleMeshLayer,
+    data:response.data.features,
+    mesh: "Tree01.ply",
+    loaders: [PLYLoader],
+    getPosition: d => d.geometry.coordinates,
+    getOrientation: (d) => [0, 0, 90],
+    sizeScale: 1,
+    // texture: "Tree01.png",
+    _useMeshColors: true,
+    // wireframe: true
+  })
+
+  return treeLayer
+}
+export async function getTreesFromDBobj() {
+  const response = await HTTP.get('get-trees-from-db');
+  const treeLayer = new MapboxLayer({
+    id: 'trees',
+    type: SimpleMeshLayer,
+    data:response.data.features,
+    mesh: "Tree01.obj",
+    loaders: [OBJLoader],
+    getPosition: d => d.geometry.coordinates,
+    getOrientation: (d) => [0, 0, 90],
+    sizeScale: 1,
+    texture: "Tree01.png",
+    // _useMeshColors: true,
+    // wireframe: true
   })
 
   return treeLayer
