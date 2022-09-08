@@ -199,7 +199,6 @@ async def get_buildings_from_osm_api(request: Request):
         f["geometry"]["coordinates"] = [f["geometry"]["coordinates"]]
 
     for f in data_building["elements"]:
-
         wallcolor = None
         if "building:colour" in f["tags"]:
             wallcolor = f["tags"]["building:colour"]
@@ -229,7 +228,16 @@ async def get_buildings_from_osm_api(request: Request):
 
         estimatedheight = None
         if height is not None:
-            estimatedheight = float(height)
+            try:
+                estimatedheight = float(height)
+            except:
+                if "," in height:
+                    height = height.replace(",", ".")
+               #print(height.txt)
+                height = height.split() # e.g. "23 m" -> ["23","m"]
+                height = height[0] #-> 23
+            finally:
+                estimatedheight = float(height)
         elif floors is not None:
             estimatedheight = float(floors) * 3.5
         else:
@@ -332,7 +340,7 @@ async def add_drawn_line_api(request: Request):
     return "added"
 
 
-@app.get("/get-cooments")
+@app.get("/get-comments")
 async def get_comments_api():
     return get_comments()
 

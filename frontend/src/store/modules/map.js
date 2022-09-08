@@ -5,10 +5,7 @@ const map = {
         layers: [],
         sources: [],
         map: null,
-        center: {
-            lng: 13.749748,
-            lat: 51.063371
-        },
+        center: { lng: 8.26952, lat: 50.0053},
         zoom: 15,
         minZoom: 4,
         maxZoom: 23,
