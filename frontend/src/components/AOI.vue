@@ -2,9 +2,9 @@
   <v-col
     cols="10"
     sm="1"
-    style="position: absolute; right: 0; top: 60px; z-index: 999"
+    style="position: absolute; right: 0; top: 0px; z-index: 999"
   >
-    <v-select
+  <v-select
       :items="['get', 'retrieve']"
       label="building"
       variant="outlined"

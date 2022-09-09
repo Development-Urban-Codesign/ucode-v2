@@ -222,24 +222,17 @@ async def get_buildings_from_osm_api(request: Request):
         height = None
         if "height" in f["tags"]:
             height = f["tags"]["height"]
+            height = sure_float(height)
         floors = None
         if "building:levels" in f["tags"]:
             floors = f["tags"]["building:levels"]
+            floors = sure_float(floors)
 
         estimatedheight = None
         if height is not None:
-            try:
-                estimatedheight = float(height)
-            except:
-                if "," in height:
-                    height = height.replace(",", ".")
-               #print(height.txt)
-                height = height.split() # e.g. "23 m" -> ["23","m"]
-                height = height[0] #-> 23
-            finally:
-                estimatedheight = float(height)
+            estimatedheight = sure_float(height)
         elif floors is not None:
-            estimatedheight = float(floors) * 3.5
+            estimatedheight = sure_float(floors) * 3.5
         else:
             estimatedheight = 15
 
@@ -323,7 +316,7 @@ async def get_trees_from_db_api():
 @app.post("/add-comment")
 async def add_comment_api(request: Request):
     data = await request.json()
-    add_comment(data["comment"], float(data["position"][0]), float(data["position"][1]))
+    add_comment(data["comment"], sure_float(data["position"][0]), sure_float(data["position"][1]))
     return "added"
 
 
@@ -450,4 +443,22 @@ async def get_driving_lane_from_osm_api(request: Request):
 async def get_driving_lane_from_db_api():
     
     return {"lane": get_driving_lane_from_db(), "polygon": get_driving_lane_polygon_from_db()}
+
+def sure_float(may_be_number):  
+    # function which extracts surely the integer or float inside a string
+    # will handle strings like "23m" or "23,5 m" or "23.0 m" correctly
+    my_sure_float = "0"
+    try:
+        my_sure_float = float(may_be_number)
+    except:
+        may_be_number = may_be_number.strip()
+        may_be_number = may_be_number.replace(",", ".")
+        for x in may_be_number:
+            if x in "0123456789.":
+                my_sure_float = my_sure_float + x
+            elif x.isspace():
+                break
+        my_sure_float = float(my_sure_float)
+
+    return my_sure_float
 

@@ -1,9 +1,9 @@
 <template>
   <div>
-    <v-textarea solo name="input-7-4" label="leave a comment" :modelValue="commentText"
+    <v-textarea solo name="input-7-4" label="Kommentar erstellen" :modelValue="commentText"
       @update:modelValue="text => commentText = text"></v-textarea>
     <v-btn size="small" color="success" @click="submitComment" :disabled="!commentText">
-      Submit
+      Senden
     </v-btn>
   </div>
 
@@ -12,8 +12,8 @@
 <script setup>
 import { ref, defineProps } from 'vue';
 import { useStore } from "vuex";
-const store = useStore();
 import { HTTP } from '../utils/http-common';
+const store = useStore();
 const props =
   defineProps({
     clickedCoordinates: Array,
