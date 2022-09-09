@@ -53,7 +53,6 @@ export const TreeModel = (lng, lat, id)=> {
           (gltf) => {
             console.log(gltf)
             this.scene.add(gltf.scene);
-            
           }
         );
 
@@ -67,6 +66,7 @@ export const TreeModel = (lng, lat, id)=> {
         });
  
         this.renderer.autoClear = false;
+        console.count("onAdd")
       },
 
 
@@ -106,7 +106,8 @@ export const TreeModel = (lng, lat, id)=> {
         //this.renderer.state.reset();
         this.renderer.resetState();
         this.renderer.render(this.scene, this.camera);
-        this.map.triggerRepaint();
+        console.count("triggerRepaint")
+        //this.map.triggerRepaint();
       }
   };
 

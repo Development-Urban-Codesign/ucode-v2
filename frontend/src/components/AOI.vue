@@ -34,6 +34,7 @@
     <v-alert type="info" v-if="store.state.aoi.dataIsLoading">
       getting data...
     </v-alert>
+    
   </v-col>
 </template>
 
@@ -43,7 +44,6 @@ import {
   getbuildingsFromDB,
   getbuildingsFromOSM,
   storeGreeneryFromOSM,
-  getGreeneryFromDB,
   getGreeneryFromDBTexture,
   getTreesFromOSM,
   getTreesFromDB,

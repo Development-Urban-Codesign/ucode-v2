@@ -64,11 +64,41 @@ def add_comment(comment, lng, lat):
   
   insert_query_comment= '''
     INSERT INTO comment (comment, geom) VALUES (%s, ST_SetSRID(ST_MakePoint(%s, %s), 4326));
+
   '''
   cursor.execute(insert_query_comment, (comment, lng, lat,))
   connection.commit()
   cursor.close()
   connection.close()
+
+# TH Hier wird die Zahl der Fulfillments aus der db gelesen und hochgesetzt und dieser Wert zurückgesendet
+
+def add_fulfillment(quest_id):
+
+  connection = connect()
+  cursor = connection.cursor()
+
+  ## Setup table
+  insert_query_setup_table ='''
+    create table if not exists quests (id serial primary key, fulfillment integer);
+  '''
+  cursor.execute(insert_query_setup_table)
+
+  insert_query_quests_fulfillment= f'''
+    
+    update quests set fulfillment = fulfillment + 1 where id={quest_id};
+  '''
+
+  # create table if not exists quests (id serial primary key, fulfillment integer);
+
+  cursor.execute(insert_query_quests_fulfillment, (quest_id,))
+
+  connection.commit()
+  cursor.close()
+  connection.close()
+
+
+
 
 def store_greenery_from_osm(greentag, geom):
   connection = connect()
@@ -124,11 +154,13 @@ def add_drawn_line(comment, width, color, geom):
   
   insert_query_drawn_line= '''
     INSERT INTO drawnline (comment, width, color, geom) VALUES (%s,%s,%s, ST_SetSRID(st_astext(st_geomfromgeojson(%s)), 4326));
+
   '''
   cursor.execute(insert_query_drawn_line, (comment, width, color, geom,))
   connection.commit()
   cursor.close()
   connection.close()
+
 
 def get_comments():
   connection = connect()
@@ -237,6 +269,19 @@ def get_driving_lane_polygon_from_db():
   cursor.close()
   connection.close()
   return driving_lane_polygon
+
+def get_quests_from_db():
+  connection = connect()
+  cursor = connection.cursor()
+  get_quests_from_db_query='''
+  select * from quests;
+  '''
+  cursor.execute(get_quests_from_db_query)
+  quests = cursor.fetchall()
+  
+  cursor.close()
+  connection.close()
+  return quests
 
 def drop_greenery_table():
   connection = connect()
