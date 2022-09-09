@@ -1,7 +1,7 @@
 import maplibregl from 'maplibre-gl'
 import * as THREE from 'three'
-import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
-export const TreeModel = (lng, lat, id)=> {
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+export const TreeModel = (lng, lat, id) => {
   const modelAltitude = 0;
   const modelRotate = [Math.PI / 2, 0, 0];
   const modelorigin = [lng, lat]
@@ -9,7 +9,7 @@ export const TreeModel = (lng, lat, id)=> {
     modelorigin,
     modelAltitude
   );
- 
+
   // transformation parameters to position, rotate and scale the 3D model onto the map
   const modelTransform = {
     translateX: modelAsMercatorCoordinate.x,
@@ -23,69 +23,95 @@ export const TreeModel = (lng, lat, id)=> {
     */
     scale: modelAsMercatorCoordinate.meterInMercatorCoordinateUnits()
   };
- 
+
   //const THREE = window.THREE;
- 
+
   // configuration of the custom layer for a 3D model per the CustomLayerInterface
   const customLayer = {
     id: id,
     type: 'custom',
     renderingMode: '3d',
-      onAdd: function (map, gl) {
-        this.camera = new THREE.Camera();
-        this.scene = new THREE.Scene();
- 
-        // create two three.js lights to illuminate the model
-        const directionalLight = new THREE.DirectionalLight(0xffffff);
-        directionalLight.position.set(0, -70, 100).normalize();
-        this.scene.add(directionalLight);
- 
-        const directionalLight2 = new THREE.DirectionalLight(0xffffff);
-        directionalLight2.position.set(0, 70, 100).normalize();
-        this.scene.add(directionalLight2);
- 
-        // use the three.js GLTF loader to add the 3D model to the three.js scene
-        const loader = new GLTFLoader();
-        loader.crossOrigin = true;
-        
-        loader.load(
-          "https://raw.githubusercontent.com/QSafariallahkheili/ligfinder_refactor/master/GenericNewTree.glb",
-          (gltf) => {
-            console.log(gltf)
-            this.scene.add(gltf.scene);
+    onAdd: function (map, gl) {
+      this.camera = new THREE.Camera();
+      this.scene = new THREE.Scene();
+
+      // create two three.js lights to illuminate the model
+      const directionalLight = new THREE.DirectionalLight(0xffffff);
+      directionalLight.position.set(0, -70, 100).normalize();
+      this.scene.add(directionalLight);
+
+      const directionalLight2 = new THREE.DirectionalLight(0xffffff);
+      directionalLight2.position.set(0, 70, 100).normalize();
+      this.scene.add(directionalLight2);
+
+      // use the three.js GLTF loader to add the 3D model to the three.js scene
+      const loader = new GLTFLoader();
+      loader.crossOrigin = true;
+
+      loader.load(
+        "https://raw.githubusercontent.com/QSafariallahkheili/ligfinder_refactor/master/GenericNewTree.glb",
+        (gltf) => {
+          console.log(gltf)
+          this.scene.add(gltf.scene);
+          // those should come from the server
+          function generateTreeCoordinates() {
+            const sceneTreeCoordinates = [];
+            for (let index = 0; index < 1000; index++) {
+              let lat = 0;
+              let long = 0;
+              if (index % 2 === 0) {
+                lat = index + 0.01
+                long =  0.02
+              } else {
+                lat =  0.01
+                long = index + 0.03
+              }
+              sceneTreeCoordinates.push([lat, long]);
+            }
+            return sceneTreeCoordinates;
           }
-        );
 
-        this.map = map;
- 
-        // use the Mapbox GL JS map canvas for three.js
-        this.renderer = new THREE.WebGLRenderer({
-          canvas: map.getCanvas(),
-          context: gl,
-          antialias: true
-        });
- 
-        this.renderer.autoClear = false;
-        console.count("onAdd")
-      },
+          const sceneTreeCoordinates = generateTreeCoordinates();
+          // create wood :)
+          for (let index = 0; index < sceneTreeCoordinates.length; index++) {
+            const sceneClone = gltf.scene.clone()
+            sceneClone.translateX(sceneTreeCoordinates[index][0]);
+            sceneClone.translateZ(sceneTreeCoordinates[index][0]);
+            this.scene.add(sceneClone);
+          }
+        }
+      );
+
+      this.map = map;
+
+      // use the Mapbox GL JS map canvas for three.js
+      this.renderer = new THREE.WebGLRenderer({
+        canvas: map.getCanvas(),
+        context: gl,
+        antialias: true
+      });
+
+      this.renderer.autoClear = false;
+      console.count("onAdd")
+    },
 
 
-      render: function (gl, matrix) {
-        const rotationX = new THREE.Matrix4().makeRotationAxis(
-          new THREE.Vector3(1, 0, 0),
-          modelTransform.rotateX
-        );
-        const rotationY = new THREE.Matrix4().makeRotationAxis(
-          new THREE.Vector3(0, 1, 0),
-          modelTransform.rotateY
-        );
-        const rotationZ = new THREE.Matrix4().makeRotationAxis(
-          new THREE.Vector3(0, 0, 1),
-          modelTransform.rotateZ
-        );
- 
-        const m = new THREE.Matrix4().fromArray(matrix);
-        const l = new THREE.Matrix4()
+    render: function (gl, matrix) {
+      const rotationX = new THREE.Matrix4().makeRotationAxis(
+        new THREE.Vector3(1, 0, 0),
+        modelTransform.rotateX
+      );
+      const rotationY = new THREE.Matrix4().makeRotationAxis(
+        new THREE.Vector3(0, 1, 0),
+        modelTransform.rotateY
+      );
+      const rotationZ = new THREE.Matrix4().makeRotationAxis(
+        new THREE.Vector3(0, 0, 1),
+        modelTransform.rotateZ
+      );
+
+      const m = new THREE.Matrix4().fromArray(matrix);
+      const l = new THREE.Matrix4()
         .makeTranslation(
           modelTransform.translateX,
           modelTransform.translateY,
@@ -93,28 +119,28 @@ export const TreeModel = (lng, lat, id)=> {
         )
         .scale(
           new THREE.Vector3(
-            modelTransform.scale*50,
-            -modelTransform.scale*50,
-            modelTransform.scale*50
+            modelTransform.scale * 50,
+            -modelTransform.scale * 50,
+            modelTransform.scale * 50
           )
         )
         .multiply(rotationX)
         .multiply(rotationY)
         .multiply(rotationZ);
- 
-        this.camera.projectionMatrix = m.multiply(l);
-        //this.renderer.state.reset();
-        this.renderer.resetState();
-        this.renderer.render(this.scene, this.camera);
-        console.count("triggerRepaint")
-        //this.map.triggerRepaint();
-      }
+
+      this.camera.projectionMatrix = m.multiply(l);
+      //this.renderer.state.reset();
+      this.renderer.resetState();
+      this.renderer.render(this.scene, this.camera);
+      console.count("triggerRepaint")
+      //this.map.triggerRepaint();
+    }
   };
 
   return (
     customLayer
   )
- 
- 
+
+
 
 }
