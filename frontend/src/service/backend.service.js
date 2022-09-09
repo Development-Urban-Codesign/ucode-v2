@@ -167,6 +167,13 @@ export async function getTreesFromDB() {
   return treeLayer
 }
 
+export async function getTreeJsonFromDB() {
+  const response = await HTTP.get('get-trees-from-db');
+  const trees = response.data
+  return trees
+}
+
+
 export async function getDrivingLaneFromOSM(bbox) {
   HTTP
     .post('get-driving-lane-from-osm', {

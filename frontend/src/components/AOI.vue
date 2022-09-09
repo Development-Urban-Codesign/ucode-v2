@@ -48,8 +48,10 @@ import {
   getTreesFromOSM,
   getTreesFromDB,
   getDrivingLaneFromOSM,
-  getDrivingLaneFromDB
+  getDrivingLaneFromDB,
+  getTreeJsonFromDB
 } from "../service/backend.service";
+import { TreeModel } from "../utils/TreeModel";
 const store = useStore();
 
 const emit = defineEmits(["addLayer", "addImage"]);
@@ -80,7 +82,11 @@ const sendTreeyRequest= async (mode)=>{
   if (mode == "get") {
     store.dispatch("aoi/setDataIsLoading");
     await getTreesFromOSM(store.state.aoi.bbox);
-  } else {
+  }else if(true){//import trees with THREE JS
+    const treeJson = await getTreeJsonFromDB();
+    console.log(treeJson)
+    emit("addLayer", TreeModel(13.74647, 51.068646,treeJson, 100));
+  }else {
     const treeLayer = await getTreesFromDB();
     emit("addLayer", treeLayer);
   }

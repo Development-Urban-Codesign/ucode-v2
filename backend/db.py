@@ -313,7 +313,7 @@ def drop_tree_table():
 def drop_driving_lane_table():
   connection = connect()
   cursor = connection.cursor()
-  drop_driving_lane_table_query =''' delete from driving_lane tree; delete from driving_lane_polygon'''
+  drop_driving_lane_table_query =''' delete from driving_lane tree; delete from driving_lane_polygon;'''
   cursor.execute(drop_driving_lane_table_query)
   connection.commit()
   cursor.close()
