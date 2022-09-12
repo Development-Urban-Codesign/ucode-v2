@@ -1,6 +1,7 @@
 import maplibregl, { BindElementBuffer, CollisionCircleArray } from 'maplibre-gl'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+
 export const TreeModel = (lng, lat, treeJson, id) => {
   const modelAltitude = 0;
   const modelRotate = [Math.PI / 2, 0, 0];
@@ -61,22 +62,28 @@ export const TreeModel = (lng, lat, treeJson, id) => {
             const sceneTreeCoordinates = [];
             let lat = 0;
             let long = 0;
-            for (let index = 0; index < treeJson.features.length; index++) {
-              const element = treeJson.features[index].geometry.coordinates;
-               console.log(modelAsMercatorCoordinate.x +"-"+ localCord(element).x+","+modelAsMercatorCoordinate.y +"-"+ localCord(element).y);
-              let newPos = [(modelorigin[0] - element[0])*100000,(modelorigin[1] - element[1])*100000]
-              let newPos2 = [(modelAsMercatorCoordinate.x - localCord(element).x)*10000000, (modelAsMercatorCoordinate.y - localCord(element).y)*10000000]//problematic getting position for the trees
-              console.log(newPos2);
-              sceneTreeCoordinates.push(newPos2)
+            if (treeJson != null) {
+              for (let index = 0; index < treeJson.features.length; index++) {
+                const element = treeJson.features[index].geometry.coordinates;
+                console.log(modelAsMercatorCoordinate.x + "-" + localCord(element).x + "," + modelAsMercatorCoordinate.y + "-" + localCord(element).y);
+                let newPos = [(modelorigin[0] - element[0]) * 100000, (modelorigin[1] - element[1]) * 100000]
+                let newPos2 = [(modelAsMercatorCoordinate.x - localCord(element).x) * 10000000, (modelAsMercatorCoordinate.y - localCord(element).y) * 10000000]//problematic getting position for the trees
+                console.log(newPos2);
+                sceneTreeCoordinates.push(newPos2)
+              }
+            }
+            else {
+              for (let i = 0; i < 100; i++) {
+                long = i * 10
+                for (let index = 0; index < 100; index++) {
+                  lat = index * 10
+                  sceneTreeCoordinates.push([lat, long]);
+                }
+              }
+
             }
 
-            // for (let i = 0; i < 100; i++) {
-            //   long = i * 10
-            //   for (let index = 0; index < 100; index++) {
-            //     lat = index * 10
-            //     sceneTreeCoordinates.push([lat, long]);
-            //   }
-            // }
+
             return sceneTreeCoordinates;
           }
 

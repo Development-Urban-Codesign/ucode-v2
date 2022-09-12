@@ -100,7 +100,7 @@ onMounted(() => {
 
 // threejs layer
 const addThreejsShape = () => {
-  addLayerToMap(TreeModel(13.74647, 51.068646, 100));
+  addLayerToMap(TreeModel(13.74647, 51.068646, null, 100));
 }
 const addLayerToMap = (layer) => {
   const addedlayer = map.getLayer(layer.id)
