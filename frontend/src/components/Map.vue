@@ -26,6 +26,7 @@ import { onMounted, onUnmounted, reactive, shallowRef, ref } from "vue";
 import { useStore } from "vuex";
 import { HTTP } from "../utils/http-common";
 import { TreeModel } from "../utils/TreeModel";
+import { ThreejsScene } from "../utils/ThreejsScene";
 import AOI from "./AOI.vue";
 import Contribution from "./Contribution.vue";
 import {getCommentsFromDB} from "../service/backend.service";
@@ -101,6 +102,9 @@ onMounted(() => {
 // threejs layer
 const addThreejsShape = () => {
   addLayerToMap(TreeModel(13.74647, 51.068646, null, 100));
+}
+const addTrafficLights = () => {
+  addLayerToMap(ThreejsScene(13.74647, 51.068646, null, "TrafficLight.glb"));
 }
 const addLayerToMap = (layer) => {
   const addedlayer = map.getLayer(layer.id)

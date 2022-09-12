@@ -1,8 +1,8 @@
-import maplibregl, { BindElementBuffer, CollisionCircleArray, meterInMercatorCoordinateUnits} from 'maplibre-gl'
+import maplibregl, { BindElementBuffer, CollisionCircleArray } from 'maplibre-gl'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
-export const TreeModel = (lng, lat, treeJson, id) => {
+export const ThreejsScene = (lng, lat, geoJson, glbModel) => {
   const modelAltitude = 0;
   const modelRotate = [Math.PI / 2, 0, 0];
   const modelorigin = [lng, lat]
@@ -29,7 +29,7 @@ export const TreeModel = (lng, lat, treeJson, id) => {
 
   // configuration of the custom layer for a 3D model per the CustomLayerInterface
   const customLayer = {
-    id: id,
+    id: glbModel,
     type: 'custom',
     renderingMode: '3d',
     onAdd: function (map, gl) {
@@ -53,7 +53,7 @@ export const TreeModel = (lng, lat, treeJson, id) => {
         return local
       }
       loader.load(
-        "Tree2.glb",
+        glbModel,
         (gltf) => {
           console.log(gltf)
           this.scene.add(gltf.scene);
@@ -62,27 +62,20 @@ export const TreeModel = (lng, lat, treeJson, id) => {
             const sceneTreeCoordinates = [];
             let lat = 0;
             let long = 0;
-            if (treeJson != null) {
-              for (let index = 0; index < treeJson.features.length; index++) {
-                const element = treeJson.features[index].geometry.coordinates;
-                let mercatorMeterOffset = 1000000000000000*modelAsMercatorCoordinate.meterInMercatorCoordinateUnits();
-                // console.log(modelAsMercatorCoordinate.x + "-" + localCord(element).x + "," + modelAsMercatorCoordinate.y + "-" + localCord(element).y);
-                // let newPos = [(modelorigin[0] - element[0]) * 100000, (modelorigin[1] - element[1]) * 100000]
-                // let newPos2 = [(modelAsMercatorCoordinate.x - localCord(element).x) * modelAsMercatorCoordinate.meterInMercatorCoordinateUnits() *multi, (modelAsMercatorCoordinate.y - localCord(element).y) * modelAsMercatorCoordinate.meterInMercatorCoordinateUnits() *multi]//problematic getting position for the trees
-                let x1=modelAsMercatorCoordinate.x;
-                let x2=localCord(element).x
-                let y1=modelAsMercatorCoordinate.y;
-                let y2=localCord(element).y
-                let newpos3 = [(x1-x2)*mercatorMeterOffset, (y1-y2)*mercatorMeterOffset]
-                // console.log(newPos2);
-                console.log(mercatorMeterOffset)
-                sceneTreeCoordinates.push(newpos3)
+            if (geoJson != null) {
+              for (let index = 0; index < geoJson.features.length; index++) {
+                const element = geoJson.features[index].geometry.coordinates;
+                console.log(modelAsMercatorCoordinate.x + "-" + localCord(element).x + "," + modelAsMercatorCoordinate.y + "-" + localCord(element).y);
+                let newPos = [(modelorigin[0] - element[0]) * 100000, (modelorigin[1] - element[1]) * 100000]
+                let newPos2 = [(modelAsMercatorCoordinate.x - localCord(element).x) * 10000000, (modelAsMercatorCoordinate.y - localCord(element).y) * 10000000]//problematic getting position for the trees
+                console.log(newPos2);
+                sceneTreeCoordinates.push(newPos2)
               }
             }
             else {
-              for (let i = 0; i < 100; i++) {
+              for (let i = 0; i < 10; i++) {
                 long = i * 10
-                for (let index = 0; index < 100; index++) {
+                for (let index = 0; index < 10; index++) {
                   lat = index * 10
                   sceneTreeCoordinates.push([lat, long]);
                 }
