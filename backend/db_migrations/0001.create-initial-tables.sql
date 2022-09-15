@@ -11,3 +11,5 @@ create table if not exists tree (id SERIAL PRIMARY KEY, geom geometry(Point, 432
 create table if not exists driving_lane (id SERIAL PRIMARY KEY, lanes text, length float, maxspeed text, width text null,highway text, geom geometry(LINESTRING, 4326));
 
 create table if not exists driving_lane_polygon (id SERIAL PRIMARY KEY, lanes text, length float, maxspeed text, width text null,highway text, geom geometry(Geometry, 4326));
+
+create table if not exists traffic_signal (id SERIAL PRIMARY KEY, geom geometry(Point, 4326));
