@@ -318,3 +318,28 @@ def drop_driving_lane_table():
   connection.commit()
   cursor.close()
   connection.close()
+
+def drop_traffic_signal_table():
+  connection = connect()
+  cursor = connection.cursor()
+  drop_traffic_signal_table_query =''' delete from traffic_signal '''
+  cursor.execute(drop_traffic_signal_table_query)
+  connection.commit()
+  cursor.close()
+  connection.close()
+
+def get_traffic_signal_from_db():
+  connection = connect()
+  cursor = connection.cursor()
+  get_traffic_signal_query =''' select json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(ST_AsGeoJSON(traffic_signal.*)::json)
+        )
+        from traffic_signal
+      ;
+  '''
+  cursor.execute(get_traffic_signal_query)
+  traffic_signal = cursor.fetchall()[0][0]
+  cursor.close()
+  connection.close()
+  return traffic_signal
