@@ -178,3 +178,28 @@ export async function getDrivingLaneFromDB() {
   const response = await HTTP.get('get-driving-lane-from-db');
   return response
 }
+
+export async function getTrafficLightsFromOSM(bbox) {
+  HTTP
+    .post('get-traffic-lights-from-osm', {
+      bbox: bbox
+  })
+}
+
+export async function getTrafficSignalFromDB() {
+  const response = await HTTP.get('get-traffic-signal-from-db');
+  console.log(response.data)
+  const trafficSignalLayer = new MapboxLayer({
+    id: 'traffic-signal',
+    type: ScenegraphLayer,
+    data:response.data.features,
+    pickable: false,
+    scenegraph: "TrafficLight.glb",
+    getPosition: d => d.geometry.coordinates,
+    getOrientation: (d) => [0, 0, 90],
+    sizeScale: 1,
+    _lighting: "pbr",
+  })
+
+  return trafficSignalLayer
+}
