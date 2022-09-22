@@ -9,11 +9,12 @@
           Deckgl
         </v-btn>
       </v-row>
-
+      <Loadingscreen/>
       <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
       <Quests />
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine" @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl" :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
       <Comment @removePulseLayer="removePulseLayerFromMap"/>
+      
     </div>
   </div>
 </template>
@@ -32,6 +33,7 @@ import {getCommentsFromDB} from "../service/backend.service";
 import Comment from "./Comment.vue";
 import { pulseLayer } from "../utils/pulseLayer";
 import Quests from "./Quests.vue";
+import Loadingscreen from "./Loadingscreen.vue";
 
 
 
