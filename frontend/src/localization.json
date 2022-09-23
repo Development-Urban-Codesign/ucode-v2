@@ -4,6 +4,9 @@
     "Quest": {
       "greeting": "Welcome",
       "startAdventure": "Let's go"
+    },
+    "AOI":{
+      "greenery":"greenery"
     }
   },
   "de": {
@@ -11,6 +14,9 @@
     "Quest": {
       "greeting": "Willkommen",
       "startAdventure": "Los gehts"
+    },
+    "AOI": {
+      "greenery": "Grünzeug"
     }
   }
 }

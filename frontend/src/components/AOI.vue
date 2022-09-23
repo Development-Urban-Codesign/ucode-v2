@@ -12,7 +12,7 @@
     ></v-select>
     <v-select
       :items="['get', 'retrieve']"
-      label="greenery"
+      :label="$t('AOI.greenery')"
       variant="outlined"
       @update:modelValue="sendGreeneryRequest"
     ></v-select>
