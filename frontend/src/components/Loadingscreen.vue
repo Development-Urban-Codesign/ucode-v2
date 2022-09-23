@@ -3,13 +3,13 @@
     <v-img class="UcodeLogo" src="UCODE_Logo.png"></v-img>
     <div class="LoadingText">
 
-      <transition name="loading">
-        <div class="LoadingText">
-
-          {{curLoadingText}}
-
+      <transition-group name="fade">
+        <div class="LoadingText" v-if="showLoading">
+          <div>
+            {{curLoadingText}}
+          </div>
         </div>
-      </transition>
+      </transition-group>
     </div>
   </div>
 </template>
@@ -18,16 +18,32 @@
 import { ref } from 'vue';
 
 const Loadingtexts = ["Constructing Buildings...", "Planting Trees..."]
-let curLoadingText = ref("")
-
-async function iterateLoadingtexts(){
-  for (let index = 0; index < Loadingtexts.length; index++) {
-    curLoadingText = Loadingtexts[index];
+let curLoadingText = ref("Constructing The Map...")
+let i = 0
+const showLoading = ref(true)
+async function animate() {
+  setInterval(function () {
+    curLoadingText.value = Loadingtexts[i]
+    console.log(curLoadingText.value)
+    console.log(showLoading.value)
     
-  }
+    if (showLoading.value == false) {
+      i++
+      console.log(i)
+      showLoading.value = true
+    }
+    else {
+      showLoading.value = false
+    }
+    if (i >= Loadingtexts.length) {
+      i = 0
+    }
+    
+  }, 750);
+  
 }
-iterateLoadingtexts()
 
+animate();
 </script>
 
 <style scoped>
@@ -52,15 +68,45 @@ iterateLoadingtexts()
 
 .loading-enter-from {
   opacity: 0;
-  transform: translateY(60px);
+  /* transform: translateY(60px); */
 }
 
 .loading-enter-to {
   opacity: 1;
-  transform: translate(0px);
+  /* transform: translate(0px); */
 }
 
 .loading-enter-active {
-  transition: all 3s;
+  transition: all 1s ease;
+}
+
+.loading-leave-from {
+  opacity: 1;
+}
+
+.loading-leave-to {
+  opacity: 0;
+}
+
+.loading.leave-active {
+  transition: all 1s ease;
+}
+
+.fade-enter-active {
+  transition: all .3s ease-in;
+}
+
+.fade-leave-active {
+  transition: all .3s ease-in;
+}
+
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>
