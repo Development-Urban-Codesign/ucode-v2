@@ -54,8 +54,12 @@ import { useStore } from "vuex";
 import { HTTP } from "../utils/http-common";
 import { getQuestsFromDB } from "../service/backend.service";
 import { onMounted, reactive, ref } from "vue";
+import { useI18n } from "vue-i18n";
+const t = useI18n();
+const currentLocale = t.locale.value;
+
 onMounted(() => {
-  getQuestsFromDB().then((response) => {
+  getQuestsFromDB(currentLocale).then((response) => {
     setupQuests(response);
   });
 });

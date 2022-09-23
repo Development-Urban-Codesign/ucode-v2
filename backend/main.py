@@ -275,8 +275,8 @@ async def get_buildings_from_db_api():
     return get_buildings_from_db()
 
 @app.get("/get-quests-from-db")
-async def get_quests_from_db_api():
-    return get_quests_from_db()
+async def get_quests_from_db_api(locale: str = "de"):
+    return get_quests_from_db(locale)
 
 @app.post("/get-trees-from-osm")
 async def get_trees_from_osm_api(request: Request):

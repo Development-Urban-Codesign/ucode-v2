@@ -270,11 +270,12 @@ def get_driving_lane_polygon_from_db():
   connection.close()
   return driving_lane_polygon
 
-def get_quests_from_db():
+def get_quests_from_db(locale:str):
   connection = connect()
   cursor = connection.cursor()
-  get_quests_from_db_query='''
-  select * from quests;
+  get_quests_from_db_query=f'''
+  select q.*, i18n.* from quests q, i18n 
+  where i18n.locale_key = 'quest_content' and i18n.locale ='{locale}' and i18n.content_id = q.id
   '''
   cursor.execute(get_quests_from_db_query)
   quests = cursor.fetchall()
