@@ -88,11 +88,8 @@ def add_fulfillment(quest_id):
     
     update quests set fulfillment = fulfillment + 1 where id={quest_id};
   '''
-
-  # create table if not exists quests (id serial primary key, fulfillment integer);
-
+  
   cursor.execute(insert_query_quests_fulfillment, (quest_id,))
-
   connection.commit()
   cursor.close()
   connection.close()
