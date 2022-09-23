@@ -1,7 +1,8 @@
 <template >
   <v-card id="quests" v-if=showQuests>
     
-    <v-card-title v-if="greeting" align="center">Willkommen
+    <v-card-title v-if="greeting" align="center">
+    {{$t("Quest.greeting")}}
       <v-btn
       icon="mdi-close-circle-outline"
       @click="showQuests=false"
@@ -18,7 +19,7 @@
       v-if="greeting"
       @click="startAdventure"
     >
-      Los gehts</v-btn
+      {{$t("Quest.startAdventure")}}</v-btn
     >
     <v-card
       align="center"

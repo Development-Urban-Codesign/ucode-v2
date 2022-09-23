@@ -3,7 +3,24 @@
 </template>
 
 <script setup>
-import { RouterView } from "vue-router";
+import { RouterView, useRoute } from "vue-router";
+import { watch } from "vue";
+import { useI18n } from "vue-i18n";
+const t = useI18n();
+
+
+    const route = useRoute()
+    // fetch the user information when params change
+    watch(
+      () => route.hash,
+      async newLangHash => {
+        // TODO refactor me!!!
+        const lang = newLangHash.split("#lang=")[1]
+        t.locale.value = lang;
+      }
+    )
+
+
 </script>
 
 <style >
