@@ -5,4 +5,6 @@ export const i18n = createI18n({
   locale: 'en',
   fallbackLocale: 'de', // set fallback locale
   messages,
+  globalInjection: true,
+  legacy:false
 });
