@@ -28,7 +28,9 @@ from db import (
     drop_greenery_table,
     drop_building_table,
     drop_tree_table,
-    drop_driving_lane_table
+    drop_driving_lane_table,
+    drop_traffic_signal_table,
+    get_traffic_signal_from_db
 
 )
 from db_migrations import run_database_migrations
@@ -195,7 +197,7 @@ async def get_buildings_from_osm_api(request: Request):
     )
 
     data_building = response_building.json()
-
+    
     connection = connect()
     cursor = connection.cursor()
        # INSERT INTO building (wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
@@ -472,4 +474,62 @@ def sure_float(may_be_number):
         my_sure_float = float(my_sure_float)
 
     return my_sure_float
+
+@app.post("/get-traffic-lights-from-osm")
+async def get_traffic_lights_from_osm_api(request: Request):
+    drop_traffic_signal_table()
+    data = await request.json()
+    xmin = data["bbox"]["xmin"]
+    ymin = data["bbox"]["ymin"]
+    xmax = data["bbox"]["xmax"]
+    ymax = data["bbox"]["ymax"]
+    overpass_url = "http://overpass-api.de/api/interpreter"
+    overpass_query_traffic_signals = """
+         [out:json];
+         node["crossing"="traffic_signals"](%s,%s,%s,%s);
+         convert item ::=::,::geom=geom(),_osm_type=type();
+         out geom;
+     """ % (
+        ymin,
+        xmin,
+        ymax,
+        xmax,
+    )
+
+    response_traffic_signal = requests.get(overpass_url, params={"data": overpass_query_traffic_signals})
+
+    data_traffic_signal = response_traffic_signal.json()
+
+    connection = connect()
+    cursor = connection.cursor()
+    insert_query_traffic_signal = """
+        With closestpolygon AS
+        (SELECT geom
+        FROM driving_lane_polygon
+        ORDER BY geom <-> (ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326))
+        LIMIT 1)
+        INSERT INTO traffic_signal (geom) VALUES 
+        ( 
+            (select 
+                ST_ClosestPoint(
+                    ST_Boundary((select geom from closestpolygon)),
+                    ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326)
+                )
+            )
+        );
+
+    """
+    for f in data_traffic_signal["elements"]:
+
+        geom = json.dumps(f["geometry"])
+        cursor.execute(insert_query_traffic_signal, (geom,geom,))
+
+    connection.commit()
+    cursor.close()
+    connection.close()
+    return "ok"
+
+@app.get("/get-traffic-signal-from-db")
+async def get_traffic_lights_from_db_api():
+    return get_traffic_signal_from_db()
 

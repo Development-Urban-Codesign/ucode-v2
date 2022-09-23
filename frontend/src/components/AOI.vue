@@ -34,6 +34,12 @@
     <v-alert type="info" v-if="store.state.aoi.dataIsLoading">
       getting data...
     </v-alert>
+    <v-select
+      :items="['get', 'retrieve']"
+      label="traffic signal"
+      variant="outlined"
+      @update:modelValue="sendTrafficSignalRequest"
+    ></v-select>
     
   </v-col>
 </template>
@@ -48,7 +54,9 @@ import {
   getTreesFromOSM,
   getTreesFromDB,
   getDrivingLaneFromOSM,
-  getDrivingLaneFromDB
+  getDrivingLaneFromDB,
+  getTrafficLightsFromOSM,
+  getTrafficSignalFromDB
 } from "../service/backend.service";
 const store = useStore();
 
@@ -137,6 +145,17 @@ const sendDrivingLaneRequest = async (mode)=>{
       }
     })
   }
+}
+
+const sendTrafficSignalRequest = async (mode)=>{
+  if (mode == "get"){
+    await getTrafficLightsFromOSM(store.state.aoi.bbox);
+  }
+  else {
+    const trafficSignalLayer = await getTrafficSignalFromDB();
+    emit("addLayer", trafficSignalLayer);
+  }
+  
 }
 </script>
 
