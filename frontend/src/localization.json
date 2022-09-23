@@ -1,12 +1,16 @@
 {
   "en": {
+    "global-button-submit": "Submit",
     "Quest": {
-      "greeting": "Welcome"
+      "greeting": "Welcome",
+      "startAdventure": "Let's go"
     }
   },
   "de": {
+    "global-button-submit": "Abschicken",
     "Quest": {
-      "greeting": "Willkommen"
+      "greeting": "Willkommen",
+      "startAdventure": "Los gehts"
     }
   }
 }
