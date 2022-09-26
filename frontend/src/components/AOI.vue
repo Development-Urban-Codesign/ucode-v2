@@ -45,6 +45,7 @@
 </template>
 
 <script setup>
+import { onMounted } from "vue";
 import { useStore } from "vuex";
 import {
   getbuildingsFromDB,
@@ -61,7 +62,21 @@ import {
 const store = useStore();
 
 const emit = defineEmits(["addLayer", "addImage"]);
+const PopulateMap = async()=>{
+  const buildingLayer = await getbuildingsFromDB();
+  const greeneryLayer = await getGreeneryFromDBTexture();
+  const treeLayer = await getTreesFromDB();
+  const trafficSignalLayer = await getTrafficSignalFromDB();
+  emit("addLayer", trafficSignalLayer);
+  emit("addLayer", treeLayer);
+  emit("addLayer", greeneryLayer);
+  emit("addLayer", buildingLayer);
+  addDrivingLanes().then(store.dispatch("aoi/setMapIsPopulated"));
+}
+onMounted(() => {
+  PopulateMap()
 
+})
 const sendBuildingRequest = async (mode) => {
   if (mode == "get") {
     store.dispatch("aoi/setDataIsLoading");
@@ -93,7 +108,49 @@ const sendTreeyRequest= async (mode)=>{
     emit("addLayer", treeLayer);
   }
 }
+const addDrivingLanes = async () =>{
 
+  const drivingLanedata = await getDrivingLaneFromDB();
+    
+     store.commit("map/addSource", {
+      id: "driving_lane_polygon",
+      geojson: {
+        "type": "geojson",
+        "data": drivingLanedata.data.polygon
+      }
+    })
+    store.commit("map/addLayer", {
+      'id': "driving_lane_polygon",
+      'type': 'fill',
+      'source': "driving_lane_polygon",
+      'paint': {
+        'fill-color': '#888',
+        'fill-opacity': 0.8
+      }
+    })
+
+    store.commit("map/addSource", {
+      id: "driving_lane",
+      geojson: {
+        "type": "geojson",
+        "data": drivingLanedata.data.lane
+      }
+    })
+    store.commit("map/addLayer", {
+      'id': "driving_lane",
+      'type': 'line',
+      'source': "driving_lane",
+      'layout': {
+        'line-join': 'round',
+        'line-cap': 'round'
+      },
+      'paint': {
+        'line-color': '#FFFFFF',
+        'line-width': 1,
+        'line-dasharray': [10,20]
+      }
+    })
+}
 const sendDrivingLaneRequest = async (mode)=>{
   if (mode == "get") {
   store.dispatch("aoi/setDataIsLoading");

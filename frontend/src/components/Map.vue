@@ -9,7 +9,7 @@
           Deckgl
         </v-btn>
       </v-row>
-      <Loadingscreen/>
+      <Loadingscreen v-if="!store.state.aoi.mapIsPopulated"/>
       <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
       <Quests />
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine" @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl" :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />

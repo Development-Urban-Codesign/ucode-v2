@@ -1,8 +1,7 @@
 <template>
   <div class="Loadingscreen">
-    <v-img class="UcodeLogo" src="UCODE_Logo.png"></v-img>
+    <v-img max-height="60" class="UcodeLogo" src="UCODE_Logo.png"></v-img>
     <div class="LoadingText">
-
       <transition-group name="fade">
         <div class="LoadingText" v-if="showLoading">
           <div>
@@ -24,12 +23,12 @@ const showLoading = ref(true)
 async function animate() {
   setInterval(function () {
     curLoadingText.value = Loadingtexts[i]
-    console.log(curLoadingText.value)
-    console.log(showLoading.value)
+    // console.log(curLoadingText.value)
+    // console.log(showLoading.value)
     
     if (showLoading.value == false) {
       i++
-      console.log(i)
+      // console.log(i)
       showLoading.value = true
     }
     else {
@@ -42,7 +41,6 @@ async function animate() {
   }, 750);
   
 }
-
 animate();
 </script>
 
@@ -53,17 +51,20 @@ animate();
   width: 100vw;
   height: 100vh;
   position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .UcodeLogo {
-  height: 20%;
-  margin: auto;
+  margin-top: 50px;
 }
 
 .LoadingText {
-  margin: auto;
   text-align: center;
   font-size: large;
+  min-height: 50px;
+  margin-bottom: 50px;
 }
 
 .loading-enter-from {
