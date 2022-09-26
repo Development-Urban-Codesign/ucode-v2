@@ -142,6 +142,7 @@ const addLayerToMap = (layer) => {
   if(typeof drivinglane !== 'undefined' && typeof buildinglayer !== 'undefined'){
     map?.moveLayer("driving_lane", "overpass_buildings")
   }
+
   if(typeof greenerylayer !== 'undefined' && typeof treeLayer !== 'undefined'){
     map?.moveLayer("overpass_greenery", "trees")
   }
@@ -150,7 +151,7 @@ const addLayerToMap = (layer) => {
   }
   if(typeof drivinglane !== 'undefined' && typeof treeLayer !== 'undefined'){
     map?.moveLayer("driving_lane", "trees")
-  }
+}
 
    
 };
