@@ -123,6 +123,7 @@ const addLayerToMap = (layer) => {
   const commenlayer = map.getLayer("comments")
   const drivinglanelayer = map.getLayer("driving_lane_polygon")
   const drivinglane = map.getLayer("driving_lane")
+  const treeLayer = map.getLayer("trees")
   if(typeof buildinglayer !== 'undefined' && typeof greenerylayer !== 'undefined'){
     map?.moveLayer("overpass_greenery", "overpass_buildings" )
   }
@@ -140,6 +141,15 @@ const addLayerToMap = (layer) => {
   }
   if(typeof drivinglane !== 'undefined' && typeof buildinglayer !== 'undefined'){
     map?.moveLayer("driving_lane", "overpass_buildings")
+  }
+  if(typeof greenerylayer !== 'undefined' && typeof treeLayer !== 'undefined'){
+    map?.moveLayer("overpass_greenery", "trees")
+  }
+  if(typeof drivinglanelayer !== 'undefined' && typeof treeLayer !== 'undefined'){
+    map?.moveLayer("driving_lane_polygon", "trees")
+  }
+  if(typeof drivinglane !== 'undefined' && typeof treeLayer !== 'undefined'){
+    map?.moveLayer("driving_lane", "trees")
   }
 
    
