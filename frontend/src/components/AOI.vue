@@ -62,7 +62,7 @@ import {
 const store = useStore();
 
 const emit = defineEmits(["addLayer", "addImage"]);
-const PopulateMap = async()=>{
+const populateMap = async()=>{
   const buildingLayer = await getbuildingsFromDB();
   const greeneryLayer = await getGreeneryFromDBTexture();
   const treeLayer = await getTreesFromDB();
@@ -74,7 +74,7 @@ const PopulateMap = async()=>{
   addDrivingLanes().then(store.dispatch("aoi/setMapIsPopulated"));
 }
 onMounted(() => {
-  PopulateMap()
+  populateMap()
 
 })
 const sendBuildingRequest = async (mode) => {

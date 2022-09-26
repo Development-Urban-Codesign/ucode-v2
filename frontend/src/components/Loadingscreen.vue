@@ -16,8 +16,8 @@
 <script setup>
 import { ref } from 'vue';
 
-const Loadingtexts = ["Constructing Buildings...", "Planting Trees..."]
-let curLoadingText = ref("Constructing The Map...")
+const Loadingtexts = ["Gebäude hochziehen...", "Bäume pflanzen...", "Grünflächen anlegen...", "Straßen einziehen..."]
+let curLoadingText = ref("Karte wird befüllt...")
 let i = 0
 const showLoading = ref(true)
 async function animate() {
