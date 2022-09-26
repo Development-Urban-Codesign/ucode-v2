@@ -32,7 +32,7 @@
 
       <v-card-subtitle>
 
-      created at: {{store.state.comment?.commentData?.properties?.created_at}}
+      erzeugt am: {{store.state.comment?.commentData?.properties?.created_at}}
       
       </v-card-subtitle>
 

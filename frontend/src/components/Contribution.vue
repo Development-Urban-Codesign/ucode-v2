@@ -1,15 +1,17 @@
 <template>
     
-    <v-col cols="1" sm="1" style="position:absolute; left: 0; top:0; z-index:999">
-        <v-btn rounded="pill" color="secondary" @click="toggleCommentPopup">
-            Comment
+    <v-col cols="1" sm="1" style="position:absolute; left: 0; top:0; z-index:999; width:800px" >
+        <v-btn  color="#41b883" @click="toggleCommentPopup" class="mt-2">
+            Kommentar
         </v-btn>
-        <v-btn rounded="pill" color="primary" @click="setLineDrawToggle(); drawLine()" class="mt-2">
-            Draw Line
+        <v-btn color="#41b883" @click="setLineDrawToggle(); drawLine()" class="mt-2">
+            Linie
         </v-btn>
+        <v-btn color="#41b883" @click="drawRoutes()" class="mt-2">
+            Routen
+        </v-btn>
+        
     </v-col>
-
-   
 
 </template>
 
@@ -149,6 +151,19 @@ const setLineDrawToggle = () => {
 const drawLine = () => {
     //store.dispatch("contribution/drawLine")
     
+}
+
+const drawRoutes = () => {
+
+    alert("Zeichne die gespeicherten Routen ein ")
+    /* Kommando, um alle Routen anzuzeigen
+    
+    -- speichere die Routen anders ab, als die DrawLines
+    --
+    1. hole alle Routen aus der Datenbank
+    2. 
+    
+    */
 }
 
 

@@ -1,0 +1,22 @@
+{
+  "en": {
+    "global-button-submit": "Submit",
+    "Quest": {
+      "greeting": "Welcome",
+      "startAdventure": "Let's go"
+    },
+    "AOI":{
+      "greenery":"greenery"
+    }
+  },
+  "de": {
+    "global-button-submit": "Abschicken",
+    "Quest": {
+      "greeting": "Willkommen",
+      "startAdventure": "Los gehts"
+    },
+    "AOI": {
+      "greenery": "Grünzeug"
+    }
+  }
+}

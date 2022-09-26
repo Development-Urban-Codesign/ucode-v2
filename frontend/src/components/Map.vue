@@ -1,7 +1,7 @@
 <template>
   <div class="map-wrap" ref="mapContainer">
     <div class="map" id="map">
-      <v-row style="position: absolute; right: 20px; top: 20px; z-index: 999">
+      <v-row v-if=(false) style="position: absolute; right: 20px; top: 20px; z-index: 999">
         <v-btn color="error" class="ml-2" @click="addThreejsShape">
           Threejs
         </v-btn>

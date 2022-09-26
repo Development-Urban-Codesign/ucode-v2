@@ -7,14 +7,14 @@
       background-color="#418df2"
       color="white"
     >
-      <v-tab value="one" prepend-icon="mdi-comment">comment</v-tab>
-      <v-tab value="two" prepend-icon="mdi-palette">style</v-tab>
+      <v-tab value="one" prepend-icon="mdi-comment">Kommentar</v-tab>
+      <v-tab value="two" prepend-icon="mdi-palette">Stil</v-tab>
     </v-tabs>
       <v-window v-model="tab">
         <v-window-item value="one">
           <v-textarea
             
-          label="description"
+          label="Beschreibung"
             v-model="drawnLineComment"
         >
         </v-textarea>
@@ -22,28 +22,28 @@
         </v-window-item>
 
         <v-window-item value="two">
-            <div class="text-caption ml-2">width: {{drawnLineWidth}} m</div>
+            <div class="text-caption ml-2">Breite: {{drawnLineWidth}} m</div>
 
             <v-slider
                 v-model="drawnLineWidth"
                 min="1"
                 max="10"
                 step="1"
-                @update:modelValue="updateDrwanLineWidth"
+                @update:modelValue="updateDrawnLineWidth"
                 class="ml-2"
             ></v-slider>
 
-            <div class="text-caption ml-2">color</div>
+            <div class="text-caption ml-2">Farbe</div>
 
-           <input class="ml-2" type="color" v-model="drawnLineColor" @update:modelValue="updateDrwanLineColor">
+           <input class="ml-2" type="color" v-model="drawnLineColor" @update:modelValue="updateDrawnLineColor">
 
         </v-window-item>
 
       </v-window>
   </v-card>
 
-    <v-btn class="mt-2" flat variant="outlined" size="small" color="success" @click="submitDrawnLine">sumbit</v-btn>
-    <v-btn class="mt-2 ml-2" flat variant="outlined" size="small" color="error"  @click="discardDrawnLine">cancel</v-btn>
+    <v-btn class="mt-2" flat variant="outlined" size="small" color="success" @click="submitDrawnLine">Senden</v-btn>
+    <v-btn class="mt-2 ml-2" flat variant="outlined" size="small" color="error"  @click="discardDrawnLine">Abbruch</v-btn>
 
   </div>
 </template>
@@ -51,8 +51,8 @@
 <script setup>
 import {useStore} from "vuex";
 import { ref, defineProps } from 'vue';
-const store = useStore();
 import { HTTP } from '../utils/http-common';
+const store = useStore();
 
 const props =
   defineProps({
@@ -69,11 +69,11 @@ let drawnLineComment= ref("")
 let drawnLineWidth= ref(1)
 let drawnLineColor= ref("#969696")
 
-const updateDrwanLineWidth = ()=>{
+const updateDrawnLineWidth = ()=>{
   props.changeWidth(drawnLineWidth.value)
 }
 
-const updateDrwanLineColor = ()=>{
+const updateDrawnLineColor = ()=>{
   const r = parseInt(drawnLineColor.value.substr(1,2), 16)
   const g = parseInt(drawnLineColor.value.substr(3,2), 16)
   const b = parseInt(drawnLineColor.value.substr(5,2), 16)
