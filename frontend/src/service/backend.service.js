@@ -166,7 +166,7 @@ export async function getTreesFromDB() {
     type: ScenegraphLayer,
     data:response.data.features,
     pickable: false,
-    scenegraph: "Tree1.glb",
+    scenegraph: "Tree2.glb",
     getPosition: d => d.geometry.coordinates,
     getOrientation: (d) => [0, 0, 90],
     sizeScale: 1,

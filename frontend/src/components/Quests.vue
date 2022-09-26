@@ -96,7 +96,7 @@ async function startAdventure() {
 }
 
 function cancelQuest(id, item) {
-  quests[id].bgColor = "tomato";
+  quests[id].bgColor = "grey";
   setTimeout(() => (quests[id].isActive = false), 300);
   if (id < quests.length - 1) {
     setTimeout(() => (quests[id + 1].isActive = true), 300);
