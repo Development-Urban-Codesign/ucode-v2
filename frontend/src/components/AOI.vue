@@ -63,49 +63,6 @@ const sendTreeyRequest= async (mode)=>{
     emit("addLayer", treeLayer);
   }
 }
-const addDrivingLanes = async () =>{
-
-  const drivingLanedata = await getDrivingLaneFromDB();
-    
-     store.commit("map/addSource", {
-      id: "driving_lane_polygon",
-      geojson: {
-        "type": "geojson",
-        "data": drivingLanedata.data.polygon
-      }
-    })
-    store.commit("map/addLayer", {
-      'id': "driving_lane_polygon",
-      'type': 'fill',
-      'source': "driving_lane_polygon",
-      'paint': {
-        'fill-color': '#888',
-        'fill-opacity': 0.8
-      }
-    })
-
-    store.commit("map/addSource", {
-      id: "driving_lane",
-      geojson: {
-        "type": "geojson",
-        "data": drivingLanedata.data.lane
-      }
-    })
-    store.commit("map/addLayer", {
-      'id': "driving_lane",
-      'type': 'line',
-      'source': "driving_lane",
-      'layout': {
-        'line-join': 'round',
-        'line-cap': 'round'
-      },
-      'paint': {
-        'line-color': '#FFFFFF',
-        'line-width': 1,
-        'line-dasharray': [10,20]
-      }
-    })
-}
 const sendDrivingLaneRequest = async (mode)=>{
   if (mode == "get") {
   store.dispatch("aoi/setDataIsLoading");
