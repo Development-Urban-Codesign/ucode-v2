@@ -13,7 +13,8 @@ const aoi = {
         overpassGreenery: null,
         dataIsLoaded: false,
         dataIsLoading: false,
-        mapIsPopulated: false
+        mapIsPopulated: false,
+        isDevmode: false
 
     },
     mutations: {

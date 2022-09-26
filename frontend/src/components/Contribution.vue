@@ -1,6 +1,6 @@
 <template>
     
-    <v-col cols="1" sm="1" style="position:absolute; left: 0; top:0; z-index:999; width:800px" >
+    <v-col v-if="store.state.aoi.isDevmode" cols="1" sm="1" style="position:absolute; left: 0; top:0; z-index:999; width:800px" >
         <v-btn  color="#41b883" @click="toggleCommentPopup" class="mt-2">
             Kommentar
         </v-btn>

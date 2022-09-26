@@ -192,7 +192,7 @@ export async function getTrafficLightsFromOSM(bbox) {
   HTTP
     .post('get-traffic-lights-from-osm', {
       bbox: bbox
-  })
+  }).then(() => store.dispatch("aoi/setDataIsLoaded"))
 }
 
 export async function getTrafficSignalFromDB() {

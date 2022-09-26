@@ -1,7 +1,7 @@
 <template>
   <div class="map-wrap" ref="mapContainer">
     <div class="map" id="map">
-      <v-row v-if=(false) style="position: absolute; right: 20px; top: 20px; z-index: 999">
+      <v-row v-if="store.state.aoi.isDevmode" style="position: absolute; right: 20px; top: 20px; z-index: 999">
         <v-btn color="error" class="ml-2" @click="addThreejsShape">
           Threejs
         </v-btn>
@@ -9,7 +9,7 @@
           Deckgl
         </v-btn>
       </v-row>
-      <Loadingscreen v-if="!store.state.aoi.mapIsPopulated"/>
+      <Loadingscreen v-if="!store.state.aoi.mapIsPopulated && !store.state.aoi.isDevmode"/>
       <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
       <Quests />
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine" @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl" :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
@@ -66,7 +66,7 @@ onMounted(() => {
       console.log(response);
     })
     
-    getCommentData()
+    //  getCommentData()
     
   });
   map.on('click', function (mapClick) {
@@ -134,6 +134,12 @@ const addLayerToMap = (layer) => {
   }
   if(typeof drivinglane !== 'undefined' && typeof commenlayer !== 'undefined'){
     map?.moveLayer("driving_lane", "comments")
+  }
+  if(typeof drivinglanelayer !== 'undefined' && typeof buildinglayer !== 'undefined'){
+    map?.moveLayer("driving_lane_polygon", "overpass_buildings")
+  }
+  if(typeof drivinglane !== 'undefined' && typeof buildinglayer !== 'undefined'){
+    map?.moveLayer("driving_lane", "overpass_buildings")
   }
 
    

@@ -16,7 +16,7 @@
 <script setup>
 import { ref } from 'vue';
 
-const Loadingtexts = ["Gebäude hochziehen...", "Bäume pflanzen...", "Grünflächen anlegen...", "Straßen einziehen..."]
+const Loadingtexts = ["Bäume pflanzen...", "Grünflächen anlegen...", "Gebäude hochziehen...", "Straßen einziehen..."]
 let curLoadingText = ref("Karte wird befüllt...")
 let i = 0
 const showLoading = ref(true)

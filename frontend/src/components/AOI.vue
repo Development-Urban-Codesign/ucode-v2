@@ -1,47 +1,5 @@
 <template>
-  <v-col
-    cols="10"
-    sm="1"
-    style="position: absolute; right: 0; top: 0px; z-index: 999"
-  >
-  <v-select
-      :items="['get', 'retrieve']"
-      label="building"
-      variant="outlined"
-      @update:modelValue="sendBuildingRequest"
-    ></v-select>
-    <v-select
-      :items="['get', 'retrieve']"
-      :label="$t('AOI.greenery')"
-      variant="outlined"
-      @update:modelValue="sendGreeneryRequest"
-    ></v-select>
-    <v-select
-      :items="['get', 'retrieve']"
-      label="tree"
-      variant="outlined"
-      @update:modelValue="sendTreeyRequest"
-    ></v-select>
-    <v-select
-      :items="['get', 'retrieve']"
-      label="driving lane"
-      variant="outlined"
-      @update:modelValue="sendDrivingLaneRequest"
-    ></v-select>
-    <v-alert type="success" v-if="store.state.aoi.dataIsLoaded">
-      stored
-    </v-alert>
-    <v-alert type="info" v-if="store.state.aoi.dataIsLoading">
-      getting data...
-    </v-alert>
-    <v-select
-      :items="['get', 'retrieve']"
-      label="traffic signal"
-      variant="outlined"
-      @update:modelValue="sendTrafficSignalRequest"
-    ></v-select>
-    
-  </v-col>
+  <DevUI v-if="store.state.aoi.isDevmode"/>
 </template>
 
 <script setup>
@@ -59,19 +17,16 @@ import {
   getTrafficLightsFromOSM,
   getTrafficSignalFromDB
 } from "../service/backend.service";
+import DevUI from "./DevUI.vue";
 const store = useStore();
 
 const emit = defineEmits(["addLayer", "addImage"]);
 const populateMap = async()=>{
-  const buildingLayer = await getbuildingsFromDB();
-  const greeneryLayer = await getGreeneryFromDBTexture();
-  const treeLayer = await getTreesFromDB();
-  const trafficSignalLayer = await getTrafficSignalFromDB();
-  emit("addLayer", trafficSignalLayer);
-  emit("addLayer", treeLayer);
-  emit("addLayer", greeneryLayer);
-  emit("addLayer", buildingLayer);
-  addDrivingLanes().then(store.dispatch("aoi/setMapIsPopulated"));
+  await sendBuildingRequest("retrieve").then(async()=>{
+  await sendGreeneryRequest("retrieve")}).then(
+  await sendTreeyRequest("retrieve")).then(
+  await sendTrafficSignalRequest("retrieve")).then(
+  await sendDrivingLaneRequest("retrieve")).then(store.dispatch("aoi/setMapIsPopulated"));
 }
 onMounted(() => {
   populateMap()
@@ -206,6 +161,7 @@ const sendDrivingLaneRequest = async (mode)=>{
 
 const sendTrafficSignalRequest = async (mode)=>{
   if (mode == "get"){
+    store.dispatch("aoi/setDataIsLoading");
     await getTrafficLightsFromOSM(store.state.aoi.bbox);
   }
   else {
