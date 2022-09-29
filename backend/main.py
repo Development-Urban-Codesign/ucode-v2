@@ -413,12 +413,12 @@ async def get_driving_lane_from_osm_api(request: Request):
     cursor = connection.cursor()
 
     insert_query_driving_lane= '''
-        INSERT INTO driving_lane (project_id,lanes,length,maxspeed,width, highway, geom) VALUES (%s,%s,%s,%s,%s, ST_SetSRID(st_astext(st_geomfromgeojson(%s)), 4326));
+        INSERT INTO driving_lane (project_id,lanes,length,maxspeed,width, highway, geom) VALUES (%s,%s,%s,%s,%s,%s, ST_SetSRID(st_astext(st_geomfromgeojson(%s)), 4326));
 
     '''
     insert_query_driving_lane_polygon= '''
         
-        INSERT INTO driving_lane_polygon (project_id,lanes,length,maxspeed,width,highway, geom) VALUES (%s,%s,%s,%s,%s,
+        INSERT INTO driving_lane_polygon (project_id,lanes,length,maxspeed,width,highway, geom) VALUES (%s,%s,%s,%s,%s,%s,
         st_buffer(
             ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326)::geography,
             (%s::double precision)/2 ,
@@ -488,7 +488,7 @@ def sure_float(may_be_number):
 @app.post("/get-traffic-lights-from-osm")
 async def get_traffic_lights_from_osm_api(request: Request):
     projectId ="0"
-    drop_traffic_signal_table()
+    drop_traffic_signal_table(projectId)
     data = await request.json()
     xmin = data["bbox"]["xmin"]
     ymin = data["bbox"]["ymin"]

@@ -285,7 +285,7 @@ def get_quests_from_db():
 def drop_greenery_table(projectId):
   connection = connect()
   cursor = connection.cursor()
-  drop_greenery_table_query =f''' delete from greenery where project_id={projectId};'''
+  drop_greenery_table_query =f''' delete from greenery where project_id='{projectId}';'''
   cursor.execute(drop_greenery_table_query)
   connection.commit()
   cursor.close()
@@ -294,7 +294,7 @@ def drop_greenery_table(projectId):
 def drop_building_table(projectId):
   connection = connect()
   cursor = connection.cursor()
-  drop_building_table_query =f''' delete from building where project_id={projectId};'''
+  drop_building_table_query =f''' delete from building where project_id='{projectId}';'''
   cursor.execute(drop_building_table_query)
   connection.commit()
   cursor.close()
@@ -303,7 +303,7 @@ def drop_building_table(projectId):
 def drop_tree_table(projectId):
   connection = connect()
   cursor = connection.cursor()
-  drop_tree_table_query =f''' delete from tree where project_id={projectId};'''
+  drop_tree_table_query =f''' delete from tree where project_id='{projectId}';'''
   cursor.execute(drop_tree_table_query)
   connection.commit()
   cursor.close()
@@ -312,7 +312,7 @@ def drop_tree_table(projectId):
 def drop_driving_lane_table(projectId):
   connection = connect()
   cursor = connection.cursor()
-  drop_driving_lane_table_query =f''' delete from driving_lane where project_id={projectId}; delete from driving_lane_polygon where project_id={projectId};'''
+  drop_driving_lane_table_query =f''' delete from driving_lane where project_id='{projectId}'; delete from driving_lane_polygon where project_id='{projectId}';'''
   cursor.execute(drop_driving_lane_table_query)
   connection.commit()
   cursor.close()
@@ -321,7 +321,7 @@ def drop_driving_lane_table(projectId):
 def drop_traffic_signal_table(projectId):
   connection = connect()
   cursor = connection.cursor()
-  drop_traffic_signal_table_query =f''' delete from traffic_signal where project_id={projectId};'''
+  drop_traffic_signal_table_query =f''' delete from traffic_signal where project_id='{projectId}';'''
   cursor.execute(drop_traffic_signal_table_query)
   connection.commit()
   cursor.close()
