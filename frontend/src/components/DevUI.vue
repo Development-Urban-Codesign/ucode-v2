@@ -41,7 +41,7 @@ const store = useStore();
 const sendBuildingRequest = async (mode) => {
     if (mode == "get") {
         store.dispatch("aoi/setDataIsLoading");
-        await getbuildingsFromOSM(store.state.aoi.bbox);
+        await getbuildingsFromOSM(store.state.aoi.projectSpecification.bbox);
     } else {
         const newLayer = await getbuildingsFromDB();
         emit("addLayer", newLayer);
@@ -51,7 +51,7 @@ const sendGreeneryRequest = async (mode) => {
     if (mode == "get") {
         store.dispatch("aoi/setDataIsLoading");
         await storeGreeneryFromOSM(
-            store.state.aoi.bbox,
+            store.state.aoi.projectSpecification.bbox,
             store.state.aoi.usedTagsForGreenery
         );
     } else {
@@ -63,7 +63,7 @@ const sendGreeneryRequest = async (mode) => {
 const sendTreeyRequest = async (mode) => {
     if (mode == "get") {
         store.dispatch("aoi/setDataIsLoading");
-        await getTreesFromOSM(store.state.aoi.bbox);
+        await getTreesFromOSM(store.state.aoi.projectSpecification.bbox);
     } else {
         const treeLayer = await getTreesFromDB();
         emit("addLayer", treeLayer);
@@ -72,7 +72,7 @@ const sendTreeyRequest = async (mode) => {
 const sendDrivingLaneRequest = async (mode) => {
     if (mode == "get") {
         store.dispatch("aoi/setDataIsLoading");
-        await getDrivingLaneFromOSM(store.state.aoi.bbox);
+        await getDrivingLaneFromOSM(store.state.aoi.projectSpecification.bbox);
     }
     else {
 
@@ -124,7 +124,8 @@ const sendDrivingLaneRequest = async (mode) => {
 
 const sendTrafficSignalRequest = async (mode) => {
     if (mode == "get") {
-        await getTrafficLightsFromOSM(store.state.aoi.bbox);
+        
+        await getTrafficLightsFromOSM(store.state.aoi.projectSpecification.bbox);
     }
     else {
         const trafficSignalLayer = await getTrafficSignalFromDB();

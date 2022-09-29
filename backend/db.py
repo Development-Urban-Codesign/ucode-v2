@@ -342,3 +342,15 @@ def get_traffic_signal_from_db():
   cursor.close()
   connection.close()
   return traffic_signal
+
+def get_project_specification_from_db():
+  connection = connect()
+  cursor = connection.cursor()
+  get_project_specification_from_db_query =''' 
+      select json_agg(project.*) from project where project_id='0' ;
+  '''
+  cursor.execute(get_project_specification_from_db_query)
+  bbox = cursor.fetchall()[0][0]
+  cursor.close()
+  connection.close()
+  return bbox

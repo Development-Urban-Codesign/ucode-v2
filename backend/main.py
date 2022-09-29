@@ -30,7 +30,8 @@ from db import (
     drop_tree_table,
     drop_driving_lane_table,
     drop_traffic_signal_table,
-    get_traffic_signal_from_db
+    get_traffic_signal_from_db,
+    get_project_specification_from_db
 
 )
 from db_migrations import run_database_migrations
@@ -74,6 +75,9 @@ async def root():
         print(f"Unexpected {err=}, {type(err)=}")
         raise HTTPException(status_code=500, detail=f"Something went wrong: {err}")
 
+@app.get("/project-specification")
+async def get_project_specification_from_db_api():
+    return get_project_specification_from_db()
    # TH: Hier empfängt das Backend den Request aus dem Frontend, den Wert für die Quest-ID X um einen Zähler hochzusetzen 
 @app.post("/add-quest-fulfillment")
 async def add_fulfillment_api(request: Request):
