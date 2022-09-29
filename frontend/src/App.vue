@@ -6,25 +6,32 @@
 import { RouterView, useRoute } from "vue-router";
 import { watch } from "vue";
 import { useI18n } from "vue-i18n";
+import store from "./store/store";
 const t = useI18n();
 
 
-    const route = useRoute()
-    // fetch the user information when params change
-    watch(
-      () => route.hash,
-      async newLangHash => {
-        // TODO refactor me!!!
-        const lang = newLangHash.split("#lang=")[1]
-        t.locale.value = lang;
-      }
-    )
+const route = useRoute()
+// fetch the user information when params change
+watch(
+  () => route.hash,
+  async newLangHash => {
+    // TODO refactor me!!!
+    const lang = newLangHash.split("#lang=")[1]
+    t.locale.value = lang;
+  }
+)
+
+watch(
+  () => route.query,
+  console.log(route)
+)
 
 
 </script>
 
 <style >
-html, body {
+html,
+body {
   margin: 0;
   height: 100%;
 }
@@ -34,5 +41,4 @@ html, body {
   width: 100%;
   height: 100%;
 }
-
 </style>
