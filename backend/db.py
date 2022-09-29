@@ -42,14 +42,15 @@ def get_table_names():
 #   connection.close()
 #   return "ok"
 
-def get_buildings_from_db():
+def get_buildings_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
-  get_building_query =''' select json_build_object(
+  get_building_query =f''' select json_build_object(
         'type', 'FeatureCollection',
         'features', json_agg(ST_AsGeoJSON(building.*)::json)
         )
         from building
+        where project_id = '{projectId}'
       ;
   '''
   cursor.execute(get_building_query)
@@ -112,14 +113,14 @@ def add_fulfillment(quest_id):
 #   connection.close()
 #   return "ok"
 
-def get_greenery_from_db():
+def get_greenery_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
-  get_greenery_query =''' select json_build_object(
+  get_greenery_query =f''' select json_build_object(
         'type', 'FeatureCollection',
         'features', json_agg(ST_AsGeoJSON(greenery.*)::json)
         )
-        from greenery
+        from greenery where project_id = '{projectId}'
       ;
   '''
   cursor.execute(get_greenery_query)
@@ -129,14 +130,14 @@ def get_greenery_from_db():
   return greenery
 
 
-def get_trees_from_db():
+def get_trees_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
-  get_trees_query =''' select json_build_object(
+  get_trees_query =f''' select json_build_object(
         'type', 'FeatureCollection',
         'features', json_agg(ST_AsGeoJSON(tree.*)::json)
         )
-        from tree
+        from tree where project_id = '{projectId}'
       ;
   '''
   cursor.execute(get_trees_query)
@@ -237,14 +238,14 @@ def undislike_comment(commentid):
 #   connection.close()
 #   return "ok"
 
-def get_driving_lane_from_db():
+def get_driving_lane_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
-  get_driving_lane_query =''' select json_build_object(
+  get_driving_lane_query =f''' select json_build_object(
         'type', 'FeatureCollection',
         'features', json_agg(ST_AsGeoJSON(driving_lane.*)::json)
         )
-        from driving_lane
+        from driving_lane where project_id = '{projectId}'
       ;
   '''
   cursor.execute(get_driving_lane_query)
@@ -253,14 +254,14 @@ def get_driving_lane_from_db():
   connection.close()
   return driving_lane
 
-def get_driving_lane_polygon_from_db():
+def get_driving_lane_polygon_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
-  get_driving_lane_polygon_query =''' select json_build_object(
+  get_driving_lane_polygon_query =f''' select json_build_object(
         'type', 'FeatureCollection',
         'features', json_agg(ST_AsGeoJSON(driving_lane_polygon.*)::json)
         )
-        from driving_lane_polygon
+        from driving_lane_polygon where project_id = '{projectId}'
       ;
   '''
   cursor.execute(get_driving_lane_polygon_query)
@@ -327,14 +328,14 @@ def drop_traffic_signal_table(projectId):
   cursor.close()
   connection.close()
 
-def get_traffic_signal_from_db():
+def get_traffic_signal_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
-  get_traffic_signal_query =''' select json_build_object(
+  get_traffic_signal_query =f''' select json_build_object(
         'type', 'FeatureCollection',
         'features', json_agg(ST_AsGeoJSON(traffic_signal.*)::json)
         )
-        from traffic_signal
+        from traffic_signal where project_id = '{projectId}'
       ;
   '''
   cursor.execute(get_traffic_signal_query)
@@ -347,7 +348,7 @@ def get_project_specification_from_db():
   connection = connect()
   cursor = connection.cursor()
   get_project_specification_from_db_query =''' 
-      select json_agg(project.*) from project where project_id='0' ;
+      select json_agg(project.*) from project;
   '''
   cursor.execute(get_project_specification_from_db_query)
   bbox = cursor.fetchall()[0][0]

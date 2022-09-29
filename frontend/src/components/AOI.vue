@@ -31,6 +31,7 @@ const populateMap = async()=>{
   await sendDrivingLaneRequest()).then(store.dispatch("aoi/setMapIsPopulated"));
 }
 onMounted(() => {
+  console.log(store.state.aoi.projectId)
   HTTP.get("project-specification").then((response) => {
     store.commit("aoi/setProjectSpecification", response.data[0])
   }).then(()=>{
@@ -40,27 +41,26 @@ onMounted(() => {
 
 })
 const sendBuildingRequest = async () => {
-    console.log(store.state.aoi.projectSpecification)
-    const newLayer = await getbuildingsFromDB();
+    const newLayer = await getbuildingsFromDB(store.state.aoi.projectSpecification.project_id);
     emit("addLayer", newLayer);
 
 };
 const sendGreeneryRequest = async () => {
   
-    const newLayer = await getGreeneryFromDBTexture();
+    const newLayer = await getGreeneryFromDBTexture(store.state.aoi.projectSpecification.project_id);
     emit("addLayer", newLayer);
 
 };
 
 const sendTreeyRequest= async ()=>{
   
-    const treeLayer = await getTreesFromDB();
+    const treeLayer = await getTreesFromDB(store.state.aoi.projectSpecification.project_id);
     emit("addLayer", treeLayer);
   
 }
 const sendDrivingLaneRequest = async ()=>{
 
-    const drivingLanedata = await getDrivingLaneFromDB()
+    const drivingLanedata = await getDrivingLaneFromDB(store.state.aoi.projectSpecification.project_id)
 
      store.commit("map/addSource", {
       id: "driving_lane_polygon",
@@ -106,7 +106,7 @@ const sendDrivingLaneRequest = async ()=>{
 
 const sendTrafficSignalRequest = async ()=>{
   
-    const trafficSignalLayer = await getTrafficSignalFromDB();
+    const trafficSignalLayer = await getTrafficSignalFromDB(store.state.aoi.projectSpecification.project_id);
     emit("addLayer", trafficSignalLayer)
 
 }

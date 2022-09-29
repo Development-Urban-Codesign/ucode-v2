@@ -153,9 +153,10 @@ async def store_greenery_from_osm_api(request: Request):
     connection.close()
     return "gg"
 
-@app.get("/get-greenery-from-db")
-async def get_greenery_from_db_api():
-    return get_greenery_from_db()
+@app.post("/get-greenery-from-db")
+async def get_greenery_from_db_api(request: Request):
+    data = await request.json()
+    return get_greenery_from_db(data)
 
 
 @app.post("/get-buildings-from-osm")
@@ -280,9 +281,10 @@ async def get_buildings_from_osm_api(request: Request):
     return "fine"
 
 
-@app.get("/get-buildings-from-db")
-async def get_buildings_from_db_api():
-    return get_buildings_from_db()
+@app.post("/get-buildings-from-db")
+async def get_buildings_from_db_api(request: Request):
+    data = await request.json()
+    return get_buildings_from_db(data)
 
 @app.get("/get-quests-from-db")
 async def get_quests_from_db_api():
@@ -330,9 +332,10 @@ async def get_trees_from_osm_api(request: Request):
     return "ok"
 
 
-@app.get("/get-trees-from-db")
-async def get_trees_from_db_api():
-    return get_trees_from_db()
+@app.post("/get-trees-from-db")
+async def get_trees_from_db_api(request: Request):
+    data = await request.json()
+    return get_trees_from_db(data)
 
 
 @app.post("/add-comment")
@@ -462,10 +465,10 @@ async def get_driving_lane_from_osm_api(request: Request):
     
     return "true"
 
-@app.get("/get-driving-lane-from-db")
-async def get_driving_lane_from_db_api():
-    
-    return {"lane": get_driving_lane_from_db(), "polygon": get_driving_lane_polygon_from_db()}
+@app.post("/get-driving-lane-from-db")
+async def get_driving_lane_from_db_api(request: Request):
+    projectId = await request.json()
+    return {"lane": get_driving_lane_from_db(projectId), "polygon": get_driving_lane_polygon_from_db(projectId)}
 
 def sure_float(may_be_number):  
     # function which extracts surely the integer or float inside a string
@@ -541,7 +544,8 @@ async def get_traffic_lights_from_osm_api(request: Request):
     connection.close()
     return "ok"
 
-@app.get("/get-traffic-signal-from-db")
-async def get_traffic_lights_from_db_api():
-    return get_traffic_signal_from_db()
+@app.post("/get-traffic-signal-from-db")
+async def get_traffic_lights_from_db_api(request: Request):
+    projectId = await request.json()
+    return get_traffic_signal_from_db(projectId)
 
