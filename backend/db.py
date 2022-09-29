@@ -27,20 +27,20 @@ def get_table_names():
   return tables
 
 
-def get_buildings_from_osm(wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom):
-  connection = connect()
-  cursor = connection.cursor()
+# def get_buildings_from_osm(wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom):
+#   connection = connect()
+#   cursor = connection.cursor()
   
-  insert_query_building= '''
-        INSERT INTO building (wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
+#   insert_query_building= '''
+#         INSERT INTO building (wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
 
-  '''
-  cursor.execute(insert_query_building, (wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom,))
+#   '''
+#   cursor.execute(insert_query_building, (wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom,))
 
-  connection.commit()
-  cursor.close()
-  connection.close()
-  return "ok"
+#   connection.commit()
+#   cursor.close()
+#   connection.close()
+#   return "ok"
 
 def get_buildings_from_db():
   connection = connect()
@@ -59,14 +59,15 @@ def get_buildings_from_db():
   return building
 
 def add_comment(comment, lng, lat):
+  projectId ="0"
   connection = connect()
   cursor = connection.cursor()
   
   insert_query_comment= '''
-    INSERT INTO comment (comment, geom) VALUES (%s, ST_SetSRID(ST_MakePoint(%s, %s), 4326));
+    INSERT INTO comment (project_id,comment, geom) VALUES (%s,%s, ST_SetSRID(ST_MakePoint(%s, %s), 4326));
 
   '''
-  cursor.execute(insert_query_comment, (comment, lng, lat,))
+  cursor.execute(insert_query_comment, (projectId, comment, lng, lat,))
   connection.commit()
   cursor.close()
   connection.close()
@@ -74,22 +75,22 @@ def add_comment(comment, lng, lat):
 # TH Hier wird die Zahl der Fulfillments aus der db gelesen und hochgesetzt und dieser Wert zurückgesendet
 
 def add_fulfillment(quest_id):
-
+  projectId="0"
   connection = connect()
   cursor = connection.cursor()
 
   ## Setup table
-  insert_query_setup_table ='''
-    create table if not exists quests (id serial primary key, fulfillment integer);
-  '''
-  cursor.execute(insert_query_setup_table)
+  # insert_query_setup_table ='''
+  #   create table if not exists quests (id serial primary key, fulfillment integer);
+  # '''
+  # cursor.execute(insert_query_setup_table)
 
   insert_query_quests_fulfillment= f'''
     
-    update quests set fulfillment = fulfillment + 1 where id={quest_id};
+    update quests set fulfillment = fulfillment + 1 where id={quest_id} and project_id={projectId};
   '''
   
-  cursor.execute(insert_query_quests_fulfillment, (quest_id,))
+  cursor.execute(insert_query_quests_fulfillment, ())
   connection.commit()
   cursor.close()
   connection.close()
@@ -97,19 +98,19 @@ def add_fulfillment(quest_id):
 
 
 
-def store_greenery_from_osm(greentag, geom):
-  connection = connect()
-  cursor = connection.cursor()
-  insert_query_greenery= '''
-        INSERT INTO greenery (greentag, geom) VALUES (%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
+# def store_greenery_from_osm(greentag, geom): #TODO  delete or refactor? is not beeing used atm because of loop from osm data.
+#   connection = connect()
+#   cursor = connection.cursor()
+#   insert_query_greenery= '''
+#         INSERT INTO greenery (greentag, geom) VALUES (%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
 
-  '''
-  cursor.execute(insert_query_greenery, (greentag, geom,))
+#   '''
+#   cursor.execute(insert_query_greenery, (greentag, geom,))
 
-  connection.commit()
-  cursor.close()
-  connection.close()
-  return "ok"
+#   connection.commit()
+#   cursor.close()
+#   connection.close()
+#   return "ok"
 
 def get_greenery_from_db():
   connection = connect()
@@ -146,14 +147,15 @@ def get_trees_from_db():
 
 
 def add_drawn_line(comment, width, color, geom):
+  projectId ="0"
   connection = connect()
   cursor = connection.cursor()
   
   insert_query_drawn_line= '''
-    INSERT INTO drawnline (comment, width, color, geom) VALUES (%s,%s,%s, ST_SetSRID(st_astext(st_geomfromgeojson(%s)), 4326));
+    INSERT INTO drawnline (project_id, comment, width, color, geom) VALUES (%s,%s,%s, ST_SetSRID(st_astext(st_geomfromgeojson(%s)), 4326));
 
   '''
-  cursor.execute(insert_query_drawn_line, (comment, width, color, geom,))
+  cursor.execute(insert_query_drawn_line, (projectId, comment, width, color, geom,))
   connection.commit()
   cursor.close()
   connection.close()
@@ -211,7 +213,7 @@ def dislike_comment(commentid):
 def undislike_comment(commentid):
   connection = connect()
   cursor = connection.cursor()
-  add_undislike_query =''' UPDATE comment SET dislikes = dislikes - 1 where id = %s  ;'''
+  add_undislike_query =''' UPDATE comment SET dislikes = dislikes - 1 where id = %s ;'''
   cursor.execute(add_undislike_query, (commentid,))
   
   connection.commit()
@@ -219,21 +221,21 @@ def undislike_comment(commentid):
   connection.close()
   return "ok"
 
-def init_driving_lane_table():
-  connection = connect()
-  cursor = connection.cursor()
-  create_driving_lane_table_query =''' 
-        drop table if exists driving_lane;
-        drop table if exists driving_lane_polygon;
-        create table driving_lane (id SERIAL PRIMARY KEY, lanes text, length float, maxspeed text, width text null,highway text, geom geometry(LINESTRING, 4326));
-        create table driving_lane_polygon (id SERIAL PRIMARY KEY, lanes text, length float, maxspeed text, width text null,highway text, geom geometry(Geometry, 4326));
-  '''
-  cursor.execute(create_driving_lane_table_query)
+# def init_driving_lane_table(): # Not used
+#   connection = connect()
+#   cursor = connection.cursor()
+#   create_driving_lane_table_query =''' 
+#         drop table if exists driving_lane;
+#         drop table if exists driving_lane_polygon;
+#         create table driving_lane (id SERIAL PRIMARY KEY, lanes text, length float, maxspeed text, width text null,highway text, geom geometry(LINESTRING, 4326));
+#         create table driving_lane_polygon (id SERIAL PRIMARY KEY, lanes text, length float, maxspeed text, width text null,highway text, geom geometry(Geometry, 4326));
+#   '''
+#   cursor.execute(create_driving_lane_table_query)
 
-  connection.commit()
-  cursor.close()
-  connection.close()
-  return "ok"
+#   connection.commit()
+#   cursor.close()
+#   connection.close()
+#   return "ok"
 
 def get_driving_lane_from_db():
   connection = connect()
@@ -280,46 +282,46 @@ def get_quests_from_db():
   connection.close()
   return quests
 
-def drop_greenery_table():
+def drop_greenery_table(projectId):
   connection = connect()
   cursor = connection.cursor()
-  drop_greenery_table_query =''' delete from greenery;'''
+  drop_greenery_table_query =f''' delete from greenery where project_id={projectId};'''
   cursor.execute(drop_greenery_table_query)
   connection.commit()
   cursor.close()
   connection.close()
   
-def drop_building_table():
+def drop_building_table(projectId):
   connection = connect()
   cursor = connection.cursor()
-  drop_building_table_query =''' delete from building;'''
+  drop_building_table_query =f''' delete from building where project_id={projectId};'''
   cursor.execute(drop_building_table_query)
   connection.commit()
   cursor.close()
   connection.close()
 
-def drop_tree_table():
+def drop_tree_table(projectId):
   connection = connect()
   cursor = connection.cursor()
-  drop_tree_table_query =''' delete from tree;'''
+  drop_tree_table_query =f''' delete from tree where project_id={projectId};'''
   cursor.execute(drop_tree_table_query)
   connection.commit()
   cursor.close()
   connection.close()
 
-def drop_driving_lane_table():
+def drop_driving_lane_table(projectId):
   connection = connect()
   cursor = connection.cursor()
-  drop_driving_lane_table_query =''' delete from driving_lane tree; delete from driving_lane_polygon'''
+  drop_driving_lane_table_query =f''' delete from driving_lane where project_id={projectId}; delete from driving_lane_polygon where project_id={projectId};'''
   cursor.execute(drop_driving_lane_table_query)
   connection.commit()
   cursor.close()
   connection.close()
 
-def drop_traffic_signal_table():
+def drop_traffic_signal_table(projectId):
   connection = connect()
   cursor = connection.cursor()
-  drop_traffic_signal_table_query =''' delete from traffic_signal '''
+  drop_traffic_signal_table_query =f''' delete from traffic_signal where project_id={projectId};'''
   cursor.execute(drop_traffic_signal_table_query)
   connection.commit()
   cursor.close()
