@@ -18,62 +18,49 @@ import {
   getTrafficSignalFromDB
 } from "../service/backend.service";
 import DevUI from "./DevUI.vue";
+import { HTTP } from "../utils/http-common";
+
 const store = useStore();
 
 const emit = defineEmits(["addLayer", "addImage"]);
 const populateMap = async()=>{
-  await sendBuildingRequest("retrieve").then(async()=>{
-  await sendGreeneryRequest("retrieve")}).then(
-  await sendTreeyRequest("retrieve")).then(
-  await sendTrafficSignalRequest("retrieve")).then(
-  await sendDrivingLaneRequest("retrieve")).then(store.dispatch("aoi/setMapIsPopulated"));
+  await sendBuildingRequest().then(async()=>{
+  await sendGreeneryRequest()}).then(
+  await sendTreeyRequest()).then(
+  await sendTrafficSignalRequest()).then(
+  await sendDrivingLaneRequest()).then(store.dispatch("aoi/setMapIsPopulated"));
 }
 onMounted(() => {
-  populateMap()
+  HTTP.get("project-specification").then((response) => {
+    store.commit("aoi/setProjectSpecification", response.data[0])
+  }).then(()=>{
+    populateMap()
+  })
+  
 
 })
-const sendBuildingRequest = async (mode) => {
-  if (mode == "get") {
-    store.dispatch("aoi/setDataIsLoading");
-    await getbuildingsFromOSM(store.state.aoi.bbox);
-  } else {
+const sendBuildingRequest = async () => {
+    console.log(store.state.aoi.projectSpecification)
     const newLayer = await getbuildingsFromDB();
     emit("addLayer", newLayer);
-  }
+
 };
-const sendGreeneryRequest = async (mode) => {
-  if (mode == "get") {
-    store.dispatch("aoi/setDataIsLoading");
-    await storeGreeneryFromOSM(
-      store.state.aoi.bbox,
-      store.state.aoi.usedTagsForGreenery
-    );
-  } else {
+const sendGreeneryRequest = async () => {
+  
     const newLayer = await getGreeneryFromDBTexture();
     emit("addLayer", newLayer);
-  }
+
 };
 
-const sendTreeyRequest= async (mode)=>{
-  if (mode == "get") {
-    store.dispatch("aoi/setDataIsLoading");
-    await getTreesFromOSM(store.state.aoi.bbox);
-  } else {
+const sendTreeyRequest= async ()=>{
+  
     const treeLayer = await getTreesFromDB();
     emit("addLayer", treeLayer);
-  }
+  
 }
-const sendDrivingLaneRequest = async (mode)=>{
-  if (mode == "get") {
-  store.dispatch("aoi/setDataIsLoading");
-   await getDrivingLaneFromOSM(store.state.aoi.bbox);
-  }
-  else {
-    
-    const drivingLanedata = await getDrivingLaneFromDB();
-    console.log(drivingLanedata)
-    
+const sendDrivingLaneRequest = async ()=>{
 
+    const drivingLanedata = await getDrivingLaneFromDB()
 
      store.commit("map/addSource", {
       id: "driving_lane_polygon",
@@ -113,19 +100,15 @@ const sendDrivingLaneRequest = async (mode)=>{
         'line-dasharray': [10,20]
       }
     })
-  }
+
 }
 
-const sendTrafficSignalRequest = async (mode)=>{
-  if (mode == "get"){
-    store.dispatch("aoi/setDataIsLoading");
-    await getTrafficLightsFromOSM(store.state.aoi.bbox);
-  }
-  else {
-    const trafficSignalLayer = await getTrafficSignalFromDB();
-    emit("addLayer", trafficSignalLayer);
-  }
+
+const sendTrafficSignalRequest = async ()=>{
   
+    const trafficSignalLayer = await getTrafficSignalFromDB();
+    emit("addLayer", trafficSignalLayer)
+
 }
 </script>
 
