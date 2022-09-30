@@ -212,3 +212,10 @@ export async function getTrafficSignalFromDB() {
 
   return trafficSignalLayer
 }
+
+export async function getRoutesFromDB(projectId) {
+  HTTP
+    .post('get-traffic-lights-from-osm', {
+      bbox: bbox
+  }).then(() => store.dispatch("aoi/setDataIsLoaded"))
+}

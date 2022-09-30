@@ -11,6 +11,7 @@
       </v-row>
       <Loadingscreen v-if="!store.state.aoi.mapIsPopulated && !store.state.aoi.isDevmode"/>
       <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
+      <PlanningIdeas />
       <Quests />
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine" @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl" :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
       <Comment @removePulseLayer="removePulseLayerFromMap"/>
@@ -34,7 +35,7 @@ import Comment from "./Comment.vue";
 import { pulseLayer } from "../utils/pulseLayer";
 import Quests from "./Quests.vue";
 import Loadingscreen from "./Loadingscreen.vue";
-
+import PlanningIdeas from "./PlanningIdeas.vue";
 
 
 const store = useStore();
