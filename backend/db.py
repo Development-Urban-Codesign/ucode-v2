@@ -59,8 +59,7 @@ def get_buildings_from_db(projectId):
   connection.close()
   return building
 
-def add_comment(comment, lng, lat):
-  projectId ="0"
+def add_comment(projectId, comment, lng, lat):
   connection = connect()
   cursor = connection.cursor()
   
@@ -146,8 +145,7 @@ def get_trees_from_db(projectId):
   return trees
 
 
-def add_drawn_line(comment, width, color, geom):
-  projectId ="0"
+def add_drawn_line(projectId,comment, width, color, geom):
   connection = connect()
   cursor = connection.cursor()
   
@@ -161,14 +159,14 @@ def add_drawn_line(comment, width, color, geom):
   connection.close()
 
 
-def get_comments():
+def get_comments(projectId):
   connection = connect()
   cursor = connection.cursor()
-  get_comment_query =''' select json_build_object(
+  get_comment_query =f''' select json_build_object(
         'type', 'FeatureCollection',
         'features', json_agg(ST_AsGeoJSON(comment.*)::json)
         )
-        from comment
+        from comment where project_id='{projectId}'
       ;
   '''
   cursor.execute(get_comment_query)
@@ -177,44 +175,44 @@ def get_comments():
   connection.close()
   return comments
 
-def like_comment(commentid):
+def like_comment(commentid, projectId):
   connection = connect()
   cursor = connection.cursor()
-  add_like_query =''' UPDATE comment SET likes = likes + 1 where id = %s  ;'''
-  cursor.execute(add_like_query, (commentid,))
+  add_like_query =f''' UPDATE comment SET likes = likes + 1 where id = {commentid} and project_id='{projectId}';'''
+  cursor.execute(add_like_query, ())
   
   connection.commit()
   cursor.close()
   connection.close()
   return "ok"
 
-def unlike_comment(commentid):
+def unlike_comment(commentid, projectId):
   connection = connect()
   cursor = connection.cursor()
-  add_unlike_query =''' UPDATE comment SET likes = likes - 1 where id = %s  ;'''
-  cursor.execute(add_unlike_query, (commentid,))
+  add_unlike_query =f''' UPDATE comment SET likes = likes - 1 where id = {commentid} and project_id='{projectId}';'''
+  cursor.execute(add_unlike_query, ())
   
   connection.commit()
   cursor.close()
   connection.close()
   return "ok"
 
-def dislike_comment(commentid):
+def dislike_comment(commentid, projectId):
   connection = connect()
   cursor = connection.cursor()
-  add_dislike_query =''' UPDATE comment SET dislikes = dislikes + 1 where id = %s  ;'''
-  cursor.execute(add_dislike_query, (commentid,))
+  add_dislike_query =f''' UPDATE comment SET dislikes = dislikes + 1 where id = {commentid} and project_id='{projectId}';'''
+  cursor.execute(add_dislike_query, ())
   
   connection.commit()
   cursor.close()
   connection.close()
   return "ok"
 
-def undislike_comment(commentid):
+def undislike_comment(commentid, projectId):
   connection = connect()
   cursor = connection.cursor()
-  add_undislike_query =''' UPDATE comment SET dislikes = dislikes - 1 where id = %s ;'''
-  cursor.execute(add_undislike_query, (commentid,))
+  add_undislike_query =f''' UPDATE comment SET dislikes = dislikes - 1 where id = {commentid} and project_id='{projectId}';'''
+  cursor.execute(add_undislike_query, ())
   
   connection.commit()
   cursor.close()

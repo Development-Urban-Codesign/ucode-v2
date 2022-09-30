@@ -185,7 +185,7 @@ const addImageToMap = (ImgUrl) => {
 };
 
 const getCommentData = async () => {
-  const commentLayer = await getCommentsFromDB()
+  const commentLayer = await getCommentsFromDB(store.state.aoi.projectId)
   addLayerToMap(commentLayer)
 };
 // deckgl layder

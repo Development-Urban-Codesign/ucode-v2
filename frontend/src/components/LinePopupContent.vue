@@ -90,6 +90,7 @@ const submitDrawnLine = ()=>{
 
     HTTP
     .post('add-drawn-line', {
+        projectId: store.state.aoi.projectSpecification.project_id,
         comment: drawnLineComment.value,
         width: drawnLineWidth.value,
         color: drawnLineColor.value,

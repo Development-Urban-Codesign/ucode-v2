@@ -102,8 +102,8 @@ export async function storeGreeneryFromOSM(bbox, usedTagsForGreenery) {
 }
 
 
-export async function getCommentsFromDB() {
-  const response = await HTTP.get('get-comments')
+export async function getCommentsFromDB(projectId) {
+  const response = await HTTP.post('get-comments',projectId)
 
   const iconlayer = new MapboxLayer({
     id: 'comments',

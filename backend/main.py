@@ -342,7 +342,7 @@ async def get_trees_from_db_api(request: Request):
 @app.post("/add-comment")
 async def add_comment_api(request: Request):
     data = await request.json()
-    add_comment(data["comment"], sure_float(data["position"][0]), sure_float(data["position"][1]))
+    add_comment(data["projectId"],data["comment"], sure_float(data["position"][0]), sure_float(data["position"][1]))
     return "added"
 
 
@@ -350,45 +350,46 @@ async def add_comment_api(request: Request):
 async def add_drawn_line_api(request: Request):
     data = await request.json()
     add_drawn_line(
+        data["projectId"],
         data["comment"],
         data["width"],
         data["color"],
         json.dumps(data["geometry"]["features"][0]["geometry"]),
     )
-    print(data)
     return "added"
 
 
-@app.get("/get-comments")
-async def get_comments_api():
-    return get_comments()
+@app.post("/get-comments")
+async def get_comments_api(request: Request):
+    data = await request.json()
+    return get_comments(data)
 
 
 @app.post("/like-comment")
 async def like_comment_api(request: Request):
     data = await request.json()
-    like_comment(data["id"])
+    like_comment(data["id"],data["projectId"])
     return "added"
 
 
 @app.post("/unlike-comment")
 async def unlike_comment_api(request: Request):
     data = await request.json()
-    unlike_comment(data["id"])
+    unlike_comment(data["id"],data["projectId"])
     return "added"
 
 
 @app.post("/dislike-comment")
 async def dislike_comment_api(request: Request):
     data = await request.json()
-    dislike_comment(data["id"])
+    dislike_comment(data["id"],data["projectId"])
     return "added"
 
 
 @app.post("/undislike-comment")
 async def undislike_comment_api(request: Request):
     data = await request.json()
-    undislike_comment(data["id"])
+    undislike_comment(data["id"],data["projectId"])
     return "added"
 
 @app.post("/get-driving-lane-from-osm")
