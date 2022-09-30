@@ -25,6 +25,7 @@ let commentText = ref("")
 const submitComment = () => {
   HTTP
   .post('add-comment', {
+    projectId: store.state.aoi.projectSpecification.project_id,
     comment: commentText.value,
     position: props.clickedCoordinates
   })

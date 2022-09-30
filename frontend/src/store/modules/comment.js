@@ -22,7 +22,7 @@ const comment = {
         }
     },
     actions: {
-        likeComment({state}, payload){
+        likeComment({state, rootState}, payload){
             if (state.likedCommentIds.includes(payload)){
                 state.commentData.properties.likes--
                 const index = state.likedCommentIds.indexOf(payload);
@@ -32,6 +32,7 @@ const comment = {
                 HTTP
                 .post('unlike-comment', {
                     id: payload,
+                    projectId: rootState.aoi.projectSpecification.project_id
                 })
                 
             }
@@ -41,11 +42,12 @@ const comment = {
                 HTTP
                 .post('like-comment', {
                     id: payload,
+                    projectId: rootState.aoi.projectSpecification.project_id
                 })
             }
 
         },
-        dislikeComment({state}, payload){
+        dislikeComment({state,rootState}, payload){
             if (state.unlikedCommentIds.includes(payload)){
                 state.commentData.properties.dislikes--
                 const index = state.unlikedCommentIds.indexOf(payload);
@@ -55,6 +57,7 @@ const comment = {
                 HTTP
                 .post('undislike-comment', {
                     id: payload,
+                    projectId: rootState.aoi.projectSpecification.project_id
                 })
                 
             }
@@ -64,6 +67,7 @@ const comment = {
                 HTTP
                 .post('dislike-comment', {
                     id: payload,
+                    projectId: rootState.aoi.projectSpecification.project_id
                 })
             }
         }

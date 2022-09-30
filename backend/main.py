@@ -82,12 +82,13 @@ async def get_project_specification_from_db_api():
 @app.post("/add-quest-fulfillment")
 async def add_fulfillment_api(request: Request):
     data = await request.json()
-    add_fulfillment(data["questid"])
+    add_fulfillment(data["questid"], data["projectId"])
     return "fulfillment has been updated"
     
 @app.post("/store-greenery-from-osm")
 async def store_greenery_from_osm_api(request: Request):
-    drop_greenery_table()
+    projectId="0"
+    drop_greenery_table(projectId)    
     data = await request.json()
     xmin = data["bbox"]["xmin"]
     ymin = data["bbox"]["ymin"]
@@ -123,7 +124,7 @@ async def store_greenery_from_osm_api(request: Request):
     connection = connect()
     cursor = connection.cursor()
     insert_query_greenery = """
-        INSERT INTO greenery (greentag, geom) VALUES (%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
+        INSERT INTO greenery (project_id,greentag, geom) VALUES (%s,%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
 
     """
     for f in data_greenery["elements"]:
@@ -141,6 +142,7 @@ async def store_greenery_from_osm_api(request: Request):
         cursor.execute(
             insert_query_greenery,
             (
+                projectId,
                 greentag,
                 geom,
             ),
@@ -151,14 +153,16 @@ async def store_greenery_from_osm_api(request: Request):
     connection.close()
     return "gg"
 
-@app.get("/get-greenery-from-db")
-async def get_greenery_from_db_api():
-    return get_greenery_from_db()
+@app.post("/get-greenery-from-db")
+async def get_greenery_from_db_api(request: Request):
+    data = await request.json()
+    return get_greenery_from_db(data)
 
 
 @app.post("/get-buildings-from-osm")
 async def get_buildings_from_osm_api(request: Request):
-    drop_building_table()
+    projectId="0" #TODO get from request, from the frontend
+    drop_building_table(projectId)
     data = await request.json()
     xmin = data["bbox"]["xmin"]
     ymin = data["bbox"]["ymin"]
@@ -206,7 +210,7 @@ async def get_buildings_from_osm_api(request: Request):
     cursor = connection.cursor()
        # INSERT INTO building (wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
     insert_query_building = """
-        INSERT INTO building (wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s, (st_buffer(st_buffer(ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326)::geography, 1,'side=right'),1)::geography)::geometry);
+        INSERT INTO building (project_id,wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, (st_buffer(st_buffer(ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326)::geography, 1,'side=right'),1)::geography)::geometry);
     """
     for f in data_building["elements"]:
         f["geometry"]["type"] = "Polygon"
@@ -256,6 +260,7 @@ async def get_buildings_from_osm_api(request: Request):
         cursor.execute(
             insert_query_building,
             (
+                projectId,
                 wallcolor,
                 wallmaterial,
                 roofcolor,
@@ -276,17 +281,20 @@ async def get_buildings_from_osm_api(request: Request):
     return "fine"
 
 
-@app.get("/get-buildings-from-db")
-async def get_buildings_from_db_api():
-    return get_buildings_from_db()
+@app.post("/get-buildings-from-db")
+async def get_buildings_from_db_api(request: Request):
+    data = await request.json()
+    return get_buildings_from_db(data)
 
-@app.get("/get-quests-from-db")
-async def get_quests_from_db_api():
-    return get_quests_from_db()
+@app.post("/get-quests-from-db")
+async def get_quests_from_db_api(request: Request):
+    projectId = await request.json()
+    return get_quests_from_db(projectId)
 
 @app.post("/get-trees-from-osm")
 async def get_trees_from_osm_api(request: Request):
-    drop_tree_table()
+    projectId ="0"
+    drop_tree_table(projectId)
     data = await request.json()
     xmin = data["bbox"]["xmin"]
     ymin = data["bbox"]["ymin"]
@@ -311,13 +319,13 @@ async def get_trees_from_osm_api(request: Request):
     connection = connect()
     cursor = connection.cursor()
     insert_query_tree = """
-        INSERT INTO tree (geom) VALUES (ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
+        INSERT INTO tree (project_id,geom) VALUES (%s,ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
 
     """
     for f in data_tree["elements"]:
 
         geom = json.dumps(f["geometry"])
-        cursor.execute(insert_query_tree, (geom,))
+        cursor.execute(insert_query_tree, (projectId,geom,))
 
     connection.commit()
     cursor.close()
@@ -325,15 +333,16 @@ async def get_trees_from_osm_api(request: Request):
     return "ok"
 
 
-@app.get("/get-trees-from-db")
-async def get_trees_from_db_api():
-    return get_trees_from_db()
+@app.post("/get-trees-from-db")
+async def get_trees_from_db_api(request: Request):
+    data = await request.json()
+    return get_trees_from_db(data)
 
 
 @app.post("/add-comment")
 async def add_comment_api(request: Request):
     data = await request.json()
-    add_comment(data["comment"], sure_float(data["position"][0]), sure_float(data["position"][1]))
+    add_comment(data["projectId"],data["comment"], sure_float(data["position"][0]), sure_float(data["position"][1]))
     return "added"
 
 
@@ -341,50 +350,52 @@ async def add_comment_api(request: Request):
 async def add_drawn_line_api(request: Request):
     data = await request.json()
     add_drawn_line(
+        data["projectId"],
         data["comment"],
         data["width"],
         data["color"],
         json.dumps(data["geometry"]["features"][0]["geometry"]),
     )
-    print(data)
     return "added"
 
 
-@app.get("/get-comments")
-async def get_comments_api():
-    return get_comments()
+@app.post("/get-comments")
+async def get_comments_api(request: Request):
+    data = await request.json()
+    return get_comments(data)
 
 
 @app.post("/like-comment")
 async def like_comment_api(request: Request):
     data = await request.json()
-    like_comment(data["id"])
+    like_comment(data["id"],data["projectId"])
     return "added"
 
 
 @app.post("/unlike-comment")
 async def unlike_comment_api(request: Request):
     data = await request.json()
-    unlike_comment(data["id"])
+    unlike_comment(data["id"],data["projectId"])
     return "added"
 
 
 @app.post("/dislike-comment")
 async def dislike_comment_api(request: Request):
     data = await request.json()
-    dislike_comment(data["id"])
+    dislike_comment(data["id"],data["projectId"])
     return "added"
 
 
 @app.post("/undislike-comment")
 async def undislike_comment_api(request: Request):
     data = await request.json()
-    undislike_comment(data["id"])
+    undislike_comment(data["id"],data["projectId"])
     return "added"
 
 @app.post("/get-driving-lane-from-osm")
 async def get_driving_lane_from_osm_api(request: Request):
-    drop_driving_lane_table()
+    projectId ="0"
+    drop_driving_lane_table(projectId)
     data = await request.json()
     xmin = data['bbox']["xmin"]
     ymin = data['bbox']["ymin"]
@@ -407,12 +418,12 @@ async def get_driving_lane_from_osm_api(request: Request):
     cursor = connection.cursor()
 
     insert_query_driving_lane= '''
-        INSERT INTO driving_lane (lanes,length,maxspeed,width, highway, geom) VALUES (%s,%s,%s,%s,%s, ST_SetSRID(st_astext(st_geomfromgeojson(%s)), 4326));
+        INSERT INTO driving_lane (project_id,lanes,length,maxspeed,width, highway, geom) VALUES (%s,%s,%s,%s,%s,%s, ST_SetSRID(st_astext(st_geomfromgeojson(%s)), 4326));
 
     '''
     insert_query_driving_lane_polygon= '''
         
-        INSERT INTO driving_lane_polygon (lanes,length,maxspeed,width,highway, geom) VALUES (%s,%s,%s,%s,%s,
+        INSERT INTO driving_lane_polygon (project_id,lanes,length,maxspeed,width,highway, geom) VALUES (%s,%s,%s,%s,%s,%s,
         st_buffer(
             ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326)::geography,
             (%s::double precision)/2 ,
@@ -447,8 +458,8 @@ async def get_driving_lane_from_osm_api(request: Request):
             width =4
         else:
             width =4
-        cursor.execute(insert_query_driving_lane, (lanes,length,maxspeed,width,highway, geom,))
-        cursor.execute(insert_query_driving_lane_polygon, (lanes,length,maxspeed,width,highway, geom,width))
+        cursor.execute(insert_query_driving_lane, (projectId,lanes,length,maxspeed,width,highway, geom,))
+        cursor.execute(insert_query_driving_lane_polygon, (projectId,lanes,length,maxspeed,width,highway, geom,width))
     
     connection.commit()
     cursor.close()
@@ -456,10 +467,10 @@ async def get_driving_lane_from_osm_api(request: Request):
     
     return "true"
 
-@app.get("/get-driving-lane-from-db")
-async def get_driving_lane_from_db_api():
-    
-    return {"lane": get_driving_lane_from_db(), "polygon": get_driving_lane_polygon_from_db()}
+@app.post("/get-driving-lane-from-db")
+async def get_driving_lane_from_db_api(request: Request):
+    projectId = await request.json()
+    return {"lane": get_driving_lane_from_db(projectId), "polygon": get_driving_lane_polygon_from_db(projectId)}
 
 def sure_float(may_be_number):  
     # function which extracts surely the integer or float inside a string
@@ -481,7 +492,8 @@ def sure_float(may_be_number):
 
 @app.post("/get-traffic-lights-from-osm")
 async def get_traffic_lights_from_osm_api(request: Request):
-    drop_traffic_signal_table()
+    projectId ="0"
+    drop_traffic_signal_table(projectId)
     data = await request.json()
     xmin = data["bbox"]["xmin"]
     ymin = data["bbox"]["ymin"]
@@ -512,8 +524,9 @@ async def get_traffic_lights_from_osm_api(request: Request):
         FROM driving_lane_polygon
         ORDER BY geom <-> (ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326))
         LIMIT 1)
-        INSERT INTO traffic_signal (geom) VALUES 
+        INSERT INTO traffic_signal (project_id,geom) VALUES 
         ( 
+            %s,
             (select 
                 ST_ClosestPoint(
                     ST_Boundary((select geom from closestpolygon)),
@@ -526,14 +539,15 @@ async def get_traffic_lights_from_osm_api(request: Request):
     for f in data_traffic_signal["elements"]:
 
         geom = json.dumps(f["geometry"])
-        cursor.execute(insert_query_traffic_signal, (geom,geom,))
+        cursor.execute(insert_query_traffic_signal, (geom, projectId, geom,))
 
     connection.commit()
     cursor.close()
     connection.close()
     return "ok"
 
-@app.get("/get-traffic-signal-from-db")
-async def get_traffic_lights_from_db_api():
-    return get_traffic_signal_from_db()
+@app.post("/get-traffic-signal-from-db")
+async def get_traffic_lights_from_db_api(request: Request):
+    projectId = await request.json()
+    return get_traffic_signal_from_db(projectId)
 

@@ -64,7 +64,7 @@ onMounted(() => {
   });
   map.on("load", function () {
     HTTP.get("").then((response) => {
-      console.log(response);
+      // console.log(response);
     })
     
     //  getCommentData()
@@ -164,12 +164,11 @@ const removeLayerFromMap = (layerId) => {
 }
 
 const addSourceToMap = (source) => {
-  console.log(source)
+  // console.log(source)
   if (!source) return;
   if (!map) return;
   //TODO extract this as a function parameter
   let sourceId = source.id;
-  console.log(sourceId)
   /*if (map.getSource(sourceId)) {
     map.removeSource(sourceId)
     removeLayerFromMap(sourceId)
@@ -186,7 +185,7 @@ const addImageToMap = (ImgUrl) => {
 };
 
 const getCommentData = async () => {
-  const commentLayer = await getCommentsFromDB()
+  const commentLayer = await getCommentsFromDB(store.state.aoi.projectId)
   addLayerToMap(commentLayer)
 };
 // deckgl layder
