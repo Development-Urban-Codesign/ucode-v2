@@ -55,7 +55,6 @@ import { HTTP } from "../utils/http-common";
 import { getQuestsFromDB } from "../service/backend.service";
 import { onMounted, reactive, ref } from "vue";
 onMounted(() => {
-  console.log(store.state.aoi.projectId)
   getQuestsFromDB(store.state.aoi.projectId).then((response) => {
     setupQuests(response);
   });

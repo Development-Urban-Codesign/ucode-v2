@@ -196,7 +196,6 @@ export async function getTrafficLightsFromOSM(bbox) {
 
 export async function getTrafficSignalFromDB(projectId) {
   const response = await HTTP.post('get-traffic-signal-from-db',projectId);
-  console.log(response.data)
   const trafficSignalLayer = new MapboxLayer({
     id: 'traffic-signal',
     type: ScenegraphLayer,

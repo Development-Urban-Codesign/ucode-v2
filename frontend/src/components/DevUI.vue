@@ -8,14 +8,15 @@
         </v-select>
         <v-select :items="['get', 'retrieve']" label="driving lane" variant="outlined"
             @update:modelValue="sendDrivingLaneRequest"></v-select>
+        <v-select :items="['get', 'retrieve']" label="traffic signal" variant="outlined"
+            @update:modelValue="sendTrafficSignalRequest"></v-select>
         <v-alert type="success" v-if="store.state.aoi.dataIsLoaded">
             stored
         </v-alert>
         <v-alert type="info" v-if="store.state.aoi.dataIsLoading">
             getting data...
         </v-alert>
-        <v-select :items="['get', 'retrieve']" label="traffic signal" variant="outlined"
-            @update:modelValue="sendTrafficSignalRequest"></v-select>
+
 
     </v-col>
 </template>
@@ -124,7 +125,7 @@ const sendDrivingLaneRequest = async (mode) => {
 
 const sendTrafficSignalRequest = async (mode) => {
     if (mode == "get") {
-        
+        store.dispatch("aoi/setDataIsLoading");
         await getTrafficLightsFromOSM(store.state.aoi.projectSpecification.bbox);
     }
     else {
