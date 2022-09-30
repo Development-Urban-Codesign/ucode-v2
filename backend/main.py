@@ -82,7 +82,7 @@ async def get_project_specification_from_db_api():
 @app.post("/add-quest-fulfillment")
 async def add_fulfillment_api(request: Request):
     data = await request.json()
-    add_fulfillment(data["questid"])
+    add_fulfillment(data["questid"], data["projectId"])
     return "fulfillment has been updated"
     
 @app.post("/store-greenery-from-osm")
@@ -286,9 +286,10 @@ async def get_buildings_from_db_api(request: Request):
     data = await request.json()
     return get_buildings_from_db(data)
 
-@app.get("/get-quests-from-db")
-async def get_quests_from_db_api():
-    return get_quests_from_db()
+@app.post("/get-quests-from-db")
+async def get_quests_from_db_api(request: Request):
+    projectId = await request.json()
+    return get_quests_from_db(projectId)
 
 @app.post("/get-trees-from-osm")
 async def get_trees_from_osm_api(request: Request):

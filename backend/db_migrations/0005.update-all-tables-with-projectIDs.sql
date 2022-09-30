@@ -34,3 +34,7 @@ update routes set project_id = '0';
 alter table traffic_signal 
 ADD COLUMN IF NOT EXISTS project_id TEXT;
 update traffic_signal set project_id = '0';
+
+alter table quests 
+ADD COLUMN IF NOT EXISTS project_id TEXT;
+update quests set project_id = '0';

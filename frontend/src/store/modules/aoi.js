@@ -24,6 +24,9 @@ const aoi = {
         },
         setProjectId(state, projectId){
             state.projectId = projectId
+        },
+        setDevmode(state,bool){
+            state.isDevmode = bool
         }
     },
     actions:{

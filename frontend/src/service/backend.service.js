@@ -4,9 +4,8 @@ import { MapboxLayer } from '@deck.gl/mapbox';
 import { HTTP } from '../utils/http-common.js';
 import store from "../store/store";
 
-export async function getQuestsFromDB(){
-  const response = await HTTP.get('get-quests-from-db');
-  // console.log(response.data);
+export async function getQuestsFromDB(projectId){
+  const response = await HTTP.post('get-quests-from-db', projectId);
   return response.data
 }
 export async function getbuildingsFromDB(projectId) {

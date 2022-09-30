@@ -55,7 +55,8 @@ import { HTTP } from "../utils/http-common";
 import { getQuestsFromDB } from "../service/backend.service";
 import { onMounted, reactive, ref } from "vue";
 onMounted(() => {
-  getQuestsFromDB().then((response) => {
+  console.log(store.state.aoi.projectId)
+  getQuestsFromDB(store.state.aoi.projectId).then((response) => {
     setupQuests(response);
   });
 });
@@ -106,6 +107,7 @@ function fulfillQuest(id, quest) {
   quests[id].bgColor = "lightgreen";
   HTTP.post("add-quest-fulfillment", {
     questid: quest.id,
+    projectId: store.state.aoi.projectSpecification.project_id
   });
   setTimeout(() => (quests[id].isActive = false), 300);
   if (id < quests.length - 1) {

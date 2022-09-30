@@ -6,11 +6,11 @@
 import { RouterView, useRoute } from "vue-router";
 import { watch } from "vue";
 import { useI18n } from "vue-i18n";
-import store from "./store/store";
+import { useStore } from "vuex";
 const t = useI18n();
 
-
-const route = useRoute()
+const store = useStore();
+const route = useRoute();
 // fetch the user information when params change
 watch(
   () => route.hash,
@@ -23,7 +23,14 @@ watch(
 
 watch(
   () => route.query,
-  console.log(route)
+  async routeQueries => {
+    if (routeQueries.devmode !== null) {
+      store.commit("aoi/setDevmode", routeQueries.devmode)
+    }
+    else if (routeQueries.project !== null) {
+      store.commit("aoi/setProjectId", routeQueries.project)
+    }
+  }
 )
 
 

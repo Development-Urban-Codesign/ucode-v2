@@ -75,8 +75,7 @@ def add_comment(comment, lng, lat):
 
 # TH Hier wird die Zahl der Fulfillments aus der db gelesen und hochgesetzt und dieser Wert zurückgesendet
 
-def add_fulfillment(quest_id):
-  projectId="0"
+def add_fulfillment(quest_id, projectId):
   connection = connect()
   cursor = connection.cursor()
 
@@ -88,7 +87,7 @@ def add_fulfillment(quest_id):
 
   insert_query_quests_fulfillment= f'''
     
-    update quests set fulfillment = fulfillment + 1 where id={quest_id} and project_id={projectId};
+    update quests set fulfillment = fulfillment + 1 where id={quest_id} and project_id='{projectId}';
   '''
   
   cursor.execute(insert_query_quests_fulfillment, ())
@@ -270,11 +269,11 @@ def get_driving_lane_polygon_from_db(projectId):
   connection.close()
   return driving_lane_polygon
 
-def get_quests_from_db():
+def get_quests_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
-  get_quests_from_db_query='''
-  select * from quests;
+  get_quests_from_db_query=f'''
+  select * from quests where project_id = '{projectId}';
   '''
   cursor.execute(get_quests_from_db_query)
   quests = cursor.fetchall()
