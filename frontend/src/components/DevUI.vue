@@ -42,7 +42,7 @@ const store = useStore();
 const sendBuildingRequest = async (mode) => {
     if (mode == "get") {
         store.dispatch("aoi/setDataIsLoading");
-        await getbuildingsFromOSM(store.state.aoi.projectSpecification.bbox);
+        await getbuildingsFromOSM(store.state.aoi.projectSpecification.bbox, store.state.aoi.projectSpecification.project_id);
     } else {
         const newLayer = await getbuildingsFromDB();
         emit("addLayer", newLayer);
@@ -53,7 +53,8 @@ const sendGreeneryRequest = async (mode) => {
         store.dispatch("aoi/setDataIsLoading");
         await storeGreeneryFromOSM(
             store.state.aoi.projectSpecification.bbox,
-            store.state.aoi.usedTagsForGreenery
+            store.state.aoi.usedTagsForGreenery,
+            store.state.aoi.projectSpecification.project_id
         );
     } else {
         const newLayer = await getGreeneryFromDBTexture();

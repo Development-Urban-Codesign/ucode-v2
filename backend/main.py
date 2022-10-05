@@ -87,9 +87,9 @@ async def add_fulfillment_api(request: Request):
     
 @app.post("/store-greenery-from-osm")
 async def store_greenery_from_osm_api(request: Request):
-    projectId = await request.json()
-    drop_greenery_table(projectId)    
     data = await request.json()
+    projectId = data["projectId"] 
+    drop_greenery_table(projectId)
     xmin = data["bbox"]["xmin"]
     ymin = data["bbox"]["ymin"]
     xmax = data["bbox"]["xmax"]
@@ -161,9 +161,9 @@ async def get_greenery_from_db_api(request: Request):
 
 @app.post("/get-buildings-from-osm")
 async def get_buildings_from_osm_api(request: Request):
-    projectId="0" #TODO get from request, from the frontend
-    drop_building_table(projectId)
     data = await request.json()
+    projectId = data["projectId"]
+    drop_building_table(projectId)
     xmin = data["bbox"]["xmin"]
     ymin = data["bbox"]["ymin"]
     xmax = data["bbox"]["xmax"]
