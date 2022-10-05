@@ -1,7 +1,11 @@
 <template>
   <div class="map-wrap" ref="mapContainer">
     <div class="map" id="map">
+      <!--Show this only when http://localhost:8080/?devmode=true-->
       <v-row v-if="store.state.aoi.isDevmode" style="position: absolute; right: 20px; top: 20px; z-index: 999">
+        <v-btn color="success" class="ml-2" @click="getCommentData">
+          Show comments
+        </v-btn>
         <v-btn color="error" class="ml-2" @click="addThreejsShape">
           Threejs
         </v-btn>
@@ -120,7 +124,7 @@ const addLayerToMap = (layer) => {
   
   const buildinglayer = map.getLayer("overpass_buildings")
   const greenerylayer = map.getLayer("overpass_greenery")
-  const commenlayer = map.getLayer("comments")
+  const commentlayer = map.getLayer("comments")
   const drivinglanelayer = map.getLayer("driving_lane_polygon")
   const drivinglane = map.getLayer("driving_lane")
   const treeLayer = map.getLayer("trees")
@@ -130,10 +134,10 @@ const addLayerToMap = (layer) => {
   if(typeof commenlayer !== 'undefined' && typeof greenerylayer !== 'undefined'){
     map?.moveLayer("overpass_greenery", "comments" )
   }
-  if(typeof drivinglanelayer !== 'undefined' && typeof commenlayer !== 'undefined'){
+  if(typeof drivinglanelayer !== 'undefined' && typeof commentlayer !== 'undefined'){
     map?.moveLayer("driving_lane_polygon", "comments")
   }
-  if(typeof drivinglane !== 'undefined' && typeof commenlayer !== 'undefined'){
+  if(typeof drivinglane !== 'undefined' && typeof commentlayer !== 'undefined'){
     map?.moveLayer("driving_lane", "comments")
   }
   if(typeof drivinglanelayer !== 'undefined' && typeof buildinglayer !== 'undefined'){
