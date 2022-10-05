@@ -76,9 +76,9 @@ async def root():
         raise HTTPException(status_code=500, detail=f"Something went wrong: {err}")
 
 @app.get("/project-specification")
-async def get_project_specification_from_db_api():
-    return get_project_specification_from_db()
-   # TH: Hier empfängt das Backend den Request aus dem Frontend, den Wert für die Quest-ID X um einen Zähler hochzusetzen 
+async def get_project_specification_from_db_api(projectId: str = None):
+    return get_project_specification_from_db(projectId)
+   
 @app.post("/add-quest-fulfillment")
 async def add_fulfillment_api(request: Request):
     data = await request.json()
@@ -87,7 +87,7 @@ async def add_fulfillment_api(request: Request):
     
 @app.post("/store-greenery-from-osm")
 async def store_greenery_from_osm_api(request: Request):
-    projectId="0"
+    projectId = await request.json()
     drop_greenery_table(projectId)    
     data = await request.json()
     xmin = data["bbox"]["xmin"]
