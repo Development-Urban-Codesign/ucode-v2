@@ -11,7 +11,7 @@
       </v-row>
       <Loadingscreen v-if="!store.state.aoi.mapIsPopulated && !store.state.aoi.isDevmode"/>
       <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
-      <PlanningIdeas />
+      <PlanningIdeas @addLayer="addLayerToMap" />
       <Quests />
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine" @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl" :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
       <Comment @removePulseLayer="removePulseLayerFromMap"/>
@@ -125,6 +125,8 @@ const addLayerToMap = (layer) => {
   const drivinglanelayer = map.getLayer("driving_lane_polygon")
   const drivinglane = map.getLayer("driving_lane")
   const treeLayer = map.getLayer("trees")
+  const routesLayer = map.getLayer("routes")
+  const routesSymbolLayer = map.getLayer("routes-symbols")
   if(typeof buildinglayer !== 'undefined' && typeof greenerylayer !== 'undefined'){
     map?.moveLayer("overpass_greenery", "overpass_buildings" )
   }
@@ -153,6 +155,12 @@ const addLayerToMap = (layer) => {
   if(typeof drivinglane !== 'undefined' && typeof treeLayer !== 'undefined'){
     map?.moveLayer("driving_lane", "trees")
 }
+  if(typeof routesLayer !== 'undefined' && typeof treeLayer !== 'undefined'){
+    map?.moveLayer("routes", "trees")
+  }
+  if(typeof routesSymbolLayer !== 'undefined' && typeof treeLayer !== 'undefined'){
+    map?.moveLayer("routes-symbols", "trees")
+  }
 
    
 };
