@@ -353,14 +353,15 @@ def get_project_specification_from_db():
   connection.close()
   return bbox
 
-def get_routes_from_db():
+def get_routes_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
-  get_routes_query =''' select json_build_object(
+  get_routes_query = f''' select json_build_object(
         'type', 'FeatureCollection',
         'features', json_agg(ST_AsGeoJSON(routes.*)::json)
         )
         from routes
+        where project_id = '{projectId}'
       ;
   '''
   cursor.execute(get_routes_query)
