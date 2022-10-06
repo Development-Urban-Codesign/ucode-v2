@@ -31,7 +31,8 @@ from db import (
     drop_driving_lane_table,
     drop_traffic_signal_table,
     get_traffic_signal_from_db,
-    get_project_specification_from_db
+    get_project_specification_from_db,
+    get_routes_from_db
 
 )
 from db_migrations import run_database_migrations
@@ -550,4 +551,9 @@ async def get_traffic_lights_from_osm_api(request: Request):
 async def get_traffic_lights_from_db_api(request: Request):
     projectId = await request.json()
     return get_traffic_signal_from_db(projectId)
+
+@app.post("/get-routes-from-db")
+async def get_routes_from_db_api(request: Request):
+    projectId = await request.json()
+    return get_routes_from_db(projectId)
 
