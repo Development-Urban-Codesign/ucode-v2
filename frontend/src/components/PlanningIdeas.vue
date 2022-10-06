@@ -19,7 +19,12 @@ const addRouteToMap = async()=>{
   await sendRouteRequest()
 }
 onMounted(() => {
-     HTTP.get("project-specification").then((response) => {
+    HTTP.get("project-specification", {
+        params: 
+        {
+          projectId: store.state.aoi.projectId
+        }
+      }).then((response) => {
         store.commit("aoi/setProjectSpecification", response.data[0])
     }).then(()=>{
         addRouteToMap()
