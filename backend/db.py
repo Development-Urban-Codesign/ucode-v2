@@ -341,11 +341,11 @@ def get_traffic_signal_from_db(projectId):
   connection.close()
   return traffic_signal
 
-def get_project_specification_from_db():
+def get_project_specification_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
-  get_project_specification_from_db_query =''' 
-      select json_agg(project.*) from project;
+  get_project_specification_from_db_query =f''' 
+      select json_agg(project.*) from project where project_id = '{projectId}';
   '''
   cursor.execute(get_project_specification_from_db_query)
   bbox = cursor.fetchall()[0][0]

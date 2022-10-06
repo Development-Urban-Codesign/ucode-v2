@@ -56,10 +56,11 @@ return new MapboxLayer({
   })
 }
 
-export async function getbuildingsFromOSM(bbox) {
+export async function getbuildingsFromOSM(bbox, projectId) {
   HTTP
     .post('get-buildings-from-osm', {
-      bbox: bbox
+      bbox: bbox,
+      projectId: projectId
     }).then(() => store.dispatch("aoi/setDataIsLoaded"))
 }
 export async function getGreeneryFromDB() {
@@ -93,11 +94,12 @@ export async function getGreeneryFromDBTexture(projectID) {
     }
   })
 }
-export async function storeGreeneryFromOSM(bbox, usedTagsForGreenery) {
+export async function storeGreeneryFromOSM(bbox, usedTagsForGreenery, projectId) {
   HTTP
     .post('store-greenery-from-osm', {
       bbox: bbox,
-      usedTagsForGreenery: usedTagsForGreenery
+      usedTagsForGreenery: usedTagsForGreenery,
+      projectId: projectId
     }).then(() => store.dispatch("aoi/setDataIsLoaded"))
 }
 

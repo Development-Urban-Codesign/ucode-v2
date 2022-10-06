@@ -31,7 +31,14 @@ const populateMap = async()=>{
   await sendDrivingLaneRequest()).then(store.dispatch("aoi/setMapIsPopulated"));
 }
 onMounted(() => {
-  HTTP.get("project-specification").then((response) => {
+  console.log(store.state.aoi.projectId)
+          
+  HTTP.get("project-specification", {
+        params: 
+        {
+          projectId: store.state.aoi.projectId
+        }
+      }).then((response) => {
     store.commit("aoi/setProjectSpecification", response.data[0])
   }).then(()=>{
     populateMap()

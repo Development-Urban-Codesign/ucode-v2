@@ -15,7 +15,7 @@ const aoi = {
         dataIsLoaded: false,
         dataIsLoading: false,
         mapIsPopulated: false,
-        isDevmode: true
+        isDevmode: false
 
     },
     mutations: {

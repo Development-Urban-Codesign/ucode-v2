@@ -24,12 +24,12 @@ watch(
 watch(
   () => route.query,
   async routeQueries => {
-    if (routeQueries.devmode !== null) {
+    if (routeQueries.devmode == "true") {
       store.commit("aoi/setDevmode", routeQueries.devmode)
     }
-    else if (routeQueries.project !== null) {
-      store.commit("aoi/setProjectId", routeQueries.project)
-    }
+    if (routeQueries.projectId != null) {
+      store.commit("aoi/setProjectId", routeQueries.projectId)
+      }
   }
 )
 

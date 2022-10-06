@@ -77,9 +77,9 @@ async def root():
         raise HTTPException(status_code=500, detail=f"Something went wrong: {err}")
 
 @app.get("/project-specification")
-async def get_project_specification_from_db_api():
-    return get_project_specification_from_db()
-   # TH: Hier empfängt das Backend den Request aus dem Frontend, den Wert für die Quest-ID X um einen Zähler hochzusetzen 
+async def get_project_specification_from_db_api(projectId: str = None):
+    return get_project_specification_from_db(projectId)
+   
 @app.post("/add-quest-fulfillment")
 async def add_fulfillment_api(request: Request):
     data = await request.json()
@@ -88,9 +88,9 @@ async def add_fulfillment_api(request: Request):
     
 @app.post("/store-greenery-from-osm")
 async def store_greenery_from_osm_api(request: Request):
-    projectId="0"
-    drop_greenery_table(projectId)    
     data = await request.json()
+    projectId = data["projectId"] 
+    drop_greenery_table(projectId)
     xmin = data["bbox"]["xmin"]
     ymin = data["bbox"]["ymin"]
     xmax = data["bbox"]["xmax"]
@@ -162,9 +162,9 @@ async def get_greenery_from_db_api(request: Request):
 
 @app.post("/get-buildings-from-osm")
 async def get_buildings_from_osm_api(request: Request):
-    projectId="0" #TODO get from request, from the frontend
-    drop_building_table(projectId)
     data = await request.json()
+    projectId = data["projectId"]
+    drop_building_table(projectId)
     xmin = data["bbox"]["xmin"]
     ymin = data["bbox"]["ymin"]
     xmax = data["bbox"]["xmax"]
