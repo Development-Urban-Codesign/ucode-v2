@@ -14,7 +14,7 @@
         </v-btn>
       </v-row>
       <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
-      <PlanningIdeas @addLayer="addLayerToMap" />
+      <PlanningIdeas @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap" />
       <Quests />
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
         @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
@@ -40,6 +40,7 @@ import Comment from "./Comment.vue";
 import Contribution from "./Contribution.vue";
 import PlanningIdeas from "./PlanningIdeas.vue";
 import Quests from "./Quests.vue";
+import * as turf from '@turf/turf'
 
 
 const store = useStore();
@@ -144,10 +145,10 @@ const addLayerToMap = (layer) => {
     map?.moveLayer("driving_lane", "comments")
   }
   if (typeof drivinglanelayer !== 'undefined' && typeof buildinglayer !== 'undefined') {
-    map?.moveLayer("driving_lane_polygon", "overpass_buildings")
+    map?.moveLayer("overpass_buildings", "driving_lane_polygon")
   }
   if (typeof drivinglane !== 'undefined' && typeof buildinglayer !== 'undefined') {
-    map?.moveLayer("driving_lane", "overpass_buildings")
+    map?.moveLayer("overpass_buildings", "driving_lane")
   }
 
   if (typeof greenerylayer !== 'undefined' && typeof treeLayer !== 'undefined') {
@@ -244,6 +245,27 @@ const removePulseLayerFromMap = (layerid) => {
   removeLayerFromMap(layerid)
   cancelAnimationFrame(store.state.pulse.pulseAnimationActivation)
 
+}
+
+const activateSelectedPlanningIdeaInMap = (selectedFeature)=>{
+
+  let bounds = turf.bbox(selectedFeature);
+  map.fitBounds(bounds);
+
+  if (selectedFeature.type== 'FeatureCollection'){
+
+      map.setPaintProperty ('routes', 'line-color',  ['get', 'color']);
+  } else {
+
+    map.setPaintProperty(
+      'routes', 
+      'line-color', 
+      ['match', ['get', 'id'], selectedFeature.properties.id, selectedFeature.properties.color , 'rgba(0,0,0,0.4)' /*['get', 'color']*/],
+      
+    )
+
+  }
+  
 }
 
 
