@@ -13,16 +13,16 @@
   </div>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { ref } from 'vue';
 
-const Loadingtexts = ["Bäume pflanzen...", "Grünflächen anlegen...", "Gebäude hochziehen...", "Straßen einziehen..."]
-let curLoadingText = ref("Karte wird befüllt...")
+const loadingTexts = ["Bäume pflanzen...", "Grünflächen anlegen...", "Gebäude hochziehen...", "Straßen einziehen..."]
+const curLoadingText = ref("Karte wird befüllt...")
 let i = 0
 const showLoading = ref(true)
 async function animate() {
   setInterval(function () {
-    curLoadingText.value = Loadingtexts[i]
+    curLoadingText.value = loadingTexts[i]
     
     if (showLoading.value == false) {
       i++
@@ -32,7 +32,7 @@ async function animate() {
     else {
       showLoading.value = false
     }
-    if (i >= Loadingtexts.length) {
+    if (i >= loadingTexts.length) {
       i = 0
     }
     
