@@ -1,3 +1,4 @@
+from functools import lru_cache
 import psycopg2
 from os import getenv
 
@@ -42,6 +43,7 @@ def get_table_names():
 #   connection.close()
 #   return "ok"
 
+@lru_cache
 def get_buildings_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()

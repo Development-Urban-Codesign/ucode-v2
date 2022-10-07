@@ -216,7 +216,6 @@ async def get_buildings_from_osm_api(request: Request):
     for f in data_building["elements"]:
         f["geometry"]["type"] = "Polygon"
         f["geometry"]["coordinates"] = [f["geometry"]["coordinates"]]
-
     for f in data_building["elements"]:
         wallcolor = None
         if "building:colour" in f["tags"]:
@@ -557,3 +556,13 @@ async def get_routes_from_db_api(request: Request):
     projectId = await request.json()
     return get_routes_from_db(projectId)
 
+@app.get("/admin/clear-cache")
+async def clear_cache():
+    get_buildings_from_db_cache_stats = get_buildings_from_db.cache_info()
+    get_buildings_from_db.cache_clear()
+    result = {
+        "get_buildings_from_db_cache_stats": get_buildings_from_db_cache_stats,
+        "result": "Cache cleared"
+    }
+    return result
+    
