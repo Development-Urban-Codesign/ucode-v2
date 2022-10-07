@@ -1,27 +1,21 @@
 <template>
 
-<v-sheet
-    class="mx-auto planning-ideas-options"
-    max-width="600"
+  <v-sheet
+      class="mx-auto planning-ideas-options"
+      max-width="500"
   >
-    <v-slide-group
-      show-arrows
-    >
-      <v-slide-group-item
-        v-for="route in planningData.routes" :key="route.properties.id"
-        v-slot="{ isSelected, toggle }"
-      >
-        <v-btn
-          class="ma-2"
-          rounded
-          :color="isSelected ? 'primary' : undefined"
-          @click="toggle"
-          flat
-        >
-          route {{route.properties.id}}
-        </v-btn>
-      </v-slide-group-item>
-    </v-slide-group>
+    <v-btn size="small" color="grey" rounded flat @click="activateSelectedPlanningIdea( planningData.routes)">
+          All
+    </v-btn>
+    <div v-for="route in planningData.routes.features" :key="route.properties.id">
+      
+      <v-btn size="small" class="ml-2" rounded flat @click="activateSelectedPlanningIdea(route)">
+        <v-icon :color="route.properties.color">
+          mdi-checkbox-blank-circle
+        </v-icon>
+        route {{route.properties.id}}
+      </v-btn>
+    </div>
   </v-sheet>
 
 </template>
@@ -38,7 +32,7 @@ import {
 
 const store = useStore();
 
-const emit = defineEmits(["addLayer"])
+const emit = defineEmits(["activateSelectedPlanningIdea"])
 let planningData = reactive ({ routes: [] })
 
 const addRouteToMap = async () => {
@@ -53,7 +47,8 @@ const sendRouteRequest = async () => {
 
     const routeData = await getRoutesFromDB(store.state.aoi.projectSpecification.project_id)
    
-    planningData.routes = routeData.data.features
+    planningData.routes = routeData.data
+
 
     store.commit("map/addSource", {
       id: "routes",
@@ -71,7 +66,7 @@ const sendRouteRequest = async () => {
             'line-cap': 'round',
         },
         'paint': {
-            "line-color": [
+            'line-color': ['get', 'color']/*[
                 "match",
                     ["get", "id"],
                     1,
@@ -79,7 +74,7 @@ const sendRouteRequest = async () => {
                     2,
                     "rgba(0,255,0,1)",
                     "rgba(0,0,255,1)",
-            ],
+            ]*/,
             'line-width': 6,
             //'line-dasharray': [1,5]
         }
@@ -99,17 +94,27 @@ const sendRouteRequest = async () => {
 
 };
 
+const activateSelectedPlanningIdea = (route)=>{
+  
+  emit("activateSelectedPlanningIdea", route)
+}
+
 </script>
 
 <style scoped>
 .planning-ideas-options {
   position:relative;
-  top: 94%;
+  top: 95%;
   z-index: 999;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
+  background: red;
+  width: fit-content;
+  background: rgba(255,255,255,0.4);
+  backdrop-filter: blur(5px);
+
 }
 
 </style>
