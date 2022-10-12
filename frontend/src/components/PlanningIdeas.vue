@@ -26,13 +26,15 @@
 <script lang="ts" setup>
 import { onMounted, reactive } from "vue";
 import { useStore } from "vuex";
+import bbox from "@turf/bbox";
 import {
   getRoutesFromDB
 } from "../service/backend.service";
 
+
 const store = useStore();
 
-const emit = defineEmits(["activateSelectedPlanningIdea"])
+const emit = defineEmits(["activateSelectedPlanningIdea", "planningData"])
 let planningData = reactive ({ routes: [] })
 
 const addRouteToMap = async () => {
@@ -48,8 +50,6 @@ const sendRouteRequest = async () => {
     const routeData = await getRoutesFromDB(store.state.aoi.projectSpecification.project_id)
    
     planningData.routes = routeData.data
-
-
     store.commit("map/addSource", {
       id: "routes",
       geojson: {
@@ -90,6 +90,9 @@ const sendRouteRequest = async () => {
         "text-size": 10
       }
     })
+
+    const planningIdeaBBOX = bbox(routeData.data);
+    emit("planningData", planningIdeaBBOX)
 
 
 };

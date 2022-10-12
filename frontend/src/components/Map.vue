@@ -14,7 +14,7 @@
         </v-btn>
       </v-row>
       <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
-      <PlanningIdeas @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap" />
+      <PlanningIdeas @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap" @planningData="planningData" />
       <Quests />
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
         @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
@@ -77,7 +77,17 @@ onMounted(() => {
     maxZoom: store.state.map.maxZoom,
     maxPitch: store.state.map.maxPitch,
   });
+  
+  
   map.on("load", function () {
+    const projectBBOX = [
+      store.state.aoi.projectSpecification.bbox.xmin,
+      store.state.aoi.projectSpecification.bbox.ymin,
+      store.state.aoi.projectSpecification.bbox.xmax,
+      store.state.aoi.projectSpecification.bbox.ymax
+    ]
+    map.fitBounds(projectBBOX);
+    
     HTTP.get("").then((response) => {
       // console.log(response);
     })
@@ -275,6 +285,18 @@ const activateSelectedPlanningIdeaInMap = (selectedFeature)=>{
     )
 
   }
+  
+}
+
+const planningData = (planningIdeaBBOX) => {
+
+  setTimeout(()=>{
+      map.fitBounds(planningIdeaBBOX,{
+        pitch:60,
+        duration: 3000,
+        curve: 4,
+      });
+  }, 2000);
   
 }
 
