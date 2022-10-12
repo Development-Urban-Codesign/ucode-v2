@@ -14,7 +14,7 @@
         </v-btn>
       </v-row>
       <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
-      <PlanningIdeas @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap" @planningData="planningData" />
+      <PlanningIdeas @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap" @navigateToPlanningIdea="navigateToPlanningIdea" />
       <Quests />
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
         @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
@@ -288,14 +288,15 @@ const activateSelectedPlanningIdeaInMap = (selectedFeature)=>{
   
 }
 
-const planningData = (planningIdeaBBOX) => {
+
+const navigateToPlanningIdea = (planningIdeaBBOX) => {
 
   setTimeout(()=>{
-      map.fitBounds(planningIdeaBBOX,{
-        pitch:60,
-        duration: 3000,
-        curve: 4,
-      });
+    map.fitBounds(planningIdeaBBOX,{
+      pitch:60,
+      duration: 3000,
+      curve: 4,
+    });
   }, 2000);
   
 }
