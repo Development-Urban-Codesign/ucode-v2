@@ -31,9 +31,11 @@ import {
   getRoutesFromDB
 } from "../service/backend.service";
 
+
 const store = useStore();
 
 const emit = defineEmits(["activateSelectedPlanningIdea", "navigateToPlanningIdea"])
+
 let planningData = reactive ({ routes: [] })
 
 const addRouteToMap = async () => {
@@ -89,8 +91,6 @@ const sendRouteRequest = async () => {
         "text-size": 10
       }
     })
-
-
 
 };
 
