@@ -124,9 +124,6 @@ onMounted(() => {
         store.state.pulse.pulseAnimationActivation
       ))
     }
-    if (isDragging.value = true) {
-      isDragging.value = false
-    }
 
   });
 
@@ -134,28 +131,9 @@ onMounted(() => {
     lineDrawCreated.value = 1
   })
 
-  map.on('mousemove', (e) => {
-    if (isDragging.value) {
-      // map.setLayoutProperty(
-      //   "uniqueId",
-
-      // )
-      let marker = map.getSource('uniqueId')._data;
-      // console.log(marker)
-      marker.geometry.coordinates = [e.lngLat.lng, e.lngLat.lat]
-      map.getSource('uniqueId').setData(marker)
-      // console.log([e.lngLat.lng, e.lngLat.lat])
-
-
-
-    }
-  })
   map.on('mousedown', 'uniqueId', (e) => {
     // Prevent the default map drag behavior.
     e.preventDefault();
-
-    
-
     map.on('mousemove', onMove);
     map.once('mouseup', onUp);
   });
@@ -170,9 +148,6 @@ onMounted(() => {
     map.once('touchend', onUp);
 
   })
-
-
-
 });
 function onUp(e) {
   map.off('mousemove', onMove);
