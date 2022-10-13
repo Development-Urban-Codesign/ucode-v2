@@ -16,7 +16,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 
-const loadingTexts = ["Bäume pflanzen...", "Grünflächen anlegen...", "Gebäude hochziehen...", "Straßen einziehen..."]
+const loadingTexts = ["Bäume pflanzen...", "Grünflächen pflegen...", "Gebäude planen...", "Straßen markieren..."]
 const curLoadingText = ref("Karte wird befüllt...")
 let i = 0
 const showLoadingText = ref(true)
