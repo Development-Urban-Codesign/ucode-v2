@@ -81,7 +81,9 @@ onMounted(() => {
   
   
   map.on("load", function () {
+
     mapStyleLoaded.value = true
+
     unsubscribeFromStore = store.subscribe((mutation, state) => {
       if (mutation.type === "map/addLayer") {
         state.map.layers?.slice(-1).map(addLayerToMap)
