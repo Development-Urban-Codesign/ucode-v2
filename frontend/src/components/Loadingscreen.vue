@@ -3,7 +3,7 @@
     <v-img max-height="60" class="UcodeLogo" src="UCODE_Logo.png"></v-img>
     <div class="LoadingText">
       <transition-group name="fade">
-        <div class="LoadingText" v-if="showLoading">
+        <div class="LoadingText" v-if="showLoadingText">
           <div>
             {{curLoadingText}}
           </div>
@@ -19,20 +19,23 @@ import { ref } from 'vue';
 const loadingTexts = ["Bäume pflanzen...", "Grünflächen anlegen...", "Gebäude hochziehen...", "Straßen einziehen..."]
 const curLoadingText = ref("Karte wird befüllt...")
 let i = 0
-const showLoading = ref(true)
+const showLoadingText = ref(true)
 async function animate() {
-  setInterval(function () {
+  console.log("animate")
+  const interval = setInterval(function () {
     curLoadingText.value = loadingTexts[i]
     
-    if (showLoading.value == false) {
+    if (showLoadingText.value == false) {
       i++
       // console.log(i)
-      showLoading.value = true
+      showLoadingText.value = true
     }
     else {
-      showLoading.value = false
+      console.log("exec")
+      showLoadingText.value = false
     }
     if (i >= loadingTexts.length) {
+      clearInterval(interval)
       i = 0
     }
     
