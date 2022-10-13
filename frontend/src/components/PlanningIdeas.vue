@@ -115,7 +115,7 @@ watch(store.state.ui, function (state) {
 <style scoped>
 .planning-ideas-options {
   position:relative;
-  top: 95%;
+  margin-top: 5px;
   z-index: 999;
   display: flex;
   flex-direction: row;

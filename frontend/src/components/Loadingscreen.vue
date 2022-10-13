@@ -21,7 +21,6 @@ const curLoadingText = ref("Karte wird befüllt...")
 let i = 0
 const showLoadingText = ref(true)
 async function animate() {
-  console.log("animate")
   const interval = setInterval(function () {
     curLoadingText.value = loadingTexts[i]
     
@@ -31,7 +30,6 @@ async function animate() {
       showLoadingText.value = true
     }
     else {
-      console.log("exec")
       showLoadingText.value = false
     }
     if (i >= loadingTexts.length) {
@@ -47,7 +45,7 @@ animate();
 
 <style scoped>
 .Loadingscreen {
-  z-index: 999;
+  z-index: 1000;
   background-color: #81ABBC;
   width: 100vw;
   height: 100vh;

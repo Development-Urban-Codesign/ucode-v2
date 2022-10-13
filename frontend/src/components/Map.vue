@@ -13,15 +13,19 @@
           Deckgl
         </v-btn>
       </v-row>
-      <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
-      <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap" @navigateToPlanningIdea="navigateToPlanningIdea" />
 
+      <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
       <Quests />
+      <FreelyComment @addComment="addCommentToMap" />
+      <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
+        @navigateToPlanningIdea="navigateToPlanningIdea" />
+
+
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
         @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
         :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
       <Comment @removePulseLayer="removePulseLayerFromMap" />
-      <FreelyComment />
+
 
     </div>
   </div>
@@ -54,6 +58,7 @@ let map = {};
 const mapClicks = reactive({ clickedCoordinates: [] })
 let lineDrawCreated = ref(0)
 let mapStyleLoaded = ref(false)
+const isDragging = ref(false)
 
 let unsubscribeFromStore = () => { };
 
@@ -81,8 +86,8 @@ onMounted(() => {
     maxZoom: store.state.map.maxZoom,
     maxPitch: store.state.map.maxPitch,
   });
-  
-  
+
+
   map.on("load", function () {
 
     mapStyleLoaded.value = true
@@ -102,7 +107,7 @@ onMounted(() => {
       store.state.aoi.projectSpecification.bbox.ymax
     ]
     map.fitBounds(projectBBOX);
-    
+
     HTTP.get("").then((response) => {
       // console.log(response);
     })
@@ -113,11 +118,14 @@ onMounted(() => {
   map.on('click', function (mapClick) {
     mapClicks.clickedCoordinates = [mapClick.lngLat.lng, mapClick.lngLat.lat]
 
-    if  (store.state.comment.toggle)  {
+    if (store.state.comment.toggle) {
       addLayerToMap(pulseLayer(
         store.state.pulse.pulseCoordinates.geometry.coordinates,
         store.state.pulse.pulseAnimationActivation
       ))
+    }
+    if (isDragging.value = true) {
+      isDragging.value = false
     }
 
   });
@@ -126,15 +134,92 @@ onMounted(() => {
     lineDrawCreated.value = 1
   })
 
+  map.on('mousemove', (e) => {
+    if (isDragging.value) {
+      // map.setLayoutProperty(
+      //   "uniqueId",
+
+      // )
+      let marker = map.getSource('uniqueId')._data;
+      // console.log(marker)
+      marker.geometry.coordinates = [e.lngLat.lng, e.lngLat.lat]
+      map.getSource('uniqueId').setData(marker)
+      // console.log([e.lngLat.lng, e.lngLat.lat])
+
+
+
+    }
+  })
+  map.on('mousedown', 'uniqueId', (e) => {
+    // Prevent the default map drag behavior.
+    e.preventDefault();
+
+    
+
+    map.on('mousemove', onMove);
+    map.once('mouseup', onUp);
+  });
+
+  map.on('touchstart', 'uniqueId', (e) => {
+    if (e.points.length !== 1) return;
+
+    // Prevent the default map drag behavior.
+    e.preventDefault();
+
+    map.on('touchmove', onMove);
+    map.once('touchend', onUp);
+
+  })
+
 
 
 });
+function onUp(e) {
+  map.off('mousemove', onMove);
+  map.off('touchmove', onMove);
+}
+function onMove(e) {
 
-
+  let marker = map.getSource('uniqueId')._data;
+  // console.log(marker)
+  marker.geometry.coordinates = [e.lngLat.lng, e.lngLat.lat]
+  map.getSource('uniqueId').setData(marker)
+}
 
 // threejs layer
 const addThreejsShape = () => {
   addLayerToMap(TreeModel(13.74647, 51.068646, 100));
+}
+
+const addCommentToMap = (text) => {
+
+  let marker = {
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [map.getCenter().lng, map.getCenter().lat]
+    }
+  }
+  store.commit("map/addSource", {
+    id: "uniqueId",
+    geojson: {
+      "type": "geojson",
+      "data": marker
+    }
+
+  })
+  addImageToMap('comment1.png');
+
+  store.commit("map/addLayer", {
+    'id': "uniqueId",
+    'type': 'symbol',
+    'source': "uniqueId",
+    'layout': {
+      'icon-image': 'comment1.png', // reference the image
+      'icon-size': 0.25
+    }
+  })
+  isDragging.value = true;
 }
 const addLayerToMap = (layer) => {
   const addedlayer = map.getLayer(layer.id)
@@ -273,38 +358,38 @@ const removePulseLayerFromMap = (layerid) => {
 
 }
 
-const activateSelectedPlanningIdeaInMap = (selectedFeature)=>{
+const activateSelectedPlanningIdeaInMap = (selectedFeature) => {
 
   let bounds = turf.bbox(selectedFeature);
-  map.fitBounds(bounds, {padding: 20});
+  map.fitBounds(bounds, { padding: 20 });
 
-  if (selectedFeature.type== 'FeatureCollection'){
+  if (selectedFeature.type == 'FeatureCollection') {
 
-      map.setPaintProperty ('routes', 'line-color',  ['get', 'color']);
+    map.setPaintProperty('routes', 'line-color', ['get', 'color']);
   } else {
 
     map.setPaintProperty(
-      'routes', 
-      'line-color', 
-      ['match', ['get', 'id'], selectedFeature.properties.id, selectedFeature.properties.color , 'rgba(0,0,0,0.4)' /*['get', 'color']*/],
-      
+      'routes',
+      'line-color',
+      ['match', ['get', 'id'], selectedFeature.properties.id, selectedFeature.properties.color, 'rgba(0,0,0,0.4)' /*['get', 'color']*/],
+
     )
 
   }
-  
+
 }
 
 
 const navigateToPlanningIdea = (planningIdeaBBOX) => {
 
-  setTimeout(()=>{
-    map.fitBounds(planningIdeaBBOX,{
-      pitch:60,
+  setTimeout(() => {
+    map.fitBounds(planningIdeaBBOX, {
+      pitch: 60,
       duration: 3000,
       curve: 4,
     });
   }, 2000);
-  
+
 }
 
 
@@ -322,13 +407,16 @@ onUnmounted(() => {
 }
 
 .map {
+
   height: 100%;
   width: 100%;
   position: absolute;
   background-color: darkgray;
   margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 10px;
 }
-
-
-
 </style>
