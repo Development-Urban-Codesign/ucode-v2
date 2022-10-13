@@ -1,7 +1,9 @@
 <template>
-    <v-container class="Container fill-height">
-        <v-row class="ContainerRow">
-            <v-btn height:50px class="CommentButton">Kommentieren</v-btn>
+    <v-container>
+        <v-row>
+            <v-col>
+                <v-btn>Kommentieren</v-btn>
+            </v-col>
         </v-row>
     </v-container>
 </template>
@@ -10,23 +12,6 @@
 
 </script>
 
-<style>
-#Container {
-    z-index: 1000;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-around;
-    flex-direction: column-reverse;
-    
-}
-#ContainerRow{
-    height:200px;
+<style scoped>
 
-    justify-content: space-around;
-
-}
-
-#CommentButton {
-    justify-content: space-around;
-}
 </style>

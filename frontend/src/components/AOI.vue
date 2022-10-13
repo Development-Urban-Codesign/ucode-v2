@@ -30,9 +30,7 @@ const populateMap = async()=>{
   await sendTrafficSignalRequest()).then(
   await sendDrivingLaneRequest()).then(store.dispatch("aoi/setMapIsPopulated"));
 }
-onMounted(() => {
-  console.log(store.state.aoi.projectId)
-          
+onMounted(() => {          
   HTTP.get("project-specification", {
         params: 
         {

@@ -44,7 +44,7 @@ animate();
 
 <style scoped>
 .Loadingscreen {
-  z-index: 1000;
+  z-index: 999;
   background-color: #81ABBC;
   width: 100vw;
   height: 100vh;
