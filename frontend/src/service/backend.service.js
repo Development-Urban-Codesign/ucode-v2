@@ -212,3 +212,8 @@ export async function getTrafficSignalFromDB(projectId) {
 
   return trafficSignalLayer
 }
+
+export async function getRoutesFromDB(projectId) {
+  const response = await HTTP.post('get-routes-from-db', projectId);
+  return response
+}

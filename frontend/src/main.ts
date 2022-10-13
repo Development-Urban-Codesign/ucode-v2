@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-import store from "./store/store.js";
+import store from "./store/store";
 import vuetify from './plugins/vuetify'
 import '../node_modules/maplibre-gl/dist/maplibre-gl.css';
 import 'bootstrap/dist/css/bootstrap.css';

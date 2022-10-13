@@ -1,54 +1,49 @@
 <template>
-  <v-app>
-    <v-main>
-      <div class="map-wrap" ref="mapContainer">
-        <div class="map" id="map">
-          <!--Show this only when http://localhost:8080/?devmode=true-->
-          <v-row v-if="store.state.aoi.isDevmode" style="position: absolute; right: 20px; top: 20px; z-index: 999">
-            <v-btn color="success" class="ml-2" @click="getCommentData">
-              Show comments
-            </v-btn>
-            <v-btn color="error" class="ml-2" @click="addThreejsShape">
-              Threejs
-            </v-btn>
-            <v-btn color="success" class="ml-2" @click="addDeckglShape">
-              Deckgl
-            </v-btn>
-          </v-row>
-          
-          
-          <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
-          <Quests />
-          <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
-            @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
-            :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
-          <Comment @removePulseLayer="removePulseLayerFromMap" />
-          <Loadingscreen v-if="!store.state.aoi.mapIsPopulated && !store.state.aoi.isDevmode" />
-          <FreelyComment />
+  <div class="map-wrap" ref="mapContainer">
+    <div class="map" id="map">
+      <!--Show this only when http://localhost:8080/?devmode=true-->
+      <v-row v-if="store.state.aoi.isDevmode" style="position: absolute; right: 20px; top: 20px; z-index: 999">
+        <v-btn color="success" class="ml-2" @click="getCommentData">
+          Show comments
+        </v-btn>
+        <v-btn color="error" class="ml-2" @click="addThreejsShape">
+          Threejs
+        </v-btn>
+        <v-btn color="success" class="ml-2" @click="addDeckglShape">
+          Deckgl
+        </v-btn>
+      </v-row>
+      <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
+      <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap" @navigateToPlanningIdea="navigateToPlanningIdea" />
 
+      <Quests />
+      <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
+        @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
+        :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
+      <Comment @removePulseLayer="removePulseLayerFromMap" />
+      <FreelyComment />
 
-        </div>
-      </div>
-    </v-main>
-  </v-app>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import { MapboxLayer } from "@deck.gl/mapbox";
 import { ScenegraphLayer } from "@deck.gl/mesh-layers";
 import { Map } from "maplibre-gl";
-import { onMounted, onUnmounted, reactive, shallowRef, ref } from "vue";
+import { onMounted, onUnmounted, reactive, ref, shallowRef } from "vue";
 import { useStore } from "vuex";
+import { getCommentsFromDB } from "../service/backend.service";
 import { HTTP } from "../utils/http-common";
+import { pulseLayer } from "../utils/pulseLayer";
 import { TreeModel } from "../utils/TreeModel";
 import AOI from "./AOI.vue";
-import Contribution from "./Contribution.vue";
-import { getCommentsFromDB } from "../service/backend.service";
 import Comment from "./Comment.vue";
-import { pulseLayer } from "../utils/pulseLayer";
+import Contribution from "./Contribution.vue";
+import PlanningIdeas from "./PlanningIdeas.vue";
 import Quests from "./Quests.vue";
-import Loadingscreen from "./Loadingscreen.vue";
 import FreelyComment from "./FreelyComment.vue";
+import * as turf from '@turf/turf';
 
 
 
@@ -58,7 +53,7 @@ const mapContainer = shallowRef(null);
 let map = {};
 const mapClicks = reactive({ clickedCoordinates: [] })
 let lineDrawCreated = ref(0)
-
+let mapStyleLoaded = ref(false)
 
 let unsubscribeFromStore = () => { };
 
@@ -67,6 +62,16 @@ onUnmounted(() => {
 })
 
 onMounted(() => {
+  let vh = window.innerHeight * 0.01;
+  // Then we set the value in the --vh custom property to the root of the document
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+
+  // We listen to the resize event
+  window.addEventListener('resize', () => {
+    // We execute the same script as before
+    let vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  });
   map = new Map({
     container: mapContainer.value,
     style: store.state.map.style,
@@ -76,7 +81,28 @@ onMounted(() => {
     maxZoom: store.state.map.maxZoom,
     maxPitch: store.state.map.maxPitch,
   });
+  
+  
   map.on("load", function () {
+
+    mapStyleLoaded.value = true
+
+    unsubscribeFromStore = store.subscribe((mutation, state) => {
+      if (mutation.type === "map/addLayer") {
+        state.map.layers?.slice(-1).map(addLayerToMap)
+      }
+      if (mutation.type === "map/addSource") {
+        state.map.sources?.slice(-1).map(addSourceToMap)
+      }
+    });
+    const projectBBOX = [
+      store.state.aoi.projectSpecification.bbox.xmin,
+      store.state.aoi.projectSpecification.bbox.ymin,
+      store.state.aoi.projectSpecification.bbox.xmax,
+      store.state.aoi.projectSpecification.bbox.ymax
+    ]
+    map.fitBounds(projectBBOX);
+    
     HTTP.get("").then((response) => {
       // console.log(response);
     })
@@ -87,7 +113,7 @@ onMounted(() => {
   map.on('click', function (mapClick) {
     mapClicks.clickedCoordinates = [mapClick.lngLat.lng, mapClick.lngLat.lat]
 
-    if (store.state.comment.toggle) {
+    if  (store.state.comment.toggle)  {
       addLayerToMap(pulseLayer(
         store.state.pulse.pulseCoordinates.geometry.coordinates,
         store.state.pulse.pulseAnimationActivation
@@ -102,15 +128,6 @@ onMounted(() => {
 
 
 
-
-  unsubscribeFromStore = store.subscribe((mutation, state) => {
-    if (mutation.type === "map/addLayer") {
-      state.map.layers?.slice(-1).map(addLayerToMap)
-    }
-    if (mutation.type === "map/addSource") {
-      state.map.sources?.slice(-1).map(addSourceToMap)
-    }
-  });
 });
 
 
@@ -139,6 +156,8 @@ const addLayerToMap = (layer) => {
   const drivinglanelayer = map.getLayer("driving_lane_polygon")
   const drivinglane = map.getLayer("driving_lane")
   const treeLayer = map.getLayer("trees")
+  const routesLayer = map.getLayer("routes")
+  const routesSymbolLayer = map.getLayer("routes-symbols")
   if (typeof buildinglayer !== 'undefined' && typeof greenerylayer !== 'undefined') {
     map?.moveLayer("overpass_greenery", "overpass_buildings")
   }
@@ -152,10 +171,10 @@ const addLayerToMap = (layer) => {
     map?.moveLayer("driving_lane", "comments")
   }
   if (typeof drivinglanelayer !== 'undefined' && typeof buildinglayer !== 'undefined') {
-    map?.moveLayer("driving_lane_polygon", "overpass_buildings")
+    map?.moveLayer("overpass_buildings", "driving_lane_polygon")
   }
   if (typeof drivinglane !== 'undefined' && typeof buildinglayer !== 'undefined') {
-    map?.moveLayer("driving_lane", "overpass_buildings")
+    map?.moveLayer("overpass_buildings", "driving_lane")
   }
 
   if (typeof greenerylayer !== 'undefined' && typeof treeLayer !== 'undefined') {
@@ -166,6 +185,12 @@ const addLayerToMap = (layer) => {
   }
   if (typeof drivinglane !== 'undefined' && typeof treeLayer !== 'undefined') {
     map?.moveLayer("driving_lane", "trees")
+  }
+  if (typeof routesLayer !== 'undefined' && typeof treeLayer !== 'undefined') {
+    map?.moveLayer("routes", "trees")
+  }
+  if (typeof routesSymbolLayer !== 'undefined' && typeof treeLayer !== 'undefined') {
+    map?.moveLayer("routes-symbols", "trees")
   }
 
 
@@ -248,6 +273,40 @@ const removePulseLayerFromMap = (layerid) => {
 
 }
 
+const activateSelectedPlanningIdeaInMap = (selectedFeature)=>{
+
+  let bounds = turf.bbox(selectedFeature);
+  map.fitBounds(bounds, {padding: 20});
+
+  if (selectedFeature.type== 'FeatureCollection'){
+
+      map.setPaintProperty ('routes', 'line-color',  ['get', 'color']);
+  } else {
+
+    map.setPaintProperty(
+      'routes', 
+      'line-color', 
+      ['match', ['get', 'id'], selectedFeature.properties.id, selectedFeature.properties.color , 'rgba(0,0,0,0.4)' /*['get', 'color']*/],
+      
+    )
+
+  }
+  
+}
+
+
+const navigateToPlanningIdea = (planningIdeaBBOX) => {
+
+  setTimeout(()=>{
+    map.fitBounds(planningIdeaBBOX,{
+      pitch:60,
+      duration: 3000,
+      curve: 4,
+    });
+  }, 2000);
+  
+}
+
 
 onUnmounted(() => {
   map?.remove();
@@ -259,6 +318,7 @@ onUnmounted(() => {
   position: relative;
   width: 100%;
   height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
 }
 
 .map {
@@ -268,4 +328,7 @@ onUnmounted(() => {
   background-color: darkgray;
   margin: auto;
 }
+
+
+
 </style>

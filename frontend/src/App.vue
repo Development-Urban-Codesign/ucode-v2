@@ -2,15 +2,28 @@
   <RouterView />
 </template>
 
-<script setup>
-import { RouterView, useRoute } from "vue-router";
+<script lang="ts" setup>
 import { watch } from "vue";
 import { useI18n } from "vue-i18n";
+import { RouterView, useRoute } from "vue-router";
 import { useStore } from "vuex";
+import { HTTP } from "./utils/http-common";
 const t = useI18n();
 
 const store = useStore();
 const route = useRoute();
+
+// initProjects
+HTTP.get("project-specification", {
+  params:
+  {
+    projectId: store.state.aoi.projectId
+  }
+}).then((response) => {
+  store.commit("aoi/setProjectSpecification", response.data[0]);
+  store.commit("ui/loadedProjects", true);
+});
+
 // fetch the user information when params change
 watch(
   () => route.hash,
@@ -25,11 +38,11 @@ watch(
   () => route.query,
   async routeQueries => {
     if (routeQueries.devmode == "true") {
-      store.commit("aoi/setDevmode", routeQueries.devmode)
+      store.commit("ui/toggleDevMode", true)
     }
     if (routeQueries.projectId != null) {
       store.commit("aoi/setProjectId", routeQueries.projectId)
-      }
+    }
   }
 )
 
