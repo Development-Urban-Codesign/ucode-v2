@@ -81,6 +81,15 @@ onMounted(() => {
   
   
   map.on("load", function () {
+
+    unsubscribeFromStore = store.subscribe((mutation, state) => {
+      if (mutation.type === "map/addLayer") {
+        state.map.layers?.slice(-1).map(addLayerToMap)
+      }
+      if (mutation.type === "map/addSource") {
+        state.map.sources?.slice(-1).map(addSourceToMap)
+      }
+    });
     const projectBBOX = [
       store.state.aoi.projectSpecification.bbox.xmin,
       store.state.aoi.projectSpecification.bbox.ymin,
@@ -114,15 +123,6 @@ onMounted(() => {
 
 
 
-
-  unsubscribeFromStore = store.subscribe((mutation, state) => {
-    if (mutation.type === "map/addLayer") {
-      state.map.layers?.slice(-1).map(addLayerToMap)
-    }
-    if (mutation.type === "map/addSource") {
-      state.map.sources?.slice(-1).map(addSourceToMap)
-    }
-  });
 });
 
 
