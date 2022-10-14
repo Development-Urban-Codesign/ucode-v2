@@ -29,7 +29,7 @@
     >
       <v-banner
         v-if="item.isActive"
-        lines="1"
+        lines="one"
         color="black"
         :id="i"
         :style="{ backgroundColor: item.bgColor }"
@@ -49,9 +49,9 @@
   </v-card>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { useStore } from "vuex";
-import { HTTP } from "../utils/http-common";
+import { HTTP } from "@/utils/http-common";
 import { getQuestsFromDB } from "../service/backend.service";
 import { onMounted, reactive, ref } from "vue";
 onMounted(() => {
@@ -62,11 +62,13 @@ onMounted(() => {
 let showQuests = ref(true);
 let greeting = ref(true);
 const store = useStore();
-let quests1 = reactive([]);
-let quests = reactive([]);
+let quests1 = reactive<Quest[]>([]);
+let quests = reactive<Quest[]>([]);
 let introText = ref();
 
-function setupQuests(questsData) {
+type Quest = { name: any; isActive: boolean; id: number; bgColor?:string }
+
+function setupQuests(questsData:any[]) {
   for (let i = 0; i < questsData.length; i++) {
     if (questsData[i][0] == questsData.length) {
       //introText is always last item in quests db
@@ -89,20 +91,22 @@ function setupQuests(questsData) {
     }
   }
 }
+
 async function startAdventure() {
   quests[0].isActive = true;
   greeting.value = false;
+  //@ts-ignore
   document.getElementById("quests").style.top = "0px";
 }
 
-function cancelQuest(id, item) {
+function cancelQuest(id:number, item:Quest) {
   quests[id].bgColor = "grey";
   setTimeout(() => (quests[id].isActive = false), 300);
   if (id < quests.length - 1) {
     setTimeout(() => (quests[id + 1].isActive = true), 300);
   }
 }
-function fulfillQuest(id, quest) {
+function fulfillQuest(id:number, quest:Quest) {
   quests[id].bgColor = "lightgreen";
   HTTP.post("add-quest-fulfillment", {
     questid: quest.id,
