@@ -5,10 +5,9 @@
 
     </div>
 </template>
-<script setup>
+<script lang="ts" setup>
+
 const emit = defineEmits(["addComment"])
-
-
 const createComment = ()=>{
 
 emit('addComment', "asd")
