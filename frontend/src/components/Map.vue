@@ -55,7 +55,8 @@ let map: Map = {} as Map;
 const mapClicks = reactive({ clickedCoordinates: [] })
 let lineDrawCreated = ref(0)
 let mapStyleLoaded = ref(false)
-const isDragging = ref(false)
+let activeMarker = reactive({});
+
 
 let unsubscribeFromStore = () => { };
 
@@ -98,8 +99,8 @@ onMounted(() => {
       }
     });
 
-
     const projectSpecification: ProjectSpecification = store.state.aoi.projectSpecification;
+
     map.fitBounds([projectSpecification.bbox.xmin,
     projectSpecification.bbox.ymin,
     projectSpecification.bbox.xmax,
@@ -131,35 +132,34 @@ onMounted(() => {
   map.on('mousedown', 'uniqueId', (e) => {
     // Prevent the default map drag behavior.
     e.preventDefault();
+    //@ts-ignore TODO Dobo help
+    activeMarker = map.getSource('uniqueId')._data;
     map.on('mousemove', onMove);
     map.once('mouseup', onUp);
   });
-
+  
   map.on('touchstart', 'uniqueId', (e) => {
     if (e.points.length !== 1) return;
-
+    //@ts-ignore TODO Dobo help
+    activeMarker = map.getSource('uniqueId')._data;
     // Prevent the default map drag behavior.
     e.preventDefault();
-
+    
 
     map.on('touchmove', onMove);
     map.once('touchend', onUp);
 
   })
 });
-
 function onUp() {
   map.off('mousemove', onMove);
   map.off('touchmove', onMove);
 }
 function onMove(e: { lngLat: { lng: number; lat: number; }; }) {
-
-  //@ts-ignore TODO Dobo
-  let marker = map.getSource('uniqueId')._data;
-  // console.log(marker)
-  marker.geometry.coordinates = [e.lngLat.lng, e.lngLat.lat]
-  //@ts-ignore TODO Dobo
-  map.getSource('uniqueId').setData(marker)
+  //@ts-ignore
+  activeMarker.geometry.coordinates = [e.lngLat.lng, e.lngLat.lat]
+  //@ts-ignore TODO Dobo help
+  map.getSource('uniqueId').setData(activeMarker)
 }
 
 // threejs layer
@@ -187,18 +187,24 @@ const addCommentToMap = (text: any) => {
     }
 
   })
-  addImageToMap('comment1.png');
+  addImageToMap('comment.png');
 
   store.commit("map/addLayer", {
     'id': "uniqueId",
     'type': 'symbol',
     'source': "uniqueId",
     'layout': {
-      'icon-image': 'comment1.png', // reference the image
-      'icon-size': 0.25
+      'icon-image': 'comment.png', // reference the image
+      'icon-size': 0.25,
+      'icon-offset': [130,25],
+      'icon-anchor': "bottom",
+      'icon-allow-overlap': true,
+      // 'icon-ignore-placement': true
+    },
+    'paint':{
+      // 'fadeDuration': 0
     }
   })
-  isDragging.value = true;
 }
 
 
