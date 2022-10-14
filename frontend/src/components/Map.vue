@@ -1,8 +1,7 @@
 <template>
   <div class="map-wrap" ref="mapContainer">
     <div class="map" id="map">
-      <!--Show this only when http://localhost:8080/?devmode=true-->
-      <v-row v-if="store.state.aoi.isDevmode" style="position: absolute; right: 20px; top: 20px; z-index: 999">
+      <v-row v-if="devMode" style="position: absolute; right: 20px; top: 20px; z-index: 999">
         <v-btn color="success" class="ml-2" @click="getCommentData">
           Show comments
         </v-btn>
@@ -14,7 +13,8 @@
         </v-btn>
       </v-row>
       <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
-      <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap" @navigateToPlanningIdea="navigateToPlanningIdea" />
+      <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
+        @navigateToPlanningIdea="navigateToPlanningIdea" />
 
       <Quests />
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
@@ -29,8 +29,9 @@
 <script setup>
 import { MapboxLayer } from "@deck.gl/mapbox";
 import { ScenegraphLayer } from "@deck.gl/mesh-layers";
+import * as turf from '@turf/turf';
 import { Map } from "maplibre-gl";
-import { onMounted, onUnmounted, reactive, ref, shallowRef } from "vue";
+import { computed, onMounted, onUnmounted, reactive, ref, shallowRef } from "vue";
 import { useStore } from "vuex";
 import { getCommentsFromDB } from "../service/backend.service";
 import { HTTP } from "../utils/http-common";
@@ -41,10 +42,11 @@ import Comment from "./Comment.vue";
 import Contribution from "./Contribution.vue";
 import PlanningIdeas from "./PlanningIdeas.vue";
 import Quests from "./Quests.vue";
-import * as turf from '@turf/turf'
 
 
 const store = useStore();
+
+const devMode = computed(() => store.getters["ui/devMode"]);
 
 const mapContainer = shallowRef(null);
 let map = {};
@@ -78,8 +80,8 @@ onMounted(() => {
     maxZoom: store.state.map.maxZoom,
     maxPitch: store.state.map.maxPitch,
   });
-  
-  
+
+
   map.on("load", function () {
 
     mapStyleLoaded.value = true
@@ -99,7 +101,7 @@ onMounted(() => {
       store.state.aoi.projectSpecification.bbox.ymax
     ]
     map.fitBounds(projectBBOX);
-    
+
     HTTP.get("").then((response) => {
       // console.log(response);
     })
@@ -270,38 +272,38 @@ const removePulseLayerFromMap = (layerid) => {
 
 }
 
-const activateSelectedPlanningIdeaInMap = (selectedFeature)=>{
+const activateSelectedPlanningIdeaInMap = (selectedFeature) => {
 
   let bounds = turf.bbox(selectedFeature);
-  map.fitBounds(bounds, {padding: 20});
+  map.fitBounds(bounds, { padding: 20 });
 
-  if (selectedFeature.type== 'FeatureCollection'){
+  if (selectedFeature.type == 'FeatureCollection') {
 
-      map.setPaintProperty ('routes', 'line-color',  ['get', 'color']);
+    map.setPaintProperty('routes', 'line-color', ['get', 'color']);
   } else {
 
     map.setPaintProperty(
-      'routes', 
-      'line-color', 
-      ['match', ['get', 'id'], selectedFeature.properties.id, selectedFeature.properties.color , 'rgba(0,0,0,0.4)' /*['get', 'color']*/],
-      
+      'routes',
+      'line-color',
+      ['match', ['get', 'id'], selectedFeature.properties.id, selectedFeature.properties.color, 'rgba(0,0,0,0.4)' /*['get', 'color']*/],
+
     )
 
   }
-  
+
 }
 
 
 const navigateToPlanningIdea = (planningIdeaBBOX) => {
 
-  setTimeout(()=>{
-    map.fitBounds(planningIdeaBBOX,{
-      pitch:60,
+  setTimeout(() => {
+    map.fitBounds(planningIdeaBBOX, {
+      pitch: 60,
       duration: 3000,
       curve: 4,
     });
   }, 2000);
-  
+
 }
 
 
@@ -325,7 +327,4 @@ onUnmounted(() => {
   background-color: darkgray;
   margin: auto;
 }
-
-
-
 </style>

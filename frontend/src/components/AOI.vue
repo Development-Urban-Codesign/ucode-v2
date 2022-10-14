@@ -1,9 +1,9 @@
 <template>
-  <DevUI v-if="store.state.aoi.isDevmode" />
+  <DevUI v-if="devMode" />
 </template>
 
 <script lang="ts" setup>
-import { onMounted } from "vue";
+import { onMounted, computed } from "vue";
 import { useStore } from "vuex";
 import {
   getbuildingsFromDB, getDrivingLaneFromDB, getGreeneryFromDBTexture, getTrafficSignalFromDB, getTreesFromDB
@@ -11,6 +11,7 @@ import {
 import DevUI from "./DevUI.vue";
 
 const store = useStore();
+const devMode = computed(() => store.getters["ui/devMode"]);
 
 const emit = defineEmits(["addLayer", "addImage"]);
 const populateMap = async () => {
