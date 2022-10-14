@@ -15,6 +15,7 @@ export interface AOIState {
   dataIsLoading: boolean;
   mapIsPopulated: boolean;
   isDevmode: boolean;
+  userId: string;
 }
 
 export interface ProjectSpecification {
@@ -29,6 +30,7 @@ const aoi = {
     //bbox: { xmin: 13.723167, ymin:51.053100, xmax: 13.770031, ymax: 51.079799 }, // DResden
     projectSpecification: null, // Mainz
     projectId: "0",
+    userId: "",
     //bbox: { xmin: -74.023387, ymin: 40.741825, xmax: -73.877212, ymax: 40.825175}, // Manhatten
     overpassBuildings: null,
     usedTagsForGreenery: {
@@ -64,6 +66,9 @@ const aoi = {
     setDevmode(state: AOIState, bool: boolean) {
       state.isDevmode = bool;
     },
+    setUserId(state: AOIState, userId: string){
+      state.userId = userId
+  },
   },
   actions: {
     setDataIsLoaded({ state }: { state: AOIState }) {

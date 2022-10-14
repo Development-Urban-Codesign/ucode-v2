@@ -14,15 +14,7 @@ const store = useStore();
 const route = useRoute();
 
 // initProjects
-HTTP.get("project-specification", {
-  params:
-  {
-    projectId: store.state.aoi.projectId
-  }
-}).then((response) => {
-  store.commit("aoi/setProjectSpecification", response.data[0]);
-  store.commit("ui/loadedProjects", true);
-});
+
 
 // fetch the user information when params change
 watch(
@@ -37,10 +29,13 @@ watch(
 watch(
   () => route.query,
   async routeQueries => {
+    
     if (routeQueries.devmode == "true") {
+      
       store.commit("ui/toggleDevMode", true)
     }
     if (routeQueries.projectId != null) {
+      
       store.commit("aoi/setProjectId", routeQueries.projectId)
     }
     if (routeQueries.userId != null) {
@@ -49,16 +44,16 @@ watch(
   }
 )
 
-// initProjects
-HTTP.get("project-specification", {
-  params:
-  {
-    projectId: store.state.aoi.projectId
-  }
-}).then((response) => {
-  store.commit("aoi/setProjectSpecification", response.data[0]);
-  store.commit("ui/loadedProjects", true);
-});
+// // initProjects
+// HTTP.get("project-specification", {
+//   params:
+//   { 
+//     projectId: store.state.aoi.projectId
+//   }
+// }).then((response) => {
+//   store.commit("aoi/setProjectSpecification", response.data[0]);
+//   store.commit("ui/loadedProjects", true);
+// });
 
 </script>
 
