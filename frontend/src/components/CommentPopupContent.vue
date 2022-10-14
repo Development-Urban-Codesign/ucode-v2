@@ -9,7 +9,7 @@
 
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { ref, defineProps } from 'vue';
 import { useStore } from "vuex";
 import { HTTP } from '../utils/http-common';
@@ -58,7 +58,7 @@ const submitComment = () => {
     }
   })
 
-  props.closePopup();
+  props.closePopup!();
 }
 
 </script>
