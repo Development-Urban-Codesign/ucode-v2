@@ -26,6 +26,7 @@
   </div>
 </template>
 
+
 <script lang="ts" setup>
 import AOI from "@/components/AOI.vue";
 import Comment from "@/components/Comment.vue";
@@ -43,6 +44,7 @@ import * as turf from '@turf/turf';
 import { Map, type CustomLayerInterface, type Feature, type IControl, type LayerSpecification, type LngLatBoundsLike, type Popup, type SourceSpecification } from "maplibre-gl";
 import { computed, onMounted, onUnmounted, reactive, ref, shallowRef } from "vue";
 import { useStore } from "vuex";
+
 
 const store = useStore();
 
@@ -94,11 +96,13 @@ onMounted(() => {
         state.map.sources?.slice(-1).map(addSourceToMap)
       }
     });
+
     const projectSpecification: ProjectSpecification = store.state.aoi.projectSpecification;
     map.fitBounds([projectSpecification.bbox.xmin,
     projectSpecification.bbox.ymin,
     projectSpecification.bbox.xmax,
     projectSpecification.bbox.ymax]);
+
 
     HTTP.get("").then((response) => {
       // console.log(response);
@@ -273,6 +277,7 @@ const removePulseLayerFromMap = (layerid: string) => {
   cancelAnimationFrame(store.state.pulse.pulseAnimationActivation)
 }
 
+
 const activateSelectedPlanningIdeaInMap = (selectedFeature: Feature) => {
 
   let bounds = turf.bbox(selectedFeature) as LngLatBoundsLike;
@@ -280,14 +285,17 @@ const activateSelectedPlanningIdeaInMap = (selectedFeature: Feature) => {
 
   // @ts-ignore
   if (selectedFeature.type == 'FeatureCollection') {
+
     map.setPaintProperty('routes', 'line-color', ['get', 'color']);
   } else {
     map.setPaintProperty(
       'routes',
       'line-color',
       ['match', ['get', 'id'], selectedFeature.properties.id, selectedFeature.properties.color, 'rgba(0,0,0,0.4)' /*['get', 'color']*/],
+
     )
   }
+
 }
 
 const navigateToPlanningIdea = (planningIdeaBBOX: LngLatBoundsLike) => {
