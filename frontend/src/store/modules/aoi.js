@@ -25,6 +25,9 @@ const aoi = {
         setProjectId(state, projectId){
             state.projectId = projectId
         },
+        setUserId(state, userId){
+            state.userId = userId
+        },
         setDevmode(state,bool){
             state.isDevmode = bool
         }

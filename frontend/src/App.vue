@@ -43,9 +43,22 @@ watch(
     if (routeQueries.projectId != null) {
       store.commit("aoi/setProjectId", routeQueries.projectId)
     }
+    if (routeQueries.userId != null) {
+      store.commit("aoi/setUserId", routeQueries.userId)
+    }
   }
 )
 
+// initProjects
+HTTP.get("project-specification", {
+  params:
+  {
+    projectId: store.state.aoi.projectId
+  }
+}).then((response) => {
+  store.commit("aoi/setProjectSpecification", response.data[0]);
+  store.commit("ui/loadedProjects", true);
+});
 
 </script>
 
