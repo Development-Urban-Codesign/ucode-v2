@@ -82,7 +82,7 @@ onBeforeUpdate(() => {
             .setLngLat([drawnLineGeometry?.features[0]?.geometry?.coordinates?.slice(-1)[0][0], drawnLineGeometry?.features[0]?.geometry?.coordinates?.slice(-1)[0][1]])
             .setHTML('<div id="draw-line-popup-content">fff</div>')
 
-        emit("addDrawnLine", drawnLineGeometry, drawnPathlayerId, drawnPathlayer, linePopup)
+        emit("addDrawnLine", drawnPathlayer, linePopup)
 
         document.getElementsByClassName('mapboxgl-popup-content maplibregl-popup-content')[0].style.width = "400px"
 
