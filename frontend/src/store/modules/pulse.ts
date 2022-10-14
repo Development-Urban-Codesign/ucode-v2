@@ -1,3 +1,9 @@
+export interface PulseState{
+    pulseCoordinates: object;
+    pulseAnimationActivation: unknown;
+
+}
+
 const pulse = {
     namespaced: true,
     state: {
@@ -5,7 +11,7 @@ const pulse = {
         pulseAnimationActivation: null
     },
     mutations: {
-        pulsedata(state, payload){
+        pulsedata(state:PulseState, payload:PulseState){
             state.pulseCoordinates=payload
         }
     },
