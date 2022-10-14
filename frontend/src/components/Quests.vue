@@ -8,15 +8,32 @@
       </v-btn>
     </v-card-title>
     <v-card-text v-if="greeting" align="center"> {{ introText }} </v-card-text>
-    <v-btn style="left: 50%; transform: translate(-50%, 0)" flat v-if="greeting" @click="startAdventure">
-      {{$t("Quest.startAdventure")}}</v-btn>
-    <v-card align="center" justify="center" v-for="(item, i) in quests" :key="i">
-      <v-banner v-if="item.isActive" lines="1" color="black" :id="i" :style="{ backgroundColor: item.bgColor }">
+    <v-btn
+      style="left: 50%; transform: translate(-50%, 0)"
+      flat
+      v-if="greeting"
+      @click="startAdventure"
+    >
+      {{$t("Quest.startAdventure")}}</v-btn
+    >
+    <v-card
+      align="center"
+      justify="center"
+      v-for="(item, i) in quests"
+      :key="i"
+    >
+      <v-banner
+        v-if="item.isActive"
+        lines="one"
+        color="black"
+        :id="i"
+        :style="{ backgroundColor: item.bgColor }"
+      >
         <v-banner-text>
           {{ item.name }}
         </v-banner-text>
         <v-banner-actions>
-          <v-btn v-if="i == 0 && greeting" @click="startQuest(i)">Start</v-btn>
+          <!-- <v-btn v-if="i == 0 && greeting" @click="startQuest(i)">Start</v-btn> -->
           <v-btn v-if="!greeting" @click="cancelQuest(i)">Überspringen</v-btn>
           <v-btn v-if="!greeting" @click="fulfillQuest(i, item)">Abschließen</v-btn>
         </v-banner-actions>
@@ -25,9 +42,9 @@
   </v-card>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { useStore } from "vuex";
-import { HTTP } from "../utils/http-common";
+import { HTTP } from "@/utils/http-common";
 import { getQuestsFromDB } from "../service/backend.service";
 import { onMounted, reactive, ref } from "vue";
 onMounted(() => {
@@ -38,11 +55,13 @@ onMounted(() => {
 let showQuests = ref(true);
 let greeting = ref(true);
 const store = useStore();
-let quests1 = reactive([]);
-let quests = reactive([]);
+let quests1 = reactive<Quest[]>([]);
+let quests = reactive<Quest[]>([]);
 let introText = ref();
 
-function setupQuests(questsData) {
+type Quest = { name: any; isActive: boolean; id: number; bgColor?:string }
+
+function setupQuests(questsData:any[]) {
   for (let i = 0; i < questsData.length; i++) {
     if (questsData[i][0] == questsData.length) {
       //introText is always last item in quests db
@@ -65,21 +84,24 @@ function setupQuests(questsData) {
     }
   }
 }
+
 async function startAdventure() {
   quests[0].isActive = true;
   greeting.value = false;
+  //@ts-ignore
   document.getElementById("quests").style.top = "0px";
+  //@ts-ignore
   document.getElementById("quests").style.transform= "translate(-50%, 0%)";
 }
 
-function cancelQuest(id, item) {
+function cancelQuest(id:number) {
   quests[id].bgColor = "grey";
   setTimeout(() => (quests[id].isActive = false), 300);
   if (id < quests.length - 1) {
     setTimeout(() => (quests[id + 1].isActive = true), 300);
   }
 }
-function fulfillQuest(id, quest) {
+function fulfillQuest(id:number, quest:Quest) {
   quests[id].bgColor = "lightgreen";
   HTTP.post("add-quest-fulfillment", {
     questid: quest.id,

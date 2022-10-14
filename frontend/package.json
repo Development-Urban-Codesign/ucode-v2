@@ -31,6 +31,7 @@
     "webfontloader": "^1.0.0"
   },
   "devDependencies": {
+    "@types/webfontloader": "^1.6.35",
     "@vitejs/plugin-vue": "^3.0.1",
     "@vue/test-utils": "^2.0.2",
     "@vue/tsconfig": "^0.1.3",
