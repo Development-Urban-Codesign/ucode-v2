@@ -14,9 +14,10 @@
       </v-row>
       <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
       <Quests />
-      <FreelyComment @addComment="addCommentToMap" />
+
       <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
         @navigateToPlanningIdea="navigateToPlanningIdea" />
+      <FreelyComment @addComment="addCommentToMap" />
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
         @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
         :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
@@ -119,7 +120,7 @@ onMounted(() => {
 
     if (store.state.comment.toggle) {
       //@ts-ignore
-      addLayerToMap(pulseLayer( store.state.pulse.pulseCoordinates.geometry.coordinates))
+      addLayerToMap(pulseLayer(store.state.pulse.pulseCoordinates.geometry.coordinates))
     }
 
   });
@@ -137,14 +138,14 @@ onMounted(() => {
     map.on('mousemove', onMove);
     map.once('mouseup', onUp);
   });
-  
+
   map.on('touchstart', 'uniqueId', (e) => {
     if (e.points.length !== 1) return;
     //@ts-ignore TODO Dobo help
     activeMarker = map.getSource('uniqueId')._data;
     // Prevent the default map drag behavior.
     e.preventDefault();
-    
+
 
     map.on('touchmove', onMove);
     map.once('touchend', onUp);
@@ -196,12 +197,12 @@ const addCommentToMap = (text: any) => {
     'layout': {
       'icon-image': 'comment.png', // reference the image
       'icon-size': 0.25,
-      'icon-offset': [130,25],
+      'icon-offset': [130, 25],
       'icon-anchor': "bottom",
       'icon-allow-overlap': true,
       // 'icon-ignore-placement': true
     },
-    'paint':{
+    'paint': {
       // 'fadeDuration': 0
     }
   })
@@ -407,6 +408,6 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  padding-bottom: 10px;
+  
 }
 </style>

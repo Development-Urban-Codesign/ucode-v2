@@ -2,7 +2,7 @@
 
   <v-sheet
       class="mx-auto planning-ideas-options"
-      max-width="500"
+      
   >
     <v-btn size="small" color="grey" rounded flat @click="activateSelectedPlanningIdea( planningData.routes)">
           All
@@ -116,6 +116,7 @@ watch(store.state.ui, function (state) {
 .planning-ideas-options {
   position:relative;
   margin-top: 5px;
+  padding: 5px;
   z-index: 999;
   display: flex;
   flex-direction: row;
