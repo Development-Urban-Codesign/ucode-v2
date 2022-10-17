@@ -38,7 +38,7 @@
                         </v-col>
                         <v-col cols="2">
                             <v-btn @click="saveComment" icon="mdi-send-outline" variant="plain"
-                                style=" justify-content: center; size: x-large">
+                                style=" justify-content: start; size: x-large; padding-bottom: 15px;">
 
                             </v-btn>
                         </v-col>
