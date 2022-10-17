@@ -33,7 +33,7 @@
                     </v-row>
                     <v-row no-gutters justify="center" style="margin:0px; margin-left:10px; align-items: flex-end;">
                         <v-col cols="10">
-                            <v-textarea style="margin-top:10px;" rows="2" no-resize label="Hier Kommentar eingeben"
+                            <v-textarea style="margin-top:10px;" rows="2" no-resize label="Kommentar"
                                 variant="outlined"></v-textarea>
                         </v-col>
                         <v-col cols="2">
