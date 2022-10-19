@@ -118,10 +118,6 @@ const saveComment = () => {
                 position: props.clickedCoordinates
             })
     }
-    console.log(store.state.aoi.projectSpecification.project_id);
-    console.log(commentText.value);
-    console.log(props.clickedCoordinates);
-
     submitComment()
 }
 </script>

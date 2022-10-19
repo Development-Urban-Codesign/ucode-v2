@@ -169,7 +169,6 @@ function onMove(e: { lngLat: { lng: number; lat: number; }; }) {
 function getMapCenter() {
   //@ts-ignore
   mapClicks.clickedCoordinates = [map.getCenter().lng, map.getCenter().lat]
-  console.log(mapClicks.clickedCoordinates)
 }
 // threejs layer
 const addThreejsShape = () => {
