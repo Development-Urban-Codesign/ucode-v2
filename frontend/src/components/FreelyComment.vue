@@ -1,8 +1,8 @@
 <template>
     <div class="comment-container">
         <v-row no-gutters justify="center">
-            <v-btn v-if="commentStep == 0" class="mb-10;" size="large" rounded="pill" color="primary"
-                @click="createComment">Kommentieren
+            <v-btn v-show="commentStep == 0" class="mb-10;" size="large" rounded="pill" color="primary"
+                @mousedown="emit('getCenterOnMap')" @click="createComment">Kommentieren
             </v-btn>
             <v-col v-if="commentStep == 1" cols-sx="12" sm="10" md="6" lg="4">
                 <v-card style="text-align: center;"
@@ -33,8 +33,9 @@
                     </v-row>
                     <v-row no-gutters justify="center" style="margin:0px; margin-left:10px; align-items: flex-end;">
                         <v-col cols="10">
-                            <v-textarea style="margin-top:10px;" rows="2" no-resize label="Kommentar"
-                                variant="outlined"></v-textarea>
+                            <v-textarea rows="2" no-resize label="Kommentar" variant="underlined" color="indigo"
+                                :modelValue="commentText" @update:modelValue="text => commentText = text">
+                            </v-textarea>
                         </v-col>
                         <v-col cols="2">
                             <v-btn @click="saveComment" icon="mdi-send-outline" variant="plain"
@@ -50,17 +51,54 @@
     </div>
 </template>
 <script lang="ts" setup>
+import { useStore } from 'vuex';
+import { HTTP } from '@/utils/http-common';
 import { ref } from 'vue';
-
+const store = useStore()
 let flexOrder = ref<number>(-1)
 let paddingBot = ref<string>("20px")
 let commentStep = ref<number>(0)
-const emit = defineEmits(["addComment"])
-const createComment = () => {
+let commentText = ref<string>("")
 
-    emit('addComment', "asd")
+const props = defineProps({
+    clickedCoordinates: Array<Number>,
+})
+
+const emit = defineEmits(["addComment", "getCenterOnMap"])
+
+function createComment() {
+    let marker = {
+        type: 'Feature',
+        geometry: {
+            type: 'Point',
+            coordinates: props.clickedCoordinates
+        }
+    }
+    let mapsource = {
+        id: "ownComments",
+        geojson: {
+            "type": "geojson",
+            "data": marker
+        }
+    }
+    let ownCommentLayer = {
+        'id': "ownComments",
+        'type': 'symbol',
+        'source': "ownComments",
+        'layout': {
+            'icon-image': 'comment.png', // reference the image
+            'icon-size': 0.25,
+            'icon-offset': [130, 25],
+            'icon-anchor': "bottom",
+            'icon-allow-overlap': true,
+            // 'icon-ignore-placement': true
+        },
+        'paint': {
+            // 'fadeDuration': 0
+        }
+    }
+    emit('addComment', mapsource, ownCommentLayer)
     commentStep.value++
-    console.log(commentStep)
     flexOrder.value = 1
     paddingBot.value = "0px"
 }
@@ -71,6 +109,20 @@ const saveComment = () => {
     commentStep.value = 0
     flexOrder.value = -1
     paddingBot.value = "20px"
+
+    const submitComment = () => {
+        HTTP
+            .post('add-comment', {
+                projectId: store.state.aoi.projectSpecification.project_id,
+                comment: commentText.value,
+                position: props.clickedCoordinates
+            })
+    }
+    console.log(store.state.aoi.projectSpecification.project_id);
+    console.log(commentText.value);
+    console.log(props.clickedCoordinates);
+
+    submitComment()
 }
 </script>
 
@@ -82,7 +134,7 @@ const saveComment = () => {
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    margin-top: 2px;
+    /* margin-top: 2px; */
     padding-bottom: v-bind('paddingBot');
     width: 100%;
     order: v-bind('flexOrder');

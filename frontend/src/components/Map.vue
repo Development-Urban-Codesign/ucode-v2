@@ -17,7 +17,8 @@
 
       <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
         @navigateToPlanningIdea="navigateToPlanningIdea" />
-      <FreelyComment @addComment="addCommentToMap" />
+      <FreelyComment @addComment="addCommentToMap" @getCenterOnMap="getMapCenter"
+        :clickedCoordinates="mapClicks.clickedCoordinates" />
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
         @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
         :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
@@ -130,19 +131,19 @@ onMounted(() => {
   })
 
 
-  map.on('mousedown', 'uniqueId', (e) => {
+  map.on('mousedown', 'ownComments', (e) => {
     // Prevent the default map drag behavior.
     e.preventDefault();
     //@ts-ignore TODO Dobo help
-    activeMarker = map.getSource('uniqueId')._data;
+    activeMarker = map.getSource('ownComments')._data;
     map.on('mousemove', onMove);
     map.once('mouseup', onUp);
   });
 
-  map.on('touchstart', 'uniqueId', (e) => {
+  map.on('touchstart', 'ownComments', (e) => {
     if (e.points.length !== 1) return;
     //@ts-ignore TODO Dobo help
-    activeMarker = map.getSource('uniqueId')._data;
+    activeMarker = map.getSource('ownComments')._data;
     // Prevent the default map drag behavior.
     e.preventDefault();
 
@@ -160,9 +161,16 @@ function onMove(e: { lngLat: { lng: number; lat: number; }; }) {
   //@ts-ignore
   activeMarker.geometry.coordinates = [e.lngLat.lng, e.lngLat.lat]
   //@ts-ignore TODO Dobo help
-  map.getSource('uniqueId').setData(activeMarker)
+  map.getSource('ownComments').setData(activeMarker)
+  // @ts-ignore
+  mapClicks.clickedCoordinates = [e.lngLat.lng, e.lngLat.lat]
 }
 
+function getMapCenter() {
+  //@ts-ignore
+  mapClicks.clickedCoordinates = [map.getCenter().lng, map.getCenter().lat]
+  console.log(mapClicks.clickedCoordinates)
+}
 // threejs layer
 const addThreejsShape = () => {
   //TODO type treemodel 
@@ -171,42 +179,29 @@ const addThreejsShape = () => {
 }
 
 
-const addCommentToMap = (text: any) => {
+const addCommentToMap = (source: any, layer: any) => {
 
-  let marker = {
-    type: 'Feature',
-    geometry: {
-      type: 'Point',
-      coordinates: [map.getCenter().lng, map.getCenter().lat]
-    }
-  }
-  store.commit("map/addSource", {
-    id: "uniqueId",
-    geojson: {
-      "type": "geojson",
-      "data": marker
-    }
-
-  })
+  addSourceToMap(source)
   addImageToMap('comment.png');
-
-  store.commit("map/addLayer", {
-    'id': "uniqueId",
-    'type': 'symbol',
-    'source': "uniqueId",
-    'layout': {
-      'icon-image': 'comment.png', // reference the image
-      'icon-size': 0.25,
-      'icon-offset': [130, 25],
-      'icon-anchor': "bottom",
-      'icon-allow-overlap': true,
-      // 'icon-ignore-placement': true
-    },
-    'paint': {
-      // 'fadeDuration': 0
-    }
-  })
+  addLayerToMap(layer)
 }
+
+store.commit("map/addLayer", {
+  'id': "ownComments",
+  'type': 'symbol',
+  'source': "ownComments",
+  'layout': {
+    'icon-image': 'comment.png', // reference the image
+    'icon-size': 0.25,
+    'icon-offset': [130, 25],
+    'icon-anchor': "bottom",
+    'icon-allow-overlap': true,
+    // 'icon-ignore-placement': true
+  },
+  'paint': {
+    // 'fadeDuration': 0
+  }
+})
 
 
 const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
@@ -279,7 +274,7 @@ const removeLayerFromMap = (layerId: string) => {
   }
 }
 
-const addSourceToMap = (source: { id: string, geojson: SourceSpecification }) => {
+const addSourceToMap = (source: { id: string, geojson: any }) => {
   // console.log(source)
   if (!source) return;
   if (!map) return;
@@ -408,6 +403,6 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  
+
 }
 </style>
