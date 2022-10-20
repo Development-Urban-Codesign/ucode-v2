@@ -343,7 +343,7 @@ async def get_trees_from_db_api(request: Request):
 @app.post("/add-comment")
 async def add_comment_api(request: Request):
     data = await request.json()
-    add_comment(data["projectId"],data["comment"], sure_float(data["position"][0]), sure_float(data["position"][1]))
+    add_comment(data["userId"],data["projectId"],data["comment"], sure_float(data["position"][0]), sure_float(data["position"][1]))
     return "added"
 
 

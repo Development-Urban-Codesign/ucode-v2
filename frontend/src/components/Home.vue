@@ -1,6 +1,6 @@
 <template>
   <div class="main-loader">
-    <Loadingscreen v-if="!hideLoadingScreen&&false"> </Loadingscreen>
+    <Loadingscreen v-if="!hideLoadingScreen"> </Loadingscreen>
     <Map v-if="projectsLoaded"></Map>
   </div>
 </template>

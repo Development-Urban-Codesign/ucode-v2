@@ -21,15 +21,15 @@ const props =
   })
 
 let commentText = ref("")
-
 const submitComment = () => {
   HTTP
   .post('add-comment', {
+    userId: store.state.aoi.userId,
     projectId: store.state.aoi.projectSpecification.project_id,
     comment: commentText.value,
     position: props.clickedCoordinates
   })
-
+  console.log("User: " + store.state.aoi.userId + " Projekt: " + store.state.aoi.projectSpecification.project_id)
   store.state.contribution.commentToggle = false
   let marker = {
     type: 'Feature',

@@ -16,12 +16,12 @@ export const pulseLayer = (pulseCoordinate: any) => {
     getPosition: pulseCoordinate,
     getRadius: 0,
     radiusScale: 1,
-    getFillColor: () => [0, 255, 0, 255],
+    getFillColor: () => [0, 255, 0, 150],
     getLineColor: () => [0, 0, 0],
   });
 
   let radius = 0;
-  let opacity = 255;
+  let opacity = 150;
   function pulseAnimation() {
     radius = radius + 0.0784;
     opacity--;
@@ -33,7 +33,7 @@ export const pulseLayer = (pulseCoordinate: any) => {
 
     if (radius >= 20) {
       radius = 0;
-      opacity = 255;
+      opacity = 150;
     }
 
     store.state.pulse.pulseAnimationActivation =

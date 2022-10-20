@@ -15,6 +15,14 @@ const comment = {
         getClickedCommentObject(state, payload) {
             let timestamp = new Date(payload.properties.created_at);
             let date = new Date(Date.parse(timestamp));
+
+            // TH 19.10.2022 -> Time-relative Timestamd: 
+            // when older than 1 week = the exact timestamp, 
+            // when less than 24 houers = e.g. 9 hours before
+            // when less tahn 1 houre before
+            // >> I8n?
+            
+        
             date = date.toUTCString();
             let day = new Date(date).getDate();
             let month = new Date(date).getMonth() + 1;
@@ -23,6 +31,7 @@ const comment = {
             if (hours < 10) {
                 hours = "0" + hours
             };
+
             let minutes = new Date(date).getMinutes();
             if (minutes < 10) {
                 minutes = "0" + minutes

@@ -59,15 +59,16 @@ def get_buildings_from_db(projectId):
   connection.close()
   return building
 
-def add_comment(projectId, comment, lng, lat):
+#TH : 
+def add_comment(userId, projectId, comment, lng, lat):
   connection = connect()
   cursor = connection.cursor()
   
   insert_query_comment= '''
-    INSERT INTO comment (project_id,comment, geom) VALUES (%s,%s, ST_SetSRID(ST_MakePoint(%s, %s), 4326));
+    INSERT INTO comment (user_id,project_id,comment, geom) VALUES (%s,%s,%s, ST_SetSRID(ST_MakePoint(%s, %s), 4326));
 
   '''
-  cursor.execute(insert_query_comment, (projectId, comment, lng, lat,))
+  cursor.execute(insert_query_comment, (userId, projectId, comment, lng, lat,))
   connection.commit()
   cursor.close()
   connection.close()
