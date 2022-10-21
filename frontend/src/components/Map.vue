@@ -17,8 +17,8 @@
 
       <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
         @navigateToPlanningIdea="navigateToPlanningIdea" />
-      <FreelyComment @addComment="addCommentToMap" @getCenterOnMap="getMapCenter"
-        :clickedCoordinates="mapClicks.clickedCoordinates" />
+      <FreeComment @centerMapOnComment="centerMapOnComment" @addComment="addCommentToMap" @getCenterOnMap="getMapCenter"
+        :clickedCoordinates="commentClicks.commentCoordinates" />
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
         @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
         :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
@@ -35,7 +35,7 @@ import Comment from "@/components/Comment.vue";
 import Contribution from "@/components/Contribution.vue";
 import PlanningIdeas from "@/components/PlanningIdeas.vue";
 import Quests from "@/components/Quests.vue";
-import FreelyComment from "@/components/FreelyComment.vue";
+import FreeComment from "@/components/FreeComment.vue";
 import { getCommentsFromDB } from "@/service/backend.service";
 import type { ProjectSpecification } from "@/store/modules/aoi";
 import { HTTP } from "@/utils/http-common";
@@ -44,9 +44,10 @@ import { TreeModel } from "@/utils/TreeModel";
 import { MapboxLayer } from "@deck.gl/mapbox/typed";
 import { ScenegraphLayer } from "@deck.gl/mesh-layers/typed";
 import * as turf from '@turf/turf';
-import { Map, type CustomLayerInterface, type Feature, type IControl, type LayerSpecification, type LngLatBoundsLike, type Popup, type SourceSpecification } from "maplibre-gl";
+import { Map, type CustomLayerInterface, type Feature, type IControl, type LayerSpecification, type LngLatBoundsLike, type Popup } from "maplibre-gl";
 import { computed, onMounted, onUnmounted, reactive, ref, shallowRef } from "vue";
 import { useStore } from "vuex";
+
 
 const store = useStore();
 
@@ -55,9 +56,10 @@ const devMode = computed(() => store.getters["ui/devMode"]);
 const mapContainer = shallowRef(null);
 let map: Map = {} as Map;
 const mapClicks = reactive({ clickedCoordinates: [] })
+const commentClicks = reactive({ commentCoordinates: [] })
 let lineDrawCreated = ref(0)
 let mapStyleLoaded = ref(false)
-let activeMarker = reactive({});
+let activeMarker = reactive<any>({});
 
 
 let unsubscribeFromStore = () => { };
@@ -133,6 +135,9 @@ onMounted(() => {
 
   map.on('mousedown', 'ownComments', (e) => {
     // Prevent the default map drag behavior.
+    if(!store.state.freecomment.moveComment){
+      return
+    }
     e.preventDefault();
     //@ts-ignore TODO Dobo help
     activeMarker = map.getSource('ownComments')._data;
@@ -142,12 +147,13 @@ onMounted(() => {
 
   map.on('touchstart', 'ownComments', (e) => {
     if (e.points.length !== 1) return;
+    if(!store.state.freecomment.moveComment){
+      return
+    }
     //@ts-ignore TODO Dobo help
     activeMarker = map.getSource('ownComments')._data;
     // Prevent the default map drag behavior.
     e.preventDefault();
-
-
     map.on('touchmove', onMove);
     map.once('touchend', onUp);
 
@@ -159,16 +165,22 @@ function onUp() {
 }
 function onMove(e: { lngLat: { lng: number; lat: number; }; }) {
   //@ts-ignore
-  activeMarker.geometry.coordinates = [e.lngLat.lng, e.lngLat.lat]
-  //@ts-ignore TODO Dobo help
+  let index = map.getSource('ownComments')?._data.features.length -1
+  //@ts-ignore
+  activeMarker.features[index].geometry.coordinates = [e.lngLat.lng, e.lngLat.lat]
+  //@ts-ignore
   map.getSource('ownComments').setData(activeMarker)
   // @ts-ignore
-  mapClicks.clickedCoordinates = [e.lngLat.lng, e.lngLat.lat]
+  commentClicks.commentCoordinates = [e.lngLat.lng, e.lngLat.lat]
+  // map.panTo([e.lngLat.lng, e.lngLat.lat]);
+}
+function centerMapOnComment(){
+  map.panTo(activeMarker.features[activeMarker.features.length-1].geometry.coordinates);
 }
 
 function getMapCenter() {
   //@ts-ignore
-  mapClicks.clickedCoordinates = [map.getCenter().lng, map.getCenter().lat]
+  commentClicks.commentCoordinates = ([map.getCenter().lng, map.getCenter().lat])
 }
 // threejs layer
 const addThreejsShape = () => {
@@ -180,6 +192,11 @@ const addThreejsShape = () => {
 
 const addCommentToMap = (source: any, layer: any) => {
 
+  if (map.getSource(source.id) !== undefined) {
+    // console.log("already in use")
+    addSourceToMap(source)
+    return
+  }
   addSourceToMap(source)
   addImageToMap('comment.png');
   addLayerToMap(layer)
@@ -284,7 +301,15 @@ const addSourceToMap = (source: { id: string, geojson: any }) => {
     removeLayerFromMap(sourceId)
   }*/
 
-  map.addSource(sourceId, source.geojson);
+  if (map.getSource(sourceId) !== undefined) {
+    let data = source.geojson.data
+    //@ts-ignore
+    map.getSource(sourceId).setData(data)
+  }
+  else {
+    map.addSource(sourceId, source.geojson);
+  }
+
 };
 
 const addImageToMap = (imgUrl: string) => {

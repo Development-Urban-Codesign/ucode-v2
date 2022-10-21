@@ -2,7 +2,7 @@
     <div class="comment-container">
         <v-row no-gutters justify="center">
             <v-btn v-show="commentStep == 0" class="mb-10;" size="large" rounded="pill" color="primary"
-                @mousedown="emit('getCenterOnMap')" @click="createComment">Kommentieren
+                @touchstart="emit('getCenterOnMap')" @mousedown="emit('getCenterOnMap')" @click="createComment">Kommentieren
             </v-btn>
             <v-col v-if="commentStep == 1" cols-sx="12" sm="10" md="6" lg="4">
                 <v-card style="text-align: center;"
@@ -53,32 +53,38 @@
 <script lang="ts" setup>
 import { useStore } from 'vuex';
 import { HTTP } from '@/utils/http-common';
-import { ref } from 'vue';
+import { reactive, ref } from 'vue';
+import type { FeatureCollection } from 'geojson';
 const store = useStore()
 let flexOrder = ref<number>(-1)
 let paddingBot = ref<string>("20px")
 let commentStep = ref<number>(0)
 let commentText = ref<string>("")
+let allMarker = reactive<FeatureCollection>({ type: "FeatureCollection", features: [] })
 
 const props = defineProps({
     clickedCoordinates: Array<Number>,
 })
 
-const emit = defineEmits(["addComment", "getCenterOnMap"])
+const emit = defineEmits(["addComment", "getCenterOnMap", "centerMapOnComment"])
 
 function createComment() {
+    store.commit('freecomment/toggleMoveComment')
     let marker = {
-        type: 'Feature',
+        type: "Feature",
         geometry: {
-            type: 'Point',
+            type: "Point",
             coordinates: props.clickedCoordinates
         }
     }
+    //@ts-ignore
+    allMarker.features.push(marker)
+
     let mapsource = {
         id: "ownComments",
         geojson: {
             "type": "geojson",
-            "data": marker
+            "data": allMarker
         }
     }
     let ownCommentLayer = {
@@ -104,6 +110,7 @@ function createComment() {
 }
 const positionOkay = () => {
     commentStep.value++
+    emit('centerMapOnComment')
 }
 const saveComment = () => {
     commentStep.value = 0
@@ -119,6 +126,8 @@ const saveComment = () => {
             })
     }
     submitComment()
+    commentText.value = ""
+    store.commit('freecomment/toggleMoveComment')
 }
 </script>
 
