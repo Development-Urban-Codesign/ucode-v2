@@ -8,8 +8,8 @@ const freecomment = {
         
     },
     mutations: {
-        toggleMoveComment(state : freecommentState){
-            state.moveComment = !state.moveComment
+        setMoveComment(state : freecommentState, toggle: boolean){
+            state.moveComment = toggle
         }
        
     },

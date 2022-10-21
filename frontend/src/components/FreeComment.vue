@@ -2,11 +2,15 @@
     <div class="comment-container">
         <v-row no-gutters justify="center">
             <v-btn v-show="commentStep == 0" class="mb-10;" size="large" rounded="pill" color="primary"
-                @touchstart="emit('getCenterOnMap')" @mousedown="emit('getCenterOnMap')" @click="createComment">Kommentieren
+                @touchstart="emit('getCenterOnMap')" @mousedown="emit('getCenterOnMap')" @click="createComment">
+                Kommentieren
             </v-btn>
             <v-col v-if="commentStep == 1" cols-sx="12" sm="10" md="6" lg="4">
                 <v-card style="text-align: center;"
                     text="Wähle eine Route und positioniere den Kommentar per Drag'n'Drop">
+                    <v-btn @click="cancelComment" icon="mdi-chevron-left-circle-outline" variant="plain"
+                        style="position: absolute; left: -5px; top:-5px;">
+                    </v-btn>
                     <v-row justify="center" style="min-height: 10px; margin:0px">
                         <v-icon>
                             mdi-circle-medium
@@ -23,6 +27,9 @@
             </v-col>
             <v-col v-if="commentStep == 2" cols-sx="12" sm="10" md="6" lg="4">
                 <v-card style="text-align: center;" text="Schreibe deinen Kommentar">
+                    <v-btn @click="cancelComment" icon="mdi-close-circle-outline" variant="plain"
+                        style="position: absolute; right: -5px; top:-5px;">
+                    </v-btn>
                     <v-row justify="center" style="min-height: 10px; margin:0px">
                         <v-icon color="grey">
                             mdi-circle-medium
@@ -33,8 +40,9 @@
                     </v-row>
                     <v-row no-gutters justify="center" style="margin:0px; margin-left:10px; align-items: flex-end;">
                         <v-col cols="10">
-                            <v-textarea rows="2" no-resize label="Kommentar" variant="underlined" color="indigo"
-                                :modelValue="commentText" @update:modelValue="text => commentText = text">
+                            <v-textarea autofocus ref="input" rows="2" no-resize label="Kommentar" variant="underlined"
+                                color="indigo" :modelValue="commentText"
+                                @update:modelValue="text => commentText = text">
                             </v-textarea>
                         </v-col>
                         <v-col cols="2">
@@ -66,10 +74,31 @@ const props = defineProps({
     clickedCoordinates: Array<Number>,
 })
 
-const emit = defineEmits(["addComment", "getCenterOnMap", "centerMapOnComment"])
-
+const emit = defineEmits(["addComment", "getCenterOnMap", "centerMapOnComment", "mapCancelComment"])
+function cancelComment() {
+    store.commit('freecomment/setMoveComment', false)
+    commentStep.value = 0
+    flexOrder.value = -1
+    commentText.value = ""
+    paddingBot.value = "20px"
+    if (allMarker.features.length > 1) {
+        allMarker.features.splice(allMarker.features.length - 1, 1)
+        let mapsource = {
+            id: "ownComments",
+            geojson: {
+                "type": "geojson",
+                "data": allMarker
+            }
+        }
+        emit('addComment', mapsource, 0)
+    }
+    else {
+        emit('mapCancelComment')
+        allMarker.features.splice(allMarker.features.length - 1, 1)
+    }
+}
 function createComment() {
-    store.commit('freecomment/toggleMoveComment')
+    store.commit('freecomment/setMoveComment', true)
     let marker = {
         type: "Feature",
         geometry: {
@@ -111,6 +140,8 @@ function createComment() {
 const positionOkay = () => {
     commentStep.value++
     emit('centerMapOnComment')
+
+
 }
 const saveComment = () => {
     commentStep.value = 0
@@ -122,12 +153,13 @@ const saveComment = () => {
             .post('add-comment', {
                 projectId: store.state.aoi.projectSpecification.project_id,
                 comment: commentText.value,
-                position: props.clickedCoordinates
+                position: props.clickedCoordinates,
+                userId: store.state.aoi.userId
             })
     }
     submitComment()
     commentText.value = ""
-    store.commit('freecomment/toggleMoveComment')
+    store.commit('freecomment/setMoveComment', false)
 }
 </script>
 

@@ -17,7 +17,7 @@
 
       <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
         @navigateToPlanningIdea="navigateToPlanningIdea" />
-      <FreeComment @centerMapOnComment="centerMapOnComment" @addComment="addCommentToMap" @getCenterOnMap="getMapCenter"
+      <FreeComment @mapCancelComment="deleteOwnComment" @centerMapOnComment="centerMapOnComment" @addComment="addCommentToMap" @getCenterOnMap="getMapCenter"
         :clickedCoordinates="commentClicks.commentCoordinates" />
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
         @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
@@ -188,18 +188,27 @@ const addThreejsShape = () => {
   // @ts-ignore
   addLayerToMap(TreeModel(13.74647, 51.068646, 100));
 }
-
+function deleteOwnComment(){
+    map.removeLayer('ownComments')
+    map.removeSource('ownComments')
+    map.removeImage('comment.png')
+}
 
 const addCommentToMap = (source: any, layer: any) => {
 
   if (map.getSource(source.id) !== undefined) {
     // console.log("already in use")
     addSourceToMap(source)
+    //@ts-ignore TODO Dobo help
+    activeMarker = map.getSource('ownComments')._data;
     return
   }
   addSourceToMap(source)
   addImageToMap('comment.png');
   addLayerToMap(layer)
+  //@ts-ignore TODO Dobo help
+  activeMarker = map.getSource('ownComments')._data;
+  
 }
 
 store.commit("map/addLayer", {
