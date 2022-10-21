@@ -17,7 +17,7 @@ const emit = defineEmits(["addLayer", "addImage"]);
 const populateMap = async () => {
   await sendBuildingRequest();
   await sendGreeneryRequest();
-  await sendTreeyRequest();
+  await sendTreeRequest();
   await sendTrafficSignalRequest();
   await sendDrivingLaneRequest();
   store.dispatch("aoi/setMapIsPopulated");
@@ -38,7 +38,7 @@ const sendGreeneryRequest = async () => {
 
 };
 
-const sendTreeyRequest = async () => {
+const sendTreeRequest = async () => {
   const treeLayer = await getTreesFromDB(store.state.aoi.projectSpecification.project_id);
   emit("addLayer", treeLayer);
 

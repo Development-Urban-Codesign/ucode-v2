@@ -32,8 +32,8 @@
 
       <v-card-subtitle>
 
-      erzeugt am: {{store.state.comment?.commentData?.properties?.created_at}}
-      
+      erzeugt von: {{store.state.comment?.commentData?.properties?.user_id}} <p>am: {{store.state.comment?.commentData?.properties?.created_at}}
+      </p> 
       </v-card-subtitle>
 
       <v-card-text>

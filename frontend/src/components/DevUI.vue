@@ -4,7 +4,7 @@
             @update:modelValue="sendBuildingRequest"></v-select>
         <v-select :items="['get', 'retrieve']" :label="$t('AOI.greenery')" variant="outlined"
             @update:modelValue="sendGreeneryRequest"></v-select>
-        <v-select :items="['get', 'retrieve']" label="tree" variant="outlined" @update:modelValue="sendTreeyRequest">
+        <v-select :items="['get', 'retrieve']" label="tree" variant="outlined" @update:modelValue="sendTreeRequest">
         </v-select>
         <v-select :items="['get', 'retrieve']" label="driving lane" variant="outlined"
             @update:modelValue="sendDrivingLaneRequest"></v-select>
@@ -62,7 +62,7 @@ const sendGreeneryRequest = async (mode) => {
     }
 };
 
-const sendTreeyRequest = async (mode) => {
+const sendTreeRequest = async (mode) => {
     if (mode == "get") {
         store.dispatch("aoi/setDataIsLoading");
         await getTreesFromOSM(store.state.aoi.projectSpecification.bbox);
