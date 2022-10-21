@@ -8,7 +8,7 @@
             <v-col v-if="commentStep == 1" cols-sx="12" sm="10" md="6" lg="4">
                 <v-card style="text-align: center;"
                     text="Wähle eine Route und positioniere den Kommentar per Drag'n'Drop">
-                    <v-btn @click="cancelComment" icon="mdi-chevron-left-circle-outline" variant="plain"
+                    <v-btn @click="cancelComment" icon="mdi-chevron-left" variant="plain"
                         style="position: absolute; left: -5px; top:-5px;">
                     </v-btn>
                     <v-row justify="center" style="min-height: 10px; margin:0px">
@@ -27,7 +27,7 @@
             </v-col>
             <v-col v-if="commentStep == 2" cols-sx="12" sm="10" md="6" lg="4">
                 <v-card style="text-align: center;" text="Schreibe deinen Kommentar">
-                    <v-btn @click="cancelComment" icon="mdi-close-circle-outline" variant="plain"
+                    <v-btn @click="cancelComment" icon="mdi-close" variant="plain"
                         style="position: absolute; right: -5px; top:-5px;">
                     </v-btn>
                     <v-row justify="center" style="min-height: 10px; margin:0px">

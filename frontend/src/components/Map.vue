@@ -246,49 +246,83 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
     }
   }
   map?.addLayer(layer);
+  const layerHirarchy: any[]=[]// = reactive<[{layer: any, orderId: Number}]>([{}])
 
   const buildinglayer = map.getLayer("overpass_buildings")
+  if(typeof buildinglayer !== 'undefined'){
+  layerHirarchy.push({layer: buildinglayer, orderId: 99})}
   const greenerylayer = map.getLayer("overpass_greenery")
+  if(typeof greenerylayer !== 'undefined'){
+  layerHirarchy.push({layer: greenerylayer, orderId: 10})}
   const commentlayer = map.getLayer("comments")
+  if(typeof commentlayer !== 'undefined'){
+  layerHirarchy.push({layer: commentlayer, orderId: 90})}
   const drivinglanelayer = map.getLayer("driving_lane_polygon")
+  if(typeof drivinglanelayer !== 'undefined'){
+  layerHirarchy.push({layer: drivinglanelayer, orderId: 60})}
   const drivinglane = map.getLayer("driving_lane")
+  if(typeof drivinglane !== 'undefined'){
+  layerHirarchy.push({layer: drivinglane, orderId: 70})}
   const treeLayer = map.getLayer("trees")
+  if(typeof treeLayer !== 'undefined'){
+  layerHirarchy.push({layer: treeLayer, orderId: 80})}
   const routesLayer = map.getLayer("routes")
+  if(typeof routesLayer !== 'undefined'){
+  layerHirarchy.push({layer: routesLayer, orderId: 75})}
   const routesSymbolLayer = map.getLayer("routes-symbols")
-  if (typeof buildinglayer !== 'undefined' && typeof greenerylayer !== 'undefined') {
-    map?.moveLayer("overpass_greenery", "overpass_buildings")
-  }
-  if (typeof commentlayer !== 'undefined' && typeof greenerylayer !== 'undefined') {
-    map?.moveLayer("overpass_greenery", "comments")
-  }
-  if (typeof drivinglanelayer !== 'undefined' && typeof commentlayer !== 'undefined') {
-    map?.moveLayer("driving_lane_polygon", "comments")
-  }
-  if (typeof drivinglane !== 'undefined' && typeof commentlayer !== 'undefined') {
-    map?.moveLayer("driving_lane", "comments")
-  }
-  if (typeof drivinglanelayer !== 'undefined' && typeof buildinglayer !== 'undefined') {
-    map?.moveLayer("overpass_buildings", "driving_lane_polygon")
-  }
-  if (typeof drivinglane !== 'undefined' && typeof buildinglayer !== 'undefined') {
-    map?.moveLayer("overpass_buildings", "driving_lane")
+  if(typeof routesSymbolLayer !== 'undefined'){
+  layerHirarchy.push({layer: routesSymbolLayer, orderId: 76})}
+  const ownCommentLayer = map.getLayer("ownComments")
+  if(typeof ownCommentLayer !== 'undefined'){
+  layerHirarchy.push({layer: ownCommentLayer, orderId: 100})}
+  
+
+  for (let index = 0; index < layerHirarchy.length; index++) {
+    const x = layerHirarchy[index];
+      for (let index = 0; index < layerHirarchy.length; index++) {
+        const y = layerHirarchy[index];
+         if(x.layer !== y.layer && x.orderId>y.orderId){
+           map.moveLayer(y.layer.id,x.layer.id)
+         }
+    }
   }
 
-  if (typeof greenerylayer !== 'undefined' && typeof treeLayer !== 'undefined') {
-    map?.moveLayer("overpass_greenery", "trees")
-  }
-  if (typeof drivinglanelayer !== 'undefined' && typeof treeLayer !== 'undefined') {
-    map?.moveLayer("driving_lane_polygon", "trees")
-  }
-  if (typeof drivinglane !== 'undefined' && typeof treeLayer !== 'undefined') {
-    map?.moveLayer("driving_lane", "trees")
-  }
-  if (typeof routesLayer !== 'undefined' && typeof treeLayer !== 'undefined') {
-    map?.moveLayer("routes", "trees")
-  }
-  if (typeof routesSymbolLayer !== 'undefined' && typeof treeLayer !== 'undefined') {
-    map?.moveLayer("routes-symbols", "trees")
-  }
+  // if (typeof buildinglayer !== 'undefined' && typeof greenerylayer !== 'undefined') {
+  //   map?.moveLayer("overpass_greenery", "overpass_buildings")
+  // }
+  // if (typeof commentlayer !== 'undefined' && typeof greenerylayer !== 'undefined') {
+  //   map?.moveLayer("overpass_greenery", "comments")
+  // }
+  // if (typeof drivinglanelayer !== 'undefined' && typeof commentlayer !== 'undefined') {
+  //   map?.moveLayer("driving_lane_polygon", "comments")
+  // }
+  // if (typeof drivinglane !== 'undefined' && typeof commentlayer !== 'undefined') {
+  //   map?.moveLayer("driving_lane", "comments")
+  // }
+  // if (typeof drivinglanelayer !== 'undefined' && typeof buildinglayer !== 'undefined') {
+  //   map?.moveLayer("overpass_buildings", "driving_lane_polygon")
+  // }
+  // if (typeof drivinglane !== 'undefined' && typeof buildinglayer !== 'undefined') {
+  //   map?.moveLayer("overpass_buildings", "driving_lane")
+  // }
+  // if (typeof greenerylayer !== 'undefined' && typeof treeLayer !== 'undefined') {
+  //   map?.moveLayer("overpass_greenery", "trees")
+  // }
+  // if (typeof drivinglanelayer !== 'undefined' && typeof treeLayer !== 'undefined') {
+  //   map?.moveLayer("driving_lane_polygon", "trees")
+  // }
+  // if (typeof drivinglane !== 'undefined' && typeof treeLayer !== 'undefined') {
+  //   map?.moveLayer("driving_lane", "trees")
+  // }
+  // if (typeof routesLayer !== 'undefined' && typeof treeLayer !== 'undefined') {
+  //   map?.moveLayer("routes", "trees")
+  // }
+  // if (typeof routesSymbolLayer !== 'undefined' && typeof treeLayer !== 'undefined') {
+  //   map?.moveLayer("routes-symbols", "trees")
+  // }
+  // if(typeof ownCommentLayer !== 'undefined'){
+  //   map.moveLayer('ownComments')
+  // }
 
 
 };
