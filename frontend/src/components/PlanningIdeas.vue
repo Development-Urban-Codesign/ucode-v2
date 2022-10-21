@@ -4,12 +4,25 @@
       class="mx-auto planning-ideas-options"
       max-width="500"
   >
-    <v-btn size="small" color="grey" rounded flat @click="activateSelectedPlanningIdea( planningData.routes)">
+    <v-btn :key="100"
+      size="small" 
+      :color="activeBtn==100 ? 'grey': 'white'" 
+      rounded 
+      flat 
+      @click="activateSelectedPlanningIdea( planningData.routes); setActiveBtn(100)"
+    >
           All
     </v-btn>
     <div v-for="route in planningData.routes.features" :key="route.properties.id">
       
-      <v-btn size="small" class="ml-2" rounded flat @click="activateSelectedPlanningIdea(route)">
+      <v-btn 
+        size="small"
+        class="ml-2" 
+        rounded 
+        flat 
+        @click="activateSelectedPlanningIdea(route); setActiveBtn(route.properties.id)" 
+        :color="activeBtn==route.properties.id ? 'grey': 'white'"
+      >
         <v-icon :color="route.properties.color">
           mdi-checkbox-blank-circle
         </v-icon>
@@ -24,7 +37,7 @@
 
 
 <script lang="ts" setup>
-import { onMounted, reactive, watch } from "vue";
+import { onMounted, reactive, watch, ref } from "vue";
 import { useStore } from "vuex";
 import bbox from "@turf/bbox";
 import {
@@ -37,6 +50,12 @@ const store = useStore();
 const emit = defineEmits(["activateSelectedPlanningIdea", "navigateToPlanningIdea"])
 
 let planningData = reactive ({ routes: [] })
+
+let activeBtn = ref(100)
+
+const setActiveBtn = (selectedId:any) =>{
+  activeBtn.value = selectedId
+}
 
 const addRouteToMap = async () => {
 
