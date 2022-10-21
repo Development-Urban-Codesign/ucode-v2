@@ -204,8 +204,13 @@ const addCommentToMap = (source: any, layer: any) => {
     return
   }
   addSourceToMap(source)
-  addImageToMap('comment.png');
-  addLayerToMap(layer)
+  map?.loadImage('comment.png', (error, image) => {
+    if (error) throw error;
+    map?.addImage('comment.png', image!);
+    addLayerToMap(layer)
+  });
+  
+  
   //@ts-ignore TODO Dobo help
   activeMarker = map.getSource('ownComments')._data;
   
