@@ -243,7 +243,7 @@ export async function getbuildingsFromDB(projectId: string) {
     getLineColor: [0, 0, 0, 0],
     wireframe: false,
     pickable: true,
-    extensions: [new BuildingFilter()],
+    //extensions: [new BuildingFilter()],
   });
 }
 
