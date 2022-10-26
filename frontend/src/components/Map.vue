@@ -47,6 +47,7 @@ import * as turf from '@turf/turf';
 import { Map, type CustomLayerInterface, type Feature, type IControl, type LayerSpecification, type LngLatBoundsLike, type Popup } from "maplibre-gl";
 import { computed, onMounted, onUnmounted, reactive, ref, shallowRef } from "vue";
 import { useStore } from "vuex";
+import { deckLightingEffect } from "@/utils/deckLighting";
 
 
 const store = useStore();
@@ -254,6 +255,11 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
   const layerHirarchy: any[]=[]// = reactive<[{layer: any, orderId: Number}]>([{}])
 
   const buildinglayer = map.getLayer("overpass_buildings")
+  // @ts-ignore
+  buildinglayer?.implementation?.deck.setProps({
+    effects: [deckLightingEffect]
+  });
+
   if(typeof buildinglayer !== 'undefined'){
   layerHirarchy.push({layer: buildinglayer, orderId: 99})}
   const greenerylayer = map.getLayer("overpass_greenery")
