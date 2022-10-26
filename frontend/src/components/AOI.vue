@@ -9,6 +9,8 @@ import {
   getbuildingsFromDB, getDrivingLaneFromDB, getGreeneryFromDBTexture, getTrafficSignalFromDB, getTreesFromDB, getTreeJsonFromDB, getTreesFromOSM
 } from "../service/backend.service";
 import { TreeModel } from "../utils/TreeModel";
+import DevUI from "@/components/DevUI.vue"
+import { ThreejsScene } from "@/utils/ThreejsScene";
 const store = useStore();
 const devMode = computed(() => store.getters["ui/devMode"]);
 
@@ -37,21 +39,18 @@ const sendGreeneryRequest = async () => {
 
 };
 
-const sendTreeRequest= async (mode)=>{
-  if (mode == "get") {
-    store.dispatch("aoi/setDataIsLoading");
-    await getTreesFromOSM(store.state.aoi.bbox);
-  }else if(true){//import trees with THREE JS
-    const treeJson = await getTreeJsonFromDB();
+const sendTreeRequest= async ()=>{
+  if(true){//import trees with THREE JS
+    const treeJson = await getTreeJsonFromDB(store.state.aoi.projectSpecification.project_id);
     console.log(treeJson)
-    emit("addLayer", TreeModel(13.74647, 51.068646,treeJson, 100));
+    emit("addLayer", ThreejsScene(store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin,treeJson, "Tree2.glb"));
   }else {
-    const treeLayer = await getTreesFromDB();
+    const treeLayer = await getTreesFromDB(store.state.aoi.projectSpecification.project_id);
     emit("addLayer", treeLayer);
   }
 }
 
-}
+
 const sendDrivingLaneRequest = async () => {
   const drivingLanedata = await getDrivingLaneFromDB(store.state.aoi.projectSpecification.project_id)
 

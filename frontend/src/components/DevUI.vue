@@ -1,5 +1,5 @@
 <template>
-    <v-col cols="10" sm="1" style="position: absolute; right: 0; top: 50px; z-index: 999">
+    <v-col  cols="6" md="2" sm="3" style="position: absolute; right: 0; top: 50px; z-index: 999">
         <v-select :items="['get', 'retrieve']" label="building" variant="outlined"
             @update:modelValue="sendBuildingRequest"></v-select>
         <v-select :items="['get', 'retrieve']" :label="$t('AOI.greenery')" variant="outlined"

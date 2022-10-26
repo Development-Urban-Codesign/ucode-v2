@@ -39,9 +39,10 @@ watch(store.state.ui, function (state: UiState) {
 
 
 const hideLoadingScreen = computed<boolean>(
-  () => projectsLoaded.value && aoiMapPopulated.value
-  
-);
+  () => 
+  projectsLoaded.value && aoiMapPopulated.value
+
+)
 
 </script>
 

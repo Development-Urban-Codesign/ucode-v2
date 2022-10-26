@@ -243,7 +243,7 @@ export async function getbuildingsFromDB(projectId: string) {
     getLineColor: [0, 0, 0, 0],
     wireframe: false,
     pickable: true,
-    extensions: [new BuildingFilter()],
+    // extensions: [new BuildingFilter()],
   });
 }
 
@@ -353,7 +353,11 @@ export async function getTreesFromOSM(bbox: BoundingBox) {
     bbox: bbox,
   }).then(() => store.dispatch("aoi/setDataIsLoaded"));
 }
-
+export async function getTreeJsonFromDB(projectId: string) {
+  const response = await HTTP.post("get-trees-from-db", projectId);
+  const trees = response.data
+  return trees
+}
 export async function getTreesFromDB(projectId: string) {
   const response = await HTTP.post("get-trees-from-db", projectId);
   const treeLayer = new MapboxLayer({
