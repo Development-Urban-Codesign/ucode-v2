@@ -1,14 +1,18 @@
 <template>
-  <div class="Loadingscreen">
+  <div class="loading-screen-wrapper">
     <v-img max-height="60" class="UcodeLogo" src="UCODE_Logo.png"></v-img>
+
     <div class="LoadingText">
       <transition-group name="fade">
         <div class="LoadingText" v-if="showLoadingText">
           <div>
-            {{curLoadingText}}
+            {{ curLoadingText }}
           </div>
         </div>
       </transition-group>
+    </div>
+
+    <div class="Loadingscreen">
     </div>
   </div>
 </template>
@@ -44,12 +48,17 @@ animate();
 </script>
 
 <style scoped>
+.loading-screen-wrapper {
+  background-color: #81ABBC;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+
 .Loadingscreen {
   z-index: 1000;
-  background-color: #81ABBC;
   width: 100vw;
   height: 100vh;
-  position: absolute;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -60,11 +69,15 @@ animate();
 }
 
 .LoadingText {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
   text-align: center;
   font-size: large;
   min-height: 50px;
   margin-bottom: 50px;
 }
+
 .fade-enter-active {
   transition: all .3s ease-in;
 }
