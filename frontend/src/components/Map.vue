@@ -17,7 +17,8 @@
 
       <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
         @navigateToPlanningIdea="navigateToPlanningIdea" />
-      <FreeComment @mapCancelComment="deleteOwnComment" @centerMapOnComment="centerMapOnComment" @addComment="addCommentToMap" @getCenterOnMap="getMapCenter"
+      <FreeComment @mapCancelComment="deleteOwnComment" @centerMapOnComment="centerMapOnComment"
+        @addComment="addCommentToMap" @getCenterOnMap="getMapCenter"
         :clickedCoordinates="commentClicks.commentCoordinates" />
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
         @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
@@ -33,21 +34,22 @@
 import AOI from "@/components/AOI.vue";
 import Comment from "@/components/Comment.vue";
 import Contribution from "@/components/Contribution.vue";
+import FreeComment from "@/components/FreeComment.vue";
 import PlanningIdeas from "@/components/PlanningIdeas.vue";
 import Quests from "@/components/Quests.vue";
-import FreeComment from "@/components/FreeComment.vue";
 import { getCommentsFromDB } from "@/service/backend.service";
 import type { ProjectSpecification } from "@/store/modules/aoi";
+import { deckLightingEffect } from "@/utils/deckLighting";
 import { HTTP } from "@/utils/http-common";
 import { pulseLayer } from "@/utils/pulseLayer";
 import { TreeModel } from "@/utils/TreeModel";
 import { MapboxLayer } from "@deck.gl/mapbox/typed";
 import { ScenegraphLayer } from "@deck.gl/mesh-layers/typed";
 import * as turf from '@turf/turf';
+import type { GeoJsonObject } from "geojson";
 import { Map, type CustomLayerInterface, type Feature, type IControl, type LayerSpecification, type LngLatBoundsLike, type Popup } from "maplibre-gl";
 import { computed, onMounted, onUnmounted, reactive, ref, shallowRef } from "vue";
 import { useStore } from "vuex";
-import { deckLightingEffect } from "@/utils/deckLighting";
 
 
 const store = useStore();
@@ -60,8 +62,8 @@ const mapClicks = reactive({ clickedCoordinates: [] })
 const commentClicks = reactive({ commentCoordinates: [] })
 let lineDrawCreated = ref(0)
 let mapStyleLoaded = ref(false)
-let activeMarker = reactive<any>({});
 
+let commentGeoJson = {} as GeoJsonObject;
 
 let unsubscribeFromStore = () => { };
 
@@ -136,23 +138,21 @@ onMounted(() => {
 
   map.on('mousedown', 'ownComments', (e) => {
     // Prevent the default map drag behavior.
-    if(!store.state.freecomment.moveComment){
+    if (!store.state.freecomment.moveComment) {
       return
     }
     e.preventDefault();
     //@ts-ignore TODO Dobo help
-    activeMarker = map.getSource('ownComments')._data;
     map.on('mousemove', onMove);
     map.once('mouseup', onUp);
   });
 
   map.on('touchstart', 'ownComments', (e) => {
     if (e.points.length !== 1) return;
-    if(!store.state.freecomment.moveComment){
+    if (!store.state.freecomment.moveComment) {
       return
     }
     //@ts-ignore TODO Dobo help
-    activeMarker = map.getSource('ownComments')._data;
     // Prevent the default map drag behavior.
     e.preventDefault();
     map.on('touchmove', onMove);
@@ -165,18 +165,20 @@ function onUp() {
   map.off('touchmove', onMove);
 }
 function onMove(e: { lngLat: { lng: number; lat: number; }; }) {
-  //@ts-ignore
-  let index = map.getSource('ownComments')?._data.features.length -1
-  //@ts-ignore
-  activeMarker.features[index].geometry.coordinates = [e.lngLat.lng, e.lngLat.lat]
-  //@ts-ignore
-  map.getSource('ownComments').setData(activeMarker)
+  const copy = Object.assign(commentGeoJson, {}) as any;
+
+  const features = copy.geojson.data.features;
+  features[features.length - 1].geometry.coordinates = [e.lngLat.lng, e.lngLat.lat]
+  map?.getSource('ownComments')?.setData(copy.geojson.data)
   // @ts-ignore
   commentClicks.commentCoordinates = [e.lngLat.lng, e.lngLat.lat]
   // map.panTo([e.lngLat.lng, e.lngLat.lat]);
 }
-function centerMapOnComment(){
-  map.panTo(activeMarker.features[activeMarker.features.length-1].geometry.coordinates);
+function centerMapOnComment() {
+  const copy = Object.assign(commentGeoJson, {}) as any;
+
+  const features = copy.geojson.data.features;
+  map.panTo(features[features.length - 1].geometry.coordinates);
 }
 
 function getMapCenter() {
@@ -189,19 +191,20 @@ const addThreejsShape = () => {
   // @ts-ignore
   addLayerToMap(TreeModel(13.74647, 51.068646, 100));
 }
-function deleteOwnComment(){
-    map.removeLayer('ownComments')
-    map.removeSource('ownComments')
-    map.removeImage('comment.png')
+function deleteOwnComment() {
+  map.removeLayer('ownComments')
+  map.removeSource('ownComments')
+  map.removeImage('comment.png')
 }
 
 const addCommentToMap = (source: any, layer: any) => {
 
+  commentGeoJson = source;
   if (map.getSource(source.id) !== undefined) {
     // console.log("already in use")
+
     addSourceToMap(source)
     //@ts-ignore TODO Dobo help
-    activeMarker = map.getSource('ownComments')._data;
     return
   }
   addSourceToMap(source)
@@ -210,11 +213,10 @@ const addCommentToMap = (source: any, layer: any) => {
     map?.addImage('comment.png', image!);
     addLayerToMap(layer)
   });
-  
-  
+
+
   //@ts-ignore TODO Dobo help
-  activeMarker = map.getSource('ownComments')._data;
-  
+
 }
 
 store.commit("map/addLayer", {
@@ -252,7 +254,7 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
     }
   }
   map?.addLayer(layer);
-  const layerHirarchy: any[]=[]// = reactive<[{layer: any, orderId: Number}]>([{}])
+  const layerHirarchy: any[] = []// = reactive<[{layer: any, orderId: Number}]>([{}])
 
   const buildinglayer = map.getLayer("overpass_buildings")
   // @ts-ignore
@@ -260,41 +262,50 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
     effects: [deckLightingEffect]
   });
 
-  if(typeof buildinglayer !== 'undefined'){
-  layerHirarchy.push({layer: buildinglayer, orderId: 99})}
+  if (typeof buildinglayer !== 'undefined') {
+    layerHirarchy.push({ layer: buildinglayer, orderId: 99 })
+  }
   const greenerylayer = map.getLayer("overpass_greenery")
-  if(typeof greenerylayer !== 'undefined'){
-  layerHirarchy.push({layer: greenerylayer, orderId: 10})}
+  if (typeof greenerylayer !== 'undefined') {
+    layerHirarchy.push({ layer: greenerylayer, orderId: 10 })
+  }
   const commentlayer = map.getLayer("comments")
-  if(typeof commentlayer !== 'undefined'){
-  layerHirarchy.push({layer: commentlayer, orderId: 90})}
+  if (typeof commentlayer !== 'undefined') {
+    layerHirarchy.push({ layer: commentlayer, orderId: 90 })
+  }
   const drivinglanelayer = map.getLayer("driving_lane_polygon")
-  if(typeof drivinglanelayer !== 'undefined'){
-  layerHirarchy.push({layer: drivinglanelayer, orderId: 60})}
+  if (typeof drivinglanelayer !== 'undefined') {
+    layerHirarchy.push({ layer: drivinglanelayer, orderId: 60 })
+  }
   const drivinglane = map.getLayer("driving_lane")
-  if(typeof drivinglane !== 'undefined'){
-  layerHirarchy.push({layer: drivinglane, orderId: 70})}
+  if (typeof drivinglane !== 'undefined') {
+    layerHirarchy.push({ layer: drivinglane, orderId: 70 })
+  }
   const treeLayer = map.getLayer("trees")
-  if(typeof treeLayer !== 'undefined'){
-  layerHirarchy.push({layer: treeLayer, orderId: 80})}
+  if (typeof treeLayer !== 'undefined') {
+    layerHirarchy.push({ layer: treeLayer, orderId: 80 })
+  }
   const routesLayer = map.getLayer("routes")
-  if(typeof routesLayer !== 'undefined'){
-  layerHirarchy.push({layer: routesLayer, orderId: 75})}
+  if (typeof routesLayer !== 'undefined') {
+    layerHirarchy.push({ layer: routesLayer, orderId: 75 })
+  }
   const routesSymbolLayer = map.getLayer("routes-symbols")
-  if(typeof routesSymbolLayer !== 'undefined'){
-  layerHirarchy.push({layer: routesSymbolLayer, orderId: 76})}
+  if (typeof routesSymbolLayer !== 'undefined') {
+    layerHirarchy.push({ layer: routesSymbolLayer, orderId: 76 })
+  }
   const ownCommentLayer = map.getLayer("ownComments")
-  if(typeof ownCommentLayer !== 'undefined'){
-  layerHirarchy.push({layer: ownCommentLayer, orderId: 100})}
-  
+  if (typeof ownCommentLayer !== 'undefined') {
+    layerHirarchy.push({ layer: ownCommentLayer, orderId: 100 })
+  }
+
 
   for (let index = 0; index < layerHirarchy.length; index++) {
     const x = layerHirarchy[index];
-      for (let index = 0; index < layerHirarchy.length; index++) {
-        const y = layerHirarchy[index];
-         if(x.layer !== y.layer && x.orderId>y.orderId){
-           map.moveLayer(y.layer.id,x.layer.id)
-         }
+    for (let index = 0; index < layerHirarchy.length; index++) {
+      const y = layerHirarchy[index];
+      if (x.layer !== y.layer && x.orderId > y.orderId) {
+        map.moveLayer(y.layer.id, x.layer.id)
+      }
     }
   }
 
