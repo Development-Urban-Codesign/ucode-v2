@@ -27,7 +27,7 @@ const showLoadingText = ref(true)
 async function animate() {
   const interval = setInterval(function () {
     curLoadingText.value = loadingTexts[i]
-    
+
     if (showLoadingText.value == false) {
       i++
       // console.log(i)
@@ -40,9 +40,9 @@ async function animate() {
       clearInterval(interval)
       i = 0
     }
-    
+
   }, 750);
-  
+
 }
 animate();
 </script>
@@ -53,10 +53,10 @@ animate();
   width: 100%;
   height: 100%;
   position: absolute;
+  z-index: 9999;
 }
 
 .Loadingscreen {
-  z-index: 1000;
   width: 100vw;
   height: 100vh;
   display: flex;
@@ -75,7 +75,6 @@ animate();
   text-align: center;
   font-size: large;
   min-height: 50px;
-  margin-bottom: 50px;
 }
 
 .fade-enter-active {
