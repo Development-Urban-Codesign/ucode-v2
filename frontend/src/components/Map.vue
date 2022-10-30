@@ -426,9 +426,9 @@ const removePulseLayerFromMap = (layerid: string) => {
 
 
 const activateSelectedPlanningIdeaInMap = (selectedFeature: Feature) => {
-
+  const currentBearing = map.getBearing();
   let bounds = turf.bbox(selectedFeature) as LngLatBoundsLike;
-  map.fitBounds(bounds, { padding: 20 });
+  map.fitBounds(bounds, { pitch: 40, bearing: currentBearing, padding: 40 });
 
   // @ts-ignore
   if (selectedFeature.type == 'FeatureCollection') {
