@@ -1,5 +1,5 @@
 <template>
-  <DevUI v-if="devMode" />
+  <DevUI @startPopulate="populateMap()" v-if="devMode"/>
 </template>
 
 <script lang="ts" setup>
@@ -8,7 +8,7 @@ import { useStore } from "vuex";
 import {
   getbuildingsFromDB, getDrivingLaneFromDB, getGreeneryFromDBTexture, getTrafficSignalFromDB, getTreesFromDB
 } from "../service/backend.service";
-import DevUI from "./DevUI.vue";
+import DevUI from "@/components/DevUI.vue";
 
 const store = useStore();
 const devMode = computed(() => store.getters["ui/devMode"]);

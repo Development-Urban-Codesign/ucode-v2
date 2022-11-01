@@ -59,7 +59,6 @@ def get_buildings_from_db(projectId):
   connection.close()
   return building
 
-#TH : 
 def add_comment(userId, projectId, comment, lng, lat):
   connection = connect()
   cursor = connection.cursor()

@@ -1,4 +1,5 @@
 import json
+from smtpd import DebuggingServer
 
 import requests
 import osmnx as ox
@@ -218,6 +219,7 @@ async def get_buildings_from_osm_api(request: Request):
         f["geometry"]["coordinates"] = [f["geometry"]["coordinates"]]
 
     for f in data_building["elements"]:
+       # print(f)
         wallcolor = None
         if "building:colour" in f["tags"]:
             wallcolor = f["tags"]["building:colour"]
@@ -292,11 +294,12 @@ async def get_quests_from_db_api(request: Request):
     projectId = await request.json()
     return get_quests_from_db(projectId)
 
+#TH: add projectId to insert command
 @app.post("/get-trees-from-osm")
 async def get_trees_from_osm_api(request: Request):
-    projectId ="0"
-    drop_tree_table(projectId)
     data = await request.json()
+    projectId = data["projectId"]
+    drop_tree_table(projectId)
     xmin = data["bbox"]["xmin"]
     ymin = data["bbox"]["ymin"]
     xmax = data["bbox"]["xmax"]
@@ -336,8 +339,8 @@ async def get_trees_from_osm_api(request: Request):
 
 @app.post("/get-trees-from-db")
 async def get_trees_from_db_api(request: Request):
-    data = await request.json()
-    return get_trees_from_db(data)
+    projectId = await request.json()
+    return get_trees_from_db(projectId)
 
 
 @app.post("/add-comment")
@@ -395,13 +398,13 @@ async def undislike_comment_api(request: Request):
 
 @app.post("/get-driving-lane-from-osm")
 async def get_driving_lane_from_osm_api(request: Request):
-    projectId ="0"
-    drop_driving_lane_table(projectId)
     data = await request.json()
-    xmin = data['bbox']["xmin"]
-    ymin = data['bbox']["ymin"]
-    xmax = data['bbox']["xmax"]
-    ymax = data['bbox']["ymax"] 
+    projectId = data["projectId"]
+    drop_driving_lane_table(projectId)
+    xmin = sure_float(data['bbox']["xmin"])
+    ymin = sure_float(data['bbox']["ymin"])
+    xmax = sure_float(data['bbox']["xmax"])
+    ymax = sure_float(data['bbox']["ymax"]) 
     G = ox.graph_from_bbox(ymin, ymax, xmin, xmax, network_type='drive')
     gdf = ox.graph_to_gdfs(G, nodes=False, edges=True)
     road = json.loads(gdf.to_json())
@@ -422,6 +425,7 @@ async def get_driving_lane_from_osm_api(request: Request):
         INSERT INTO driving_lane (project_id,lanes,length,maxspeed,width, highway, geom) VALUES (%s,%s,%s,%s,%s,%s, ST_SetSRID(st_astext(st_geomfromgeojson(%s)), 4326));
 
     '''
+
     insert_query_driving_lane_polygon= '''
         
         INSERT INTO driving_lane_polygon (project_id,lanes,length,maxspeed,width,highway, geom) VALUES (%s,%s,%s,%s,%s,%s,
@@ -482,6 +486,7 @@ def sure_float(may_be_number):
     except:
         may_be_number = may_be_number.strip()
         may_be_number = may_be_number.replace(",", ".")
+        may_be_number = may_be_number.replace("'", ".")
         for x in may_be_number:
             if x in "0123456789.":
                 my_sure_float = my_sure_float + x
@@ -491,11 +496,13 @@ def sure_float(may_be_number):
 
     return my_sure_float
 
+#TH:add projectId to insert command
 @app.post("/get-traffic-lights-from-osm")
 async def get_traffic_lights_from_osm_api(request: Request):
-    projectId ="0"
-    drop_traffic_signal_table(projectId)
+    # projectId ="0"
     data = await request.json()
+    projectId = data["projectId"]
+    drop_traffic_signal_table(projectId)
     xmin = data["bbox"]["xmin"]
     ymin = data["bbox"]["ymin"]
     xmax = data["bbox"]["xmax"]
