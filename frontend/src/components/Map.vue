@@ -244,7 +244,7 @@ store.commit("map/addLayer", {
 
 
 const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
-
+  console.log(layer.id)
   const addedlayer = map.getLayer(layer.id)
   if (typeof addedlayer !== 'undefined') {
     removeLayerFromMap(layer.id)
@@ -280,6 +280,10 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
   const treeLayer = map.getLayer("trees")
   if(typeof treeLayer !== 'undefined'){
   layerHirarchy.push({layer: treeLayer, orderId: 80})}
+  const treeLayer3js = map.getLayer("Tree2.glb")
+  if(typeof treeLayer !== 'undefined'){
+    console.log("threejsLayer")
+  layerHirarchy.push({layer: treeLayer3js, orderId: 80})}
   const routesLayer = map.getLayer("routes")
   if(typeof routesLayer !== 'undefined'){
   layerHirarchy.push({layer: routesLayer, orderId: 75})}

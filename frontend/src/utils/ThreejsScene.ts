@@ -1,10 +1,17 @@
-import CameraLight from '@deck.gl/core/typed/effects/lighting/camera-light';
-import type { FeatureCollection } from '@turf/turf';
-import maplibregl, { GeoJSONFeature, Map, type LngLatLike } from 'maplibre-gl'
+import maplibregl, { GeoJSONFeature, Map, type CustomLayerInterface, type LngLatLike } from 'maplibre-gl'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
-export const ThreejsScene = (lng: number, lat: number, geoJson: any, glbModel: String) => {
+//@ts-ignore
+// import { Sky } from 'three/addons/objects/Sky.js';
+import type { Layer } from '@deck.gl/core/typed';
+import { getTransitionRawChildren } from 'vue';
+import type { FeatureCollection } from '@turf/turf';
+
+export const ThreejsScene = (lng: number, lat: number, geoJson: any, glbModel: string, hasRandomSize?: boolean, hasRandomRot?: boolean) => {
+  let localSceneCoordinates: [{ position: number[], rotation: number, scale: number }]
+  let currentMeshes: { mesh: any, material: any } = { mesh: [], material: []}
+
   const modelAltitude = 0;
   const modelRotate = [Math.PI / 2, Math.PI / 2, 0];
   const modelorigin: LngLatLike = maplibregl.LngLat.convert([lng, lat])
@@ -27,124 +34,44 @@ export const ThreejsScene = (lng: number, lat: number, geoJson: any, glbModel: S
     scale: modelAsMercatorCoordinate.meterInMercatorCoordinateUnits()
   };
 
-  interface Model {
-    path: string;
-    scale: number;
-    rotate: number[];
-  }
-
-  interface Sprite {
-    model: Model;
-    position: LngLatLike;
-    altitude: number;
-  }
-  //const THREE = window.THREE;
-  function getSpriteMatrix(sprite: Sprite, center: maplibregl.MercatorCoordinate): THREE.Matrix4 {
-    const { model, position, altitude } = sprite;
-    const { scale, rotate } = model;
-    const rotationX = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), rotate[0]);
-    const rotationY = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), rotate[1]);
-    const rotationZ = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 0, 1), rotate[2]);
-
-    const coord = maplibregl.MercatorCoordinate.fromLngLat(position, altitude);
-    return new THREE.Matrix4()
-      .makeTranslation(coord.x - center.x, coord.y - center.y, coord.z! - center.z!)
-      .scale(new THREE.Vector3(scale, -scale, scale))
-      .multiply(rotationX)
-      .multiply(rotationY)
-      .multiply(rotationZ);
-  }
-
   // configuration of the custom layer for a 3D model per the CustomLayerInterface
-  const customLayer = {
+  const customLayer: CustomLayerInterface = {
     id: glbModel,
     type: 'custom',
     renderingMode: '3d',
     onAdd: function (map: Map, gl: any) {
-      //@ts-ignore
+
       this.camera = new THREE.Camera();
-      //@ts-ignore
       this.scene = new THREE.Scene();
 
-      // create two three.js lights to illuminate the model
-      const ambient = new THREE.AmbientLight(0x404040);
-      //@ts-ignore
-      // this.scene.add(ambient);
+
       const hemiLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
-      //@ts-ignore
       this.scene.add(hemiLight);
+
+      // let sky = new Sky();
+      // sky.scale.setScalar(450000);
+      // this.scene.add(sky);
+
 
       // use the three.js GLTF loader to add the 3D model to the three.js scene
       const loader = new GLTFLoader();
       loader.crossOrigin = true;
-      const localCord = (worldCords, height) => {
-        const local = maplibregl.MercatorCoordinate.fromLngLat(
-          worldCords,
-          height
-        );
-        return local
-      }
+
       loader.load(
         glbModel,
-        (gltf) => {
-          console.log(gltf)
-          this.scene.add(gltf.scene);
-          // those should come from the server
-          function generateTreeCoordinates() {
-            const sceneTreeCoordinates = [];
-            //let lat = 0;
-            let long = 0;
-            if (geoJson != null) {
-              for (let index = 0; index < geoJson.features.length; index++) {
-                const element = geoJson.features[index].geometry.coordinates;
-                // console.log(element[0]-lng)
-                // console.log( " + " )
-                //console.log(element[1]-lat)
-                let moveVec = ([(lng - element[0]) * -100000, (lat - element[1]) * -100000])
-                console.log(lng + " - " + element[0] + " // " + lat + " - " + element[1])
-                console.log(modelTransform.scale)
-                // console.log(modelAsMercatorCoordinate.x + "-" + localCord(element).x + "," + modelAsMercatorCoordinate.y + "-" + localCord(element).y);
-                // let newPos = [(modelorigin[0] - element[0]) * 100000, (modelorigin[1] - element[1]) * 100000]
-                 let newPos2 = [((localCord(element,0).x)- modelAsMercatorCoordinate.x)*1/modelAsMercatorCoordinate.meterInMercatorCoordinateUnits(), (modelAsMercatorCoordinate.y-localCord(element,0).y )*1/modelAsMercatorCoordinate.meterInMercatorCoordinateUnits()]//problematic getting position for the trees
-                 let newPos3 = [element[0], element[1]]//problematic getting position for the trees
-                 console.log(newPos2);
-                 console.log(1/modelAsMercatorCoordinate.meterInMercatorCoordinateUnits());
-                sceneTreeCoordinates.push(newPos2)
-              }
-            }
-            else {
-              for (let i = 0; i < 10; i++) {
-                long = i * 10
-                for (let index = 0; index < 10; index++) {
-                  lat = index * 10
-                  sceneTreeCoordinates.push([lat, long]);
-                }
-              }
+        (gltf: {
+          scene: {
+            children: any; clone: () => any;
+          };
+        }) => {
+          currentMeshes = { mesh: [], material: []}
+          getAllMeshes(gltf.scene)
 
-            }
-            return sceneTreeCoordinates;
-          }
+          localSceneCoordinates = generateTreeCoordinates(geoJson);
+          const clusters = createGeoInstances(localSceneCoordinates);
 
-          const sceneTreeCoordinates = generateTreeCoordinates();
-          // create wood :)
-          for (let index = 0; index < sceneTreeCoordinates.length; index++) {
-            // console.log("tree" +index + " Position: " + sceneTreeCoordinates[index])
-            const sceneClone = gltf.scene.clone()
-            // sceneClone.applyMatrix(getSpriteMatrix(
-            //   {
-            //     model: {
-            //       path: "Tree2.glb",
-            //       scale: 1,
-            //       rotate: [0, 0, 0]
-            //     },
-            //     position: {
-            //       lng: sceneTreeCoordinates[index][0],
-            //       lat: sceneTreeCoordinates[index][1]
-            //     }, altitude: 0
-            //   }, modelAsMercatorCoordinate))
-            sceneClone.translateZ(sceneTreeCoordinates[index][0]);
-            sceneClone.translateX(sceneTreeCoordinates[index][1]);
-            this.scene.add(sceneClone);
+          for (let index = 0; index < clusters.length; index++) {
+            this.scene.add(clusters[index]);
           }
         }
       );
@@ -203,7 +130,99 @@ export const ThreejsScene = (lng: number, lat: number, geoJson: any, glbModel: S
       //this.map.triggerRepaint();
     }
   };
+  function getRndNumber(min: number, max: number) {
+    return (Math.random() * (max - min)) + min;
+  }
+  const getAllMeshes = (scene: { children: any; clone: () => any; }) => {
+    if (scene.children != undefined) {
+      for (let index = 0; index < scene.children.length; index++) {
+        const element = scene.children[index];
+        if (element.geometry != undefined) {
+          //console.log("geo is: " + element.geometry)
+          currentMeshes.mesh.push(element.geometry)
+          currentMeshes.material.push(element.material)
+        }
+        else {
+          getAllMeshes(element)
+        }
+      }
+    }
+    else { console.log("no more Children...") }
+  }
+  const localCord = (worldCords: LngLatLike, height: number) => {
+    const local = maplibregl.MercatorCoordinate.fromLngLat(
+      worldCords,
+      height
+    );
+    return local
+  }
+  function generateTreeCoordinates(_geoJson: any) {
+    localSceneCoordinates = [];
+    for (let index = 0; index < 100; index++) {
+      getRndNumber(0, 90)
+      
+    }
+    if (_geoJson != null) {
+      for (let index = 0; index < _geoJson.features.length; index++) {
+        const element = _geoJson.features[index].geometry.coordinates;
+        // console.log(modelAsMercatorCoordinate.x + "-" + localCord(element).x + "," + modelAsMercatorCoordinate.y + "-" + localCord(element).y);
+        // let newPos = [(modelorigin[0] - element[0]) * 100000, (modelorigin[1] - element[1]) * 100000]
+        let localPos = { position: [((localCord(element, 0).x) - modelAsMercatorCoordinate.x) * 1 / modelAsMercatorCoordinate.meterInMercatorCoordinateUnits(), (modelAsMercatorCoordinate.y - localCord(element, 0).y) * 1 / modelAsMercatorCoordinate.meterInMercatorCoordinateUnits()], rotation: getRndNumber(0, 90), scale: getRndNumber(0.5, 1) }//problematic getting position for the trees
+        
+        localSceneCoordinates.push(localPos)
+      }
+    }
+    else {
+      let _lat = 0;
+      let _long = 0;
+      for (let i = 0; i < 500; i++) {
+        _long = i * 10
+        for (let index = 0; index < 100; index++) {
+          _lat = index * 10
+          localSceneCoordinates.push({position:[_lat, _long], rotation: 0, scale:1});
+        }
+      }
 
+    }
+    return localSceneCoordinates;
+  }
+  const createGeoInstances = (localSceneCoordinates: [{ position: number[], rotation: number, scale: number }]) => {
+    const clusters = []
+    
+    for (let index = 0; index < currentMeshes.mesh.length; index++) {
+      const mesh = currentMeshes.mesh[index];
+      const material = currentMeshes.material[index]
+      var cluster = new THREE.InstancedMesh(
+        mesh,
+        material,
+        localSceneCoordinates.length, //instance count 
+        false, //is it dynamic 
+        false, //does it have color 
+        true,  //uniform scale
+      );
+      const matrix = new THREE.Matrix4();
+      for (let index = 0; index < localSceneCoordinates.length; index++) {
+        if (hasRandomSize) {
+          matrix.makeScale(localSceneCoordinates[index].scale, localSceneCoordinates[index].scale, localSceneCoordinates[index].scale)
+          
+        }
+        if(hasRandomRot){
+          matrix.makeRotationY(localSceneCoordinates[index].rotation,localSceneCoordinates[index].rotation,localSceneCoordinates[index].rotation)
+        }
+        matrix.setPosition(localSceneCoordinates[index].position[1], 0, localSceneCoordinates[index].position[0]);
+        console.log(matrix)
+        cluster.setMatrixAt(index, matrix)
+
+        // old approach, without instancing
+        // const sceneClone = gltf.scene.clone()
+        // sceneClone.translateZ(localSceneCoordinates[index][0]);
+        // sceneClone.translateX(localSceneCoordinates[index][1]);
+        //this.scene.add(sceneClone);              
+      }
+      clusters.push(cluster)
+    }
+    return clusters
+  }
   return (
     customLayer
   )
@@ -211,3 +230,5 @@ export const ThreejsScene = (lng: number, lat: number, geoJson: any, glbModel: S
 
 
 }
+
+
