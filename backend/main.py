@@ -215,6 +215,7 @@ async def get_buildings_from_osm_api(request: Request):
         INSERT INTO building (project_id,wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, (st_buffer(st_buffer(ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326)::geography, 1,'side=right'),1)::geography)::geometry);
     """
     for f in data_building["elements"]:
+        print(f)
         f["geometry"]["type"] = "Polygon"
         f["geometry"]["coordinates"] = [f["geometry"]["coordinates"]]
 
@@ -258,7 +259,7 @@ async def get_buildings_from_osm_api(request: Request):
             estimatedheight = 15
 
         geom = json.dumps(f["geometry"])
-
+        print(geom)
         # get_buildings_from_osm(wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom)
         cursor.execute(
             insert_query_building,
@@ -438,7 +439,7 @@ async def get_driving_lane_from_osm_api(request: Request):
 
     '''
     for f in road['features']:
-       
+        #print(f)
         geom = json.dumps(f['geometry'])
         lanes=None
         if 'lanes' in f['properties']: lanes =f['properties']['lanes']
@@ -453,6 +454,7 @@ async def get_driving_lane_from_osm_api(request: Request):
         width=None
         if 'width' in f['properties'] and f['properties']["width"] is not None and isinstance(f['properties']["width"], str):
             width =f['properties']['width']
+            width = sure_float(width)
         elif f['properties']["highway"]== 'primary':
             width =10
         elif f['properties']["highway"]== 'secondary' or f['properties']["highway"]== 'secondary_link':
