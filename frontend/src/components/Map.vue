@@ -18,6 +18,8 @@
       <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
         @navigateToPlanningIdea="navigateToPlanningIdea" />
       <!--<Quests v-if="!devMode" />-->
+      <FreeComment @mapCancelComment="deleteOwnComment" @centerMapOnComment="centerMapOnComment" @addComment="addCommentToMap" @getCenterOnMap="getMapCenter"
+        :clickedCoordinates="commentClicks.commentCoordinates" />
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
         @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
         :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
