@@ -244,7 +244,7 @@ store.commit("map/addLayer", {
 
 
 const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
-  console.log(layer.id)
+  //console.log(layer.id)
   const addedlayer = map.getLayer(layer.id)
   if (typeof addedlayer !== 'undefined') {
     removeLayerFromMap(layer.id)
@@ -281,8 +281,7 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
   if(typeof treeLayer !== 'undefined'){
   layerHirarchy.push({layer: treeLayer, orderId: 80})}
   const treeLayer3js = map.getLayer("Tree2.glb")
-  if(typeof treeLayer !== 'undefined'){
-    console.log("threejsLayer")
+  if(typeof treeLayer3js !== 'undefined'){
   layerHirarchy.push({layer: treeLayer3js, orderId: 80})}
   const routesLayer = map.getLayer("routes")
   if(typeof routesLayer !== 'undefined'){
@@ -301,6 +300,7 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
         const y = layerHirarchy[index];
          if(x.layer !== y.layer && x.orderId>y.orderId){
            map.moveLayer(y.layer.id,x.layer.id)
+           //console.log("move layer " + x.layer.id + " over " +y.layer.id)
          }
     }
   }

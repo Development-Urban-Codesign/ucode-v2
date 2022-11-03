@@ -43,7 +43,7 @@ const sendTreeRequest= async ()=>{
   if(true){//import trees with THREE JS
     const treeJson = await getTreeJsonFromDB(store.state.aoi.projectSpecification.project_id);
     //console.log(treeJson)
-    emit("addLayer", ThreejsScene(store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin,treeJson, "Tree2.glb",true,true));
+    emit("addLayer", ThreejsScene(store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin,treeJson, "Tree2.glb",[0.7,0.8],true));
   }else {
     const treeLayer = await getTreesFromDB(store.state.aoi.projectSpecification.project_id);
     emit("addLayer", treeLayer);

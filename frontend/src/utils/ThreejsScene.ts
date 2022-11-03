@@ -4,13 +4,10 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
 //@ts-ignore
 // import { Sky } from 'three/addons/objects/Sky.js';
-import type { Layer } from '@deck.gl/core/typed';
-import { getTransitionRawChildren } from 'vue';
-import type { FeatureCollection } from '@turf/turf';
 
-export const ThreejsScene = (lng: number, lat: number, geoJson: any, glbModel: string, hasRandomSize?: boolean, hasRandomRot?: boolean) => {
+export const ThreejsScene = (lng: number, lat: number, geoJson: any, glbModel: string, hasRandomSize?: number[], hasRandomRot?: boolean) => {
   let localSceneCoordinates: [{ position: number[], rotation: number, scale: number }]
-  let currentMeshes: { mesh: any, material: any } = { mesh: [], material: []}
+  let currentMeshes: { mesh: any, material: any } = { mesh: [], material: [] }
 
   const modelAltitude = 0;
   const modelRotate = [Math.PI / 2, Math.PI / 2, 0];
@@ -64,7 +61,7 @@ export const ThreejsScene = (lng: number, lat: number, geoJson: any, glbModel: s
             children: any; clone: () => any;
           };
         }) => {
-          currentMeshes = { mesh: [], material: []}
+          currentMeshes = { mesh: [], material: [] }
           getAllMeshes(gltf.scene)
 
           localSceneCoordinates = generateTreeCoordinates(geoJson);
@@ -86,7 +83,7 @@ export const ThreejsScene = (lng: number, lat: number, geoJson: any, glbModel: s
       });
 
       this.renderer.autoClear = false;
-      console.count("onAdd")
+      //console.count("onAdd")
     },
 
 
@@ -158,18 +155,21 @@ export const ThreejsScene = (lng: number, lat: number, geoJson: any, glbModel: s
   }
   function generateTreeCoordinates(_geoJson: any) {
     localSceneCoordinates = [];
-    for (let index = 0; index < 100; index++) {
-      getRndNumber(0, 90)
-      
-    }
+    // for (let index = 0; index < 100; index++) {
+    //   console.log(getRndNumber(0, 90))
+
+    // }
     if (_geoJson != null) {
       for (let index = 0; index < _geoJson.features.length; index++) {
         const element = _geoJson.features[index].geometry.coordinates;
-        // console.log(modelAsMercatorCoordinate.x + "-" + localCord(element).x + "," + modelAsMercatorCoordinate.y + "-" + localCord(element).y);
-        // let newPos = [(modelorigin[0] - element[0]) * 100000, (modelorigin[1] - element[1]) * 100000]
-        let localPos = { position: [((localCord(element, 0).x) - modelAsMercatorCoordinate.x) * 1 / modelAsMercatorCoordinate.meterInMercatorCoordinateUnits(), (modelAsMercatorCoordinate.y - localCord(element, 0).y) * 1 / modelAsMercatorCoordinate.meterInMercatorCoordinateUnits()], rotation: getRndNumber(0, 90), scale: getRndNumber(0.5, 1) }//problematic getting position for the trees
-        
+
+        let rot = getRndNumber(0, Math.PI / 2)
+        let scl = getRndNumber(hasRandomSize? hasRandomSize[0]: 1, hasRandomSize? hasRandomSize[1]: 1)
+
+        let localPos = { position: [((localCord(element, 0).x) - modelAsMercatorCoordinate.x) * 1 / modelAsMercatorCoordinate.meterInMercatorCoordinateUnits(), 0, (modelAsMercatorCoordinate.y - localCord(element, 0).y) * 1 / modelAsMercatorCoordinate.meterInMercatorCoordinateUnits()], rotation: rot, scale: scl }//problematic getting position for the trees
+
         localSceneCoordinates.push(localPos)
+        
       }
     }
     else {
@@ -179,7 +179,7 @@ export const ThreejsScene = (lng: number, lat: number, geoJson: any, glbModel: s
         _long = i * 10
         for (let index = 0; index < 100; index++) {
           _lat = index * 10
-          localSceneCoordinates.push({position:[_lat, _long], rotation: 0, scale:1});
+          localSceneCoordinates.push({ position: [_lat, _long], rotation: 0, scale: 1 });
         }
       }
 
@@ -188,36 +188,39 @@ export const ThreejsScene = (lng: number, lat: number, geoJson: any, glbModel: s
   }
   const createGeoInstances = (localSceneCoordinates: [{ position: number[], rotation: number, scale: number }]) => {
     const clusters = []
-    
+
     for (let index = 0; index < currentMeshes.mesh.length; index++) {
       const mesh = currentMeshes.mesh[index];
       const material = currentMeshes.material[index]
       var cluster = new THREE.InstancedMesh(
         mesh,
         material,
-        localSceneCoordinates.length, //instance count 
-        false, //is it dynamic 
-        false, //does it have color 
+        localSceneCoordinates.length, //instance count
+        false, //is it dynamic
+        false, //does it have color
         true,  //uniform scale
       );
-      const matrix = new THREE.Matrix4();
+
       for (let index = 0; index < localSceneCoordinates.length; index++) {
-        if (hasRandomSize) {
-          matrix.makeScale(localSceneCoordinates[index].scale, localSceneCoordinates[index].scale, localSceneCoordinates[index].scale)
+        const matrix = new THREE.Matrix4();
+        let scale = new THREE.Vector3(1, 1, 1);
+        let rotation = new THREE.Quaternion();
+        let position = new THREE.Vector3(localSceneCoordinates[index].position[2], localSceneCoordinates[index].position[1], localSceneCoordinates[index].position[0]);
+
+        if (hasRandomSize !== undefined) {
+          scale = new THREE.Vector3(localSceneCoordinates[index].scale, localSceneCoordinates[index].scale, localSceneCoordinates[index].scale)
           
         }
-        if(hasRandomRot){
-          matrix.makeRotationY(localSceneCoordinates[index].rotation,localSceneCoordinates[index].rotation,localSceneCoordinates[index].rotation)
+        if (hasRandomRot) {
+          let rot = localSceneCoordinates[index].rotation
+          let eulerRot = new THREE.Euler(0, rot, 0, 'XYZ');
+          rotation = rotation.setFromEuler(eulerRot)
+          
         }
-        matrix.setPosition(localSceneCoordinates[index].position[1], 0, localSceneCoordinates[index].position[0]);
-        console.log(matrix)
+
+        matrix.compose(position, rotation, scale)
         cluster.setMatrixAt(index, matrix)
 
-        // old approach, without instancing
-        // const sceneClone = gltf.scene.clone()
-        // sceneClone.translateZ(localSceneCoordinates[index][0]);
-        // sceneClone.translateX(localSceneCoordinates[index][1]);
-        //this.scene.add(sceneClone);              
       }
       clusters.push(cluster)
     }
