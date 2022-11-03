@@ -13,10 +13,10 @@
         </v-btn>
       </v-row>
       <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
-      <PlanningIdeas v-if="mapStyleLoaded&&!devMode" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
-        @navigateToPlanningIdea="navigateToPlanningIdea" />
-
       <Quests />
+
+      <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
+        @navigateToPlanningIdea="navigateToPlanningIdea" />
       <!--<Quests v-if="!devMode" />-->
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
         @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
@@ -34,6 +34,7 @@ import Comment from "@/components/Comment.vue";
 import Contribution from "@/components/Contribution.vue";
 import PlanningIdeas from "@/components/PlanningIdeas.vue";
 import Quests from "@/components/Quests.vue";
+import FreeComment from "@/components/FreeComment.vue";
 import { getCommentsFromDB } from "@/service/backend.service";
 import type { ProjectSpecification } from "@/store/modules/aoi";
 import { HTTP } from "@/utils/http-common";
@@ -42,9 +43,10 @@ import { TreeModel } from "@/utils/TreeModel";
 import { MapboxLayer } from "@deck.gl/mapbox/typed";
 import { ScenegraphLayer } from "@deck.gl/mesh-layers/typed";
 import * as turf from '@turf/turf';
-import { Map, type CustomLayerInterface, type Feature, type IControl, type LayerSpecification, type LngLatBoundsLike, type Popup, type SourceSpecification } from "maplibre-gl";
+import { Map, type CustomLayerInterface, type Feature, type IControl, type LayerSpecification, type LngLatBoundsLike, type Popup } from "maplibre-gl";
 import { computed, onMounted, onUnmounted, reactive, ref, shallowRef } from "vue";
 import { useStore } from "vuex";
+import { deckLightingEffect } from "@/utils/deckLighting";
 
 
 const store = useStore();
@@ -54,8 +56,11 @@ const devMode = computed(() => store.getters["ui/devMode"]);
 const mapContainer = shallowRef(null);
 let map: Map = {} as Map;
 const mapClicks = reactive({ clickedCoordinates: [] })
+const commentClicks = reactive({ commentCoordinates: [] })
 let lineDrawCreated = ref(0)
 let mapStyleLoaded = ref(false)
+let activeMarker = reactive<any>({});
+
 
 let unsubscribeFromStore = () => { };
 
@@ -82,6 +87,7 @@ onMounted(() => {
     minZoom: store.state.map.minZoom,
     maxZoom: store.state.map.maxZoom,
     maxPitch: store.state.map.maxPitch,
+    attributionControl: false
   });
 
 
@@ -99,11 +105,11 @@ onMounted(() => {
     });
 
     const projectSpecification: ProjectSpecification = store.state.aoi.projectSpecification;
+
     map.fitBounds([projectSpecification.bbox.xmin,
     projectSpecification.bbox.ymin,
     projectSpecification.bbox.xmax,
     projectSpecification.bbox.ymax]);
-
 
     HTTP.get("").then((response) => {
       // console.log(response);
@@ -117,9 +123,8 @@ onMounted(() => {
     mapClicks.clickedCoordinates = [mapClick.lngLat.lng, mapClick.lngLat.lat]
 
     if (store.state.comment.toggle) {
-      addLayerToMap(pulseLayer(
-        store.state.pulse.pulseCoordinates.geometry.coordinates
-      ))
+      //@ts-ignore
+      addLayerToMap(pulseLayer(store.state.pulse.pulseCoordinates.geometry.coordinates))
     }
 
   });
@@ -128,17 +133,110 @@ onMounted(() => {
     lineDrawCreated.value = 1
   })
 
+
+  map.on('mousedown', 'ownComments', (e) => {
+    // Prevent the default map drag behavior.
+    if(!store.state.freecomment.moveComment){
+      return
+    }
+    e.preventDefault();
+    //@ts-ignore TODO Dobo help
+    activeMarker = map.getSource('ownComments')._data;
+    map.on('mousemove', onMove);
+    map.once('mouseup', onUp);
+  });
+
+  map.on('touchstart', 'ownComments', (e) => {
+    if (e.points.length !== 1) return;
+    if(!store.state.freecomment.moveComment){
+      return
+    }
+    //@ts-ignore TODO Dobo help
+    activeMarker = map.getSource('ownComments')._data;
+    // Prevent the default map drag behavior.
+    e.preventDefault();
+    map.on('touchmove', onMove);
+    map.once('touchend', onUp);
+
+  })
 });
+function onUp() {
+  map.off('mousemove', onMove);
+  map.off('touchmove', onMove);
+}
+function onMove(e: { lngLat: { lng: number; lat: number; }; }) {
+  //@ts-ignore
+  let index = map.getSource('ownComments')?._data.features.length -1
+  //@ts-ignore
+  activeMarker.features[index].geometry.coordinates = [e.lngLat.lng, e.lngLat.lat]
+  //@ts-ignore
+  map.getSource('ownComments').setData(activeMarker)
+  // @ts-ignore
+  commentClicks.commentCoordinates = [e.lngLat.lng, e.lngLat.lat]
+  // map.panTo([e.lngLat.lng, e.lngLat.lat]);
+}
+function centerMapOnComment(){
+  map.panTo(activeMarker.features[activeMarker.features.length-1].geometry.coordinates);
+}
 
-
+function getMapCenter() {
+  //@ts-ignore
+  commentClicks.commentCoordinates = ([map.getCenter().lng, map.getCenter().lat])
+}
 // threejs layer
 const addThreejsShape = () => {
   //TODO type treemodel 
   // @ts-ignore
   addLayerToMap(TreeModel(13.74647, 51.068646, 100));
 }
+function deleteOwnComment(){
+    map.removeLayer('ownComments')
+    map.removeSource('ownComments')
+    map.removeImage('comment.png')
+}
+
+const addCommentToMap = (source: any, layer: any) => {
+
+  if (map.getSource(source.id) !== undefined) {
+    // console.log("already in use")
+    addSourceToMap(source)
+    //@ts-ignore TODO Dobo help
+    activeMarker = map.getSource('ownComments')._data;
+    return
+  }
+  addSourceToMap(source)
+  map?.loadImage('comment.png', (error, image) => {
+    if (error) throw error;
+    map?.addImage('comment.png', image!);
+    addLayerToMap(layer)
+  });
+  
+  
+  //@ts-ignore TODO Dobo help
+  activeMarker = map.getSource('ownComments')._data;
+  
+}
+
+store.commit("map/addLayer", {
+  'id': "ownComments",
+  'type': 'symbol',
+  'source': "ownComments",
+  'layout': {
+    'icon-image': 'comment.png', // reference the image
+    'icon-size': 0.25,
+    'icon-offset': [130, 25],
+    'icon-anchor': "bottom",
+    'icon-allow-overlap': true,
+    // 'icon-ignore-placement': true
+  },
+  'paint': {
+    // 'fadeDuration': 0
+  }
+})
+
 
 const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
+
   const addedlayer = map.getLayer(layer.id)
   if (typeof addedlayer !== 'undefined') {
     removeLayerFromMap(layer.id)
@@ -154,49 +252,88 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
     }
   }
   map?.addLayer(layer);
+  const layerHirarchy: any[]=[]// = reactive<[{layer: any, orderId: Number}]>([{}])
 
   const buildinglayer = map.getLayer("overpass_buildings")
+  // @ts-ignore
+  buildinglayer?.implementation?.deck.setProps({
+    effects: [deckLightingEffect]
+  });
+
+  if(typeof buildinglayer !== 'undefined'){
+  layerHirarchy.push({layer: buildinglayer, orderId: 99})}
   const greenerylayer = map.getLayer("overpass_greenery")
+  if(typeof greenerylayer !== 'undefined'){
+  layerHirarchy.push({layer: greenerylayer, orderId: 10})}
   const commentlayer = map.getLayer("comments")
+  if(typeof commentlayer !== 'undefined'){
+  layerHirarchy.push({layer: commentlayer, orderId: 90})}
   const drivinglanelayer = map.getLayer("driving_lane_polygon")
+  if(typeof drivinglanelayer !== 'undefined'){
+  layerHirarchy.push({layer: drivinglanelayer, orderId: 60})}
   const drivinglane = map.getLayer("driving_lane")
+  if(typeof drivinglane !== 'undefined'){
+  layerHirarchy.push({layer: drivinglane, orderId: 70})}
   const treeLayer = map.getLayer("trees")
+  if(typeof treeLayer !== 'undefined'){
+  layerHirarchy.push({layer: treeLayer, orderId: 80})}
   const routesLayer = map.getLayer("routes")
+  if(typeof routesLayer !== 'undefined'){
+  layerHirarchy.push({layer: routesLayer, orderId: 75})}
   const routesSymbolLayer = map.getLayer("routes-symbols")
-  if (typeof buildinglayer !== 'undefined' && typeof greenerylayer !== 'undefined') {
-    map?.moveLayer("overpass_greenery", "overpass_buildings")
-  }
-  if (typeof commentlayer !== 'undefined' && typeof greenerylayer !== 'undefined') {
-    map?.moveLayer("overpass_greenery", "comments")
-  }
-  if (typeof drivinglanelayer !== 'undefined' && typeof commentlayer !== 'undefined') {
-    map?.moveLayer("driving_lane_polygon", "comments")
-  }
-  if (typeof drivinglane !== 'undefined' && typeof commentlayer !== 'undefined') {
-    map?.moveLayer("driving_lane", "comments")
-  }
-  if (typeof drivinglanelayer !== 'undefined' && typeof buildinglayer !== 'undefined') {
-    map?.moveLayer("overpass_buildings", "driving_lane_polygon")
-  }
-  if (typeof drivinglane !== 'undefined' && typeof buildinglayer !== 'undefined') {
-    map?.moveLayer("overpass_buildings", "driving_lane")
+  if(typeof routesSymbolLayer !== 'undefined'){
+  layerHirarchy.push({layer: routesSymbolLayer, orderId: 76})}
+  const ownCommentLayer = map.getLayer("ownComments")
+  if(typeof ownCommentLayer !== 'undefined'){
+  layerHirarchy.push({layer: ownCommentLayer, orderId: 100})}
+  
+
+  for (let index = 0; index < layerHirarchy.length; index++) {
+    const x = layerHirarchy[index];
+      for (let index = 0; index < layerHirarchy.length; index++) {
+        const y = layerHirarchy[index];
+         if(x.layer !== y.layer && x.orderId>y.orderId){
+           map.moveLayer(y.layer.id,x.layer.id)
+         }
+    }
   }
 
-  if (typeof greenerylayer !== 'undefined' && typeof treeLayer !== 'undefined') {
-    map?.moveLayer("overpass_greenery", "trees")
-  }
-  if (typeof drivinglanelayer !== 'undefined' && typeof treeLayer !== 'undefined') {
-    map?.moveLayer("driving_lane_polygon", "trees")
-  }
-  if (typeof drivinglane !== 'undefined' && typeof treeLayer !== 'undefined') {
-    map?.moveLayer("driving_lane", "trees")
-  }
-  if (typeof routesLayer !== 'undefined' && typeof treeLayer !== 'undefined') {
-    map?.moveLayer("routes", "trees")
-  }
-  if (typeof routesSymbolLayer !== 'undefined' && typeof treeLayer !== 'undefined') {
-    map?.moveLayer("routes-symbols", "trees")
-  }
+  // if (typeof buildinglayer !== 'undefined' && typeof greenerylayer !== 'undefined') {
+  //   map?.moveLayer("overpass_greenery", "overpass_buildings")
+  // }
+  // if (typeof commentlayer !== 'undefined' && typeof greenerylayer !== 'undefined') {
+  //   map?.moveLayer("overpass_greenery", "comments")
+  // }
+  // if (typeof drivinglanelayer !== 'undefined' && typeof commentlayer !== 'undefined') {
+  //   map?.moveLayer("driving_lane_polygon", "comments")
+  // }
+  // if (typeof drivinglane !== 'undefined' && typeof commentlayer !== 'undefined') {
+  //   map?.moveLayer("driving_lane", "comments")
+  // }
+  // if (typeof drivinglanelayer !== 'undefined' && typeof buildinglayer !== 'undefined') {
+  //   map?.moveLayer("overpass_buildings", "driving_lane_polygon")
+  // }
+  // if (typeof drivinglane !== 'undefined' && typeof buildinglayer !== 'undefined') {
+  //   map?.moveLayer("overpass_buildings", "driving_lane")
+  // }
+  // if (typeof greenerylayer !== 'undefined' && typeof treeLayer !== 'undefined') {
+  //   map?.moveLayer("overpass_greenery", "trees")
+  // }
+  // if (typeof drivinglanelayer !== 'undefined' && typeof treeLayer !== 'undefined') {
+  //   map?.moveLayer("driving_lane_polygon", "trees")
+  // }
+  // if (typeof drivinglane !== 'undefined' && typeof treeLayer !== 'undefined') {
+  //   map?.moveLayer("driving_lane", "trees")
+  // }
+  // if (typeof routesLayer !== 'undefined' && typeof treeLayer !== 'undefined') {
+  //   map?.moveLayer("routes", "trees")
+  // }
+  // if (typeof routesSymbolLayer !== 'undefined' && typeof treeLayer !== 'undefined') {
+  //   map?.moveLayer("routes-symbols", "trees")
+  // }
+  // if(typeof ownCommentLayer !== 'undefined'){
+  //   map.moveLayer('ownComments')
+  // }
 
 
 };
@@ -207,7 +344,7 @@ const removeLayerFromMap = (layerId: string) => {
   }
 }
 
-const addSourceToMap = (source: { id: string, geojson: SourceSpecification }) => {
+const addSourceToMap = (source: { id: string, geojson: any }) => {
   // console.log(source)
   if (!source) return;
   if (!map) return;
@@ -218,7 +355,15 @@ const addSourceToMap = (source: { id: string, geojson: SourceSpecification }) =>
     removeLayerFromMap(sourceId)
   }*/
 
-  map.addSource(sourceId, source.geojson);
+  if (map.getSource(sourceId) !== undefined) {
+    let data = source.geojson.data
+    //@ts-ignore
+    map.getSource(sourceId).setData(data)
+  }
+  else {
+    map.addSource(sourceId, source.geojson);
+  }
+
 };
 
 const addImageToMap = (imgUrl: string) => {
@@ -279,13 +424,15 @@ const removePulseLayerFromMap = (layerid: string) => {
 }
 
 
-const activateSelectedPlanningIdeaInMap = (selectedFeature: Feature) => {
 
+const activateSelectedPlanningIdeaInMap = (selectedFeature: Feature) => {
+  const currentBearing = map.getBearing();
   let bounds = turf.bbox(selectedFeature) as LngLatBoundsLike;
-  map.fitBounds(bounds, { padding: 20 });
+  map.fitBounds(bounds, { pitch: 40, bearing: currentBearing, padding: 40 });
 
   // @ts-ignore
   if (selectedFeature.type == 'FeatureCollection') {
+
 
     map.setPaintProperty('routes', 'line-color', ['get', 'color']);
   } else {
@@ -293,10 +440,8 @@ const activateSelectedPlanningIdeaInMap = (selectedFeature: Feature) => {
       'routes',
       'line-color',
       ['match', ['get', 'id'], selectedFeature.properties.id, selectedFeature.properties.color, 'rgba(0,0,0,0.4)' /*['get', 'color']*/],
-
     )
   }
-
 }
 
 const navigateToPlanningIdea = (planningIdeaBBOX: LngLatBoundsLike) => {
@@ -326,10 +471,16 @@ onUnmounted(() => {
 }
 
 .map {
+
   height: 100%;
   width: 100%;
   position: absolute;
   background-color: darkgray;
   margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+
 }
 </style>

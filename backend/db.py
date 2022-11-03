@@ -72,8 +72,6 @@ def add_comment(userId, projectId, comment, lng, lat):
   cursor.close()
   connection.close()
 
-# TH Hier wird die Zahl der Fulfillments aus der db gelesen und hochgesetzt und dieser Wert zurückgesendet
-
 def add_fulfillment(quest_id, projectId):
   connection = connect()
   cursor = connection.cursor()

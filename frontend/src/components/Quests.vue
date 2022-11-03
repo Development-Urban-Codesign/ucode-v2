@@ -1,16 +1,11 @@
 <template >
   <v-card id="quests" v-if=showQuests>
-    
+
     <v-card-title v-if="greeting" align="center">
-    {{$t("Quest.greeting")}}
-      <v-btn
-      icon="mdi-close-circle-outline"
-      @click="showQuests=false"
-      class="ma-2"
-      variant="text"
-      style="position: absolute; right: 0%; top:-5%;"
-    >
-    </v-btn>
+      {{$t("Quest.greeting")}}
+      <v-btn icon="mdi-close-circle-outline" @click="showQuests=false" class="ma-2" variant="text"
+        style="position: absolute; right: 0%; top:-5%;">
+      </v-btn>
     </v-card-title>
     <v-card-text v-if="greeting" align="center"> {{ introText }} </v-card-text>
     <v-btn
@@ -38,11 +33,9 @@
           {{ item.name }}
         </v-banner-text>
         <v-banner-actions>
-          <v-btn v-if="i == 0 && greeting" @click="startQuest(i)">Start</v-btn>
+          <!-- <v-btn v-if="i == 0 && greeting" @click="startQuest(i)">Start</v-btn> -->
           <v-btn v-if="!greeting" @click="cancelQuest(i)">Überspringen</v-btn>
-          <v-btn v-if="!greeting" @click="fulfillQuest(i, item)"
-            >Abschließen</v-btn
-          >
+          <v-btn v-if="!greeting" @click="fulfillQuest(i, item)">Abschließen</v-btn>
         </v-banner-actions>
       </v-banner>
     </v-card>
@@ -97,9 +90,11 @@ async function startAdventure() {
   greeting.value = false;
   //@ts-ignore
   document.getElementById("quests").style.top = "0px";
+  //@ts-ignore
+  document.getElementById("quests").style.transform= "translate(-50%, 0%)";
 }
 
-function cancelQuest(id:number, item:Quest) {
+function cancelQuest(id:number) {
   quests[id].bgColor = "grey";
   setTimeout(() => (quests[id].isActive = false), 300);
   if (id < quests.length - 1) {
@@ -123,7 +118,11 @@ function fulfillQuest(id:number, quest:Quest) {
 #quests {
   z-index: 999;
   max-width: 50vw;
-  margin: auto;
-  top: 30vh;
+  position: absolute;
+  left:50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  /* margin: auto;
+  top: 30vh; */
 }
 </style>
