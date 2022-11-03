@@ -48,6 +48,7 @@ import * as turf from '@turf/turf';
 import { Map, type CustomLayerInterface, type Feature, type IControl, type LayerSpecification, type LngLatBoundsLike, type Popup } from "maplibre-gl";
 import { computed, onMounted, onUnmounted, reactive, ref, shallowRef } from "vue";
 import { useStore } from "vuex";
+import { deckLightingEffect } from "@/utils/deckLighting";
 
 
 const store = useStore();
@@ -88,6 +89,7 @@ onMounted(() => {
     minZoom: store.state.map.minZoom,
     maxZoom: store.state.map.maxZoom,
     maxPitch: store.state.map.maxPitch,
+    attributionControl: false
   });
 
 
@@ -263,6 +265,11 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
   const layerHirarchy: any[]=[]// = reactive<[{layer: any, orderId: Number}]>([{}])
 
   const buildinglayer = map.getLayer("overpass_buildings")
+  // @ts-ignore
+  buildinglayer?.implementation?.deck.setProps({
+    effects: [deckLightingEffect]
+  });
+
   if(typeof buildinglayer !== 'undefined'){
   layerHirarchy.push({layer: buildinglayer, orderId: 99})}
   const greenerylayer = map.getLayer("overpass_greenery")
@@ -433,9 +440,9 @@ const removePulseLayerFromMap = (layerid: string) => {
 
 
 const activateSelectedPlanningIdeaInMap = (selectedFeature: Feature) => {
-
+  const currentBearing = map.getBearing();
   let bounds = turf.bbox(selectedFeature) as LngLatBoundsLike;
-  map.fitBounds(bounds, { padding: 20 });
+  map.fitBounds(bounds, { pitch: 40, bearing: currentBearing, padding: 40 });
 
   // @ts-ignore
   if (selectedFeature.type == 'FeatureCollection') {

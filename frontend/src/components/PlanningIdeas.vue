@@ -95,7 +95,12 @@ const sendRouteRequest = async () => {
                     "rgba(0,255,0,1)",
                     "rgba(0,0,255,1)",
             ]*/,
-            'line-width': 6,
+            'line-width': 5,
+            'line-offset': {
+              property: "id",
+              type: "categorical",
+              stops: [[1, -4], [2, 0], [3, -4]]
+            },
             //'line-dasharray': [1,5]
         }
     })
