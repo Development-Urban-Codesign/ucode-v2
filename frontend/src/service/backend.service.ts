@@ -293,7 +293,7 @@ export async function storeGreeneryFromOSM(
   usedTagsForGreenery: unknown[],
   projectId: string
 ) {
-  HTTP.post("store-greenery-from-osm", {
+  HTTP.post("get-greenery-from-osm", {
     bbox: bbox,
     usedTagsForGreenery: usedTagsForGreenery,
     projectId: projectId,

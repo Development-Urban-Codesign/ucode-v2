@@ -16,7 +16,8 @@
       <PlanningIdeas v-if="mapStyleLoaded&&!devMode" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
         @navigateToPlanningIdea="navigateToPlanningIdea" />
 
-      <Quests v-if="!devMode"  />
+      <Quests />
+      <!--<Quests v-if="!devMode" />-->
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
         @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
         :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />

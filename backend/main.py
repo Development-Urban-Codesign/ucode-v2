@@ -87,8 +87,8 @@ async def add_fulfillment_api(request: Request):
     add_fulfillment(data["questid"], data["projectId"])
     return "fulfillment has been updated"
     
-@app.post("/store-greenery-from-osm")
-async def store_greenery_from_osm_api(request: Request):
+@app.post("/get-greenery-from-osm")
+async def get_greenery_from_osm_api(request: Request):
     data = await request.json()
     projectId = data["projectId"] 
     drop_greenery_table(projectId)
@@ -215,7 +215,7 @@ async def get_buildings_from_osm_api(request: Request):
         INSERT INTO building (project_id,wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, (st_buffer(st_buffer(ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326)::geography, 1,'side=right'),1)::geography)::geometry);
     """
     for f in data_building["elements"]:
-        print(f)
+        #print(f)
         f["geometry"]["type"] = "Polygon"
         f["geometry"]["coordinates"] = [f["geometry"]["coordinates"]]
 
@@ -259,7 +259,7 @@ async def get_buildings_from_osm_api(request: Request):
             estimatedheight = 15
 
         geom = json.dumps(f["geometry"])
-        print(geom)
+        #print(geom)
         # get_buildings_from_osm(wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom)
         cursor.execute(
             insert_query_building,
@@ -295,7 +295,6 @@ async def get_quests_from_db_api(request: Request):
     projectId = await request.json()
     return get_quests_from_db(projectId)
 
-#TH: add projectId to insert command
 @app.post("/get-trees-from-osm")
 async def get_trees_from_osm_api(request: Request):
     data = await request.json()
@@ -409,6 +408,7 @@ async def get_driving_lane_from_osm_api(request: Request):
     G = ox.graph_from_bbox(ymin, ymax, xmin, xmax, network_type='drive')
     gdf = ox.graph_to_gdfs(G, nodes=False, edges=True)
     road = json.loads(gdf.to_json())
+    #print(road)
     """
     mylist =[]
     for i in road['features']: 
