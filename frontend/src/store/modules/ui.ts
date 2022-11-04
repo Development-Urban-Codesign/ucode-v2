@@ -2,6 +2,7 @@ export interface UiState {
   projectsLoaded: boolean;
   devMode: boolean;
   aoiMapPopulated: boolean;
+  planningIdeasLoaded: boolean;
 }
 
 export default {
@@ -10,6 +11,7 @@ export default {
     loaded: false,
     devMode: false,
     aoiMapPopulated: false,
+    planningIdeasLoaded:false,
   },
   mutations: {
     loadedProjects(state: UiState, payload: boolean) {
@@ -20,6 +22,9 @@ export default {
     },
     aoiMapPopulated(state: UiState, status: boolean) {
       state.aoiMapPopulated = status;
+    },
+    planningIdeasLoaded(state: UiState, status: boolean) {
+      state.planningIdeasLoaded = status;
     },
   },
   actions: {},

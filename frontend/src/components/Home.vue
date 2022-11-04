@@ -34,15 +34,12 @@ watch(store.state.ui, function (state: UiState) {
   devMode.value = state.devMode;
   projectsLoaded.value = state.devMode || state.projectsLoaded;
   aoiMapPopulated.value = state.aoiMapPopulated;
-  // console.log("projectdataIsLoaded: " + projectsLoaded.value+ "aoiMapPop: "+ aoiMapPopulated.value)
+  console.log("projectdataIsLoaded: " + projectsLoaded.value+ "aoiMapPop: "+ aoiMapPopulated.value)
 });
 
 
 const hideLoadingScreen = computed<boolean>(
-  () => 
-  projectsLoaded.value && aoiMapPopulated.value
-
-)
+  () => (projectsLoaded.value && aoiMapPopulated.value) || devMode.value);
 
 </script>
 

@@ -50,7 +50,7 @@
 
 <script lang="ts" setup>
 import {useStore} from "vuex";
-import { ref, defineProps } from 'vue';
+import { ref } from 'vue';
 import { HTTP } from '../utils/http-common';
 const store = useStore();
 
