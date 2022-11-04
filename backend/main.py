@@ -1,42 +1,22 @@
 import json
-from smtpd import DebuggingServer
 
 import requests
-import osmnx as ox
-import geopandas
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-from db import (
-    add_comment,
-    add_drawn_line,
-    dislike_comment,
-    get_buildings_from_db,
-    connect,
-    get_comments,
-    get_greenery_from_db,
-    get_table_names,
-    get_trees_from_db,
-    like_comment,
-    dislike_comment,
-    undislike_comment,
-    unlike_comment,
-    get_driving_lane_from_db,
-    get_driving_lane_polygon_from_db,
-    add_fulfillment,
-    get_quests_from_db,
-    get_driving_lane_polygon_from_db,
-    drop_greenery_table,
-    drop_building_table,
-    drop_tree_table,
-    drop_driving_lane_table,
-    drop_traffic_signal_table,
-    get_traffic_signal_from_db,
-    get_project_specification_from_db,
-    get_routes_from_db
-
-)
+from db import (add_comment, add_drawn_line, add_fulfillment, connect,
+                dislike_comment, drop_building_table, drop_driving_lane_table,
+                drop_greenery_table, drop_traffic_signal_table,
+                drop_tree_table, get_buildings_from_db, get_comments,
+                get_driving_lane_from_db, get_driving_lane_polygon_from_db,
+                get_greenery_from_db, get_project_specification_from_db,
+                get_quests_from_db, get_routes_from_db, get_table_names,
+                get_traffic_signal_from_db, get_trees_from_db, like_comment,
+                undislike_comment, unlike_comment)
 from db_migrations import run_database_migrations
+from models import ProjectSpecification
+from roads import getDriveNetwork
+
 try:
     run_database_migrations()
 except Exception as err:
@@ -395,19 +375,26 @@ async def undislike_comment_api(request: Request):
     data = await request.json()
     undislike_comment(data["id"],data["projectId"])
     return "added"
-
+  
 @app.post("/get-driving-lane-from-osm")
-async def get_driving_lane_from_osm_api(request: Request):
-    data = await request.json()
-    projectId = data["projectId"]
-    drop_driving_lane_table(projectId)
-    xmin = sure_float(data['bbox']["xmin"])
-    ymin = sure_float(data['bbox']["ymin"])
-    xmax = sure_float(data['bbox']["xmax"])
-    ymax = sure_float(data['bbox']["ymax"]) 
-    G = ox.graph_from_bbox(ymin, ymax, xmin, xmax, network_type='drive')
-    gdf = ox.graph_to_gdfs(G, nodes=False, edges=True)
-    road = json.loads(gdf.to_json())
+async def get_driving_lane_from_osm_api(project_spec: ProjectSpecification):
+    projectId = project_spec.projectId
+    try:
+        drop_driving_lane_table(projectId)
+    except:
+        print("Could not drop_driving_lane_table ")
+    
+    xmin = sure_float(project_spec.bbox.xmin)
+    ymin = sure_float(project_spec.bbox.ymin)
+    xmax = sure_float(project_spec.bbox.xmax)
+    ymax = sure_float(project_spec.bbox.ymax) 
+    try:
+        road = getDriveNetwork(ymin, ymax, xmin, xmax)
+    except ValueError:
+        raise HTTPException(
+            status_code=412,
+            detail="Found no graph nodes within the requested polygon"
+        )
     #print(road)
     """
     mylist =[]
