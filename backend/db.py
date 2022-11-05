@@ -169,9 +169,46 @@ def get_comments(projectId):
   '''
   cursor.execute(get_comment_query)
   comments = cursor.fetchall()[0][0]
+  print(comments)
   cursor.close()
   connection.close()
   return comments
+
+def get_filtered_comments(projectId,userId):
+  connection = connect()
+  cursor = connection.cursor()
+  get_comment_query =f''' select json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(ST_AsGeoJSON(comment.*)::json)
+        )
+        from comment where project_id='{projectId}'
+      ;
+  '''
+  cursor.execute(get_comment_query)
+  comments = cursor.fetchall()[0][0]
+
+  ##TH
+  ## hier für jeden Beitrag den Usernamen löschen/ersetzen NN, der nicht der User selbst ist
+  ## comments ist eine JSON
+
+  for f in comments["features"]:
+        #print(f)
+        currentUser = f["properties"]["user_id"]
+#        print ( "UserId: " + str(userId) + " currentUser: " + str(currentUser))
+        if str(userId) != str(currentUser):
+          f["properties"]["user_id"] = "anonymous"
+
+  print(comments)
+  
+  cursor.close()
+  connection.close()
+
+  #print(comments)
+
+  return comments
+
+
+
 
 def like_comment(commentid, projectId):
   connection = connect()

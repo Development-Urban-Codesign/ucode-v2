@@ -205,6 +205,58 @@ export async function storeGreeneryFromOSM(
   }).then(() => store.dispatch("aoi/setDataIsLoaded"));
 }
 
+//TH
+export async function getFilteredCommentsFromDB(projectId: string, userId: string) {
+  const response = await HTTP.post("get-filtered-comments", {
+    projectId: projectId,
+    userId: userId});
+    const iconlayer = new MapboxLayer({
+      id: "comments",
+      // @ts-ignore
+      type: ScenegraphLayer,
+      data: response.data.features,
+      pickable: true,
+      pickingRadius: 100,
+      scenegraph: "./Icon3d.glb",
+      // @ts-ignore
+      getPosition: (d) => d.geometry.coordinates,
+      getOrientation: () => [0, 0, 90],
+      sizeScale: 15,
+      _lighting: "pbr",
+      onClick: ({ x, y, object }) => {
+        // TODO: change the color of clicked icon
+        /*store.commit("map/addLayer", new MapboxLayer({
+          id: 'pulse-layerr',
+          type: ScatterplotLayer,
+          data : object.geometry.coordinates,
+          pickable: true,
+          stroked: false,
+          filled: true,
+          radiusUnits : 'meters',
+          antialiasing: true,
+          getPosition: object.geometry.coordinates,
+          getRadius: 0,
+          radiusScale: 1,
+          getFillColor: d => [0, 255, 0, 255],
+          getLineColor: d => [0, 0, 0],
+        }))*/
+        store.commit("pulse/pulsedata", object);
+        store.commit("comment/setCommentToggle");
+        store.commit("comment/getClickedCommentObject", object);
+  
+        //getClickedCommentObject(object)
+      },
+  
+      onHover: (e) => {
+        if (e.object) {
+          // Show content of comment in Tooltip?
+        }
+      },
+    });
+    return iconlayer;
+  }
+
+
 export async function getCommentsFromDB(projectId: string) {
   const response = await HTTP.post("get-comments", projectId);
 

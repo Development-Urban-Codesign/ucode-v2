@@ -5,6 +5,9 @@
           <v-btn color="success" class="ml-2" @click="getCommentData">
             Show comments
           </v-btn>
+          <v-btn color="success" class="ml-2" @click="getFilteredCommentData">
+            Show filtered comments
+          </v-btn>
           <v-btn color="error" class="ml-2" @click="addThreejsShape">
             Threejs
           </v-btn>
@@ -40,6 +43,7 @@ import FreeComment from "@/components/FreeComment.vue";
 import BottomNavigation from "@/components/BottomNavigation.vue";
 import CommentView from "@/components/CommentView.vue";
 import { getCommentsFromDB } from "@/service/backend.service";
+import { getFilteredCommentsFromDB } from "@/service/backend.service";
 import type { ProjectSpecification } from "@/store/modules/aoi";
 import { HTTP } from "@/utils/http-common";
 import { pulseLayer } from "@/utils/pulseLayer";
@@ -402,10 +406,27 @@ const addImageToMap = (imgUrl: string) => {
   });
 };
 
+//TH
+// provides all comments of a project but only the user comments have his/her name, all other are anonymous
+const getFilteredCommentData = async () => {
+  /*
+  const commentLayerFiltered = await getFilteredCommentsFromDB(store.state.aoi.projectId, store.state.aoi.userId);
+  console.log(commentLayerFiltered)
+  addLayerToMap(commentLayerFiltered as unknown as CustomLayerInterface)
+  */
+  const commentLayer = await getFilteredCommentsFromDB(store.state.aoi.projectId, store.state.aoi.userId);
+  console.log(commentLayer)
+  addLayerToMap(commentLayer as unknown as CustomLayerInterface)
+  
+};
+
+
+//Show comment symbols on the map
 const getCommentData = async () => {
   const commentLayer = await getCommentsFromDB(store.state.aoi.projectId);
   addLayerToMap(commentLayer as unknown as CustomLayerInterface)
 };
+
 // deckgl layder
 const addDeckglShape = () => {
   const myDeckLayer = new MapboxLayer({

@@ -15,6 +15,7 @@ from db import (
     get_buildings_from_db,
     connect,
     get_comments,
+    get_filtered_comments,
     get_greenery_from_db,
     get_table_names,
     get_trees_from_db,
@@ -63,7 +64,6 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],
 )
-
 
 @app.get("/")
 async def root():
@@ -479,6 +479,12 @@ async def get_comments_api(request: Request):
     data = await request.json()
     return get_comments(data)
 
+@app.post("/get-filtered-comments")
+async def get_filtered_comments_api(request: Request):
+    data = await request.json()
+    projectId = data["projectId"]
+    userId = data["userId"]
+    return get_filtered_comments(projectId,userId)
 
 @app.post("/like-comment")
 async def like_comment_api(request: Request):
