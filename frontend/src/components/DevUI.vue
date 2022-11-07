@@ -1,50 +1,25 @@
 <template>
-    
-  <v-col
-    cols="5"
-    sm="1"
-    style="position: absolute; right: 0; top: 50px; z-index: 999"
-  >
- 
-  <v-btn color="#41b883" @click="loadAllProjectObjectsFromOSM()" class="mt-2">
-            Import OSM
-        </v-btn>
-  <v-btn color="#41b883" @click="emit('startPopulate')" class="mt-2">
-            Load DB
-        </v-btn>
-       
-    
-    <v-select
-      :items="['get', 'retrieve']"
-      label="building"
-      variant="outlined"
-      @update:modelValue="sendBuildingRequest"
-    ></v-select>
-    <v-select
-      :items="['get', 'retrieve']"
-      :label="$t('AOI.greenery')"
-      variant="outlined"
-      @update:modelValue="sendGreeneryRequest"
-    ></v-select>
-    <v-select
-      :items="['get', 'retrieve']"
-      label="tree"
-      variant="outlined"
-      @update:modelValue="sendTreeRequest"
-    >
+
+  <v-col cols="6" md="2" sm="3" style="position: absolute; right: 0; top: 50px; z-index: 999">
+
+    <v-btn color="#41b883" @click="loadAllProjectObjectsFromOSM()" class="mt-2">
+      Import OSM
+    </v-btn>
+    <v-btn color="#41b883" @click="emit('startPopulate')" class="mt-2">
+      Load DB
+    </v-btn>
+
+
+    <v-select :items="['get', 'retrieve']" label="building" variant="outlined" @update:modelValue="sendBuildingRequest">
     </v-select>
-    <v-select
-      :items="['get', 'retrieve']"
-      label="driving lane"
-      variant="outlined"
-      @update:modelValue="sendDrivingLaneRequest"
-    ></v-select>
-    <v-select
-      :items="['get', 'retrieve']"
-      label="traffic signal"
-      variant="outlined"
-      @update:modelValue="sendTrafficSignalRequest"
-    ></v-select>
+    <v-select :items="['get', 'retrieve']" :label="$t('AOI.greenery')" variant="outlined"
+      @update:modelValue="sendGreeneryRequest"></v-select>
+    <v-select :items="['get', 'retrieve']" label="tree" variant="outlined" @update:modelValue="sendTreeRequest">
+    </v-select>
+    <v-select :items="['get', 'retrieve']" label="driving lane" variant="outlined"
+      @update:modelValue="sendDrivingLaneRequest"></v-select>
+    <v-select :items="['get', 'retrieve']" label="traffic signal" variant="outlined"
+      @update:modelValue="sendTrafficSignalRequest"></v-select>
     <v-alert type="success" v-if="store.state.aoi.dataIsLoaded">
       stored
     </v-alert>
