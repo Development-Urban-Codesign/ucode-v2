@@ -477,7 +477,8 @@ onUnmounted(() => {
   height: 100%;
   width: 100%;
   position: absolute;
-  background-color: darkgray;
+  /* background-color: darkgray; */
+  background: linear-gradient(rgba(195,245,255,1), rgba(255,199,111,1));
   margin: auto;
   display: flex;
   flex-direction: column;
