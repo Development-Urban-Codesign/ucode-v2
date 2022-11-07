@@ -42,9 +42,27 @@ const sendGreeneryRequest = async () => {
 const sendTreeRequest= async ()=>{
   if(true){//import trees with THREE JS
     const treeJson = await getTreeJsonFromDB(store.state.aoi.projectSpecification.project_id);
-    //console.log(treeJson)
-    emit("addLayer", ThreejsScene(store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin,treeJson, "Tree2.glb",[0.7,0.8],true));
-  }else {
+    if(true){
+    let trees: string[] = ["Tree_01.glb", "Tree_02.glb", "Tree_03.glb"]
+    let ArrayIndex: number[] = []
+    for (let index = 0; index < treeJson.features.length; index++) {
+      let int = Math.round((Math.random() * ((trees.length-1) - 0)) + 0)
+      ArrayIndex.push(int)
+    }
+    for (let index = 0; index < trees.length; index++) {
+      let partJson:{type: string, features: any[]} = {type: "FeatureCollection", features: []}
+     for (let index1 = 0; index1 < treeJson.features.length; index1++) {
+        if(ArrayIndex[index1] == index){
+          partJson.features.push(treeJson.features[index1])
+        }
+      }
+      emit("addLayer", ThreejsScene(store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin,partJson, "TreeVariants/"+trees[index],[0.7,0.8],true));
+    }}
+    
+    else{ //the old way with threejs, only one treemodel
+      emit("addLayer", ThreejsScene(store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin,treeJson, "Tree2.glb",[0.7,0.8],true));
+    }
+  }else { //the old way with deckgl
     const treeLayer = await getTreesFromDB(store.state.aoi.projectSpecification.project_id);
     emit("addLayer", treeLayer);
   }
