@@ -193,18 +193,11 @@ def get_filtered_comments(projectId,userId):
         if str(userId) != str(currentUser):
           f["properties"]["user_id"] = "anonymous"
 
-<<<<<<< HEAD
-  cursor.close()
-  connection.close()
-=======
   print(comments)
   
   cursor.close()
   connection.close()
 
-  #print(comments)
-
->>>>>>> 15c1542 (New button in DevUI: "Show filtred comments": shows 3D -comment symbols, where the author is "anonymous" if not the current user.)
   return comments
 
 
