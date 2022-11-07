@@ -355,7 +355,11 @@ export async function getTreesFromOSM(bbox: BoundingBox,projectId: string) {
     projectId: projectId,
   }).then(() => store.dispatch("aoi/setDataIsLoaded"));
 }
-
+export async function getTreeJsonFromDB(projectId: string) {
+  const response = await HTTP.post("get-trees-from-db", projectId);
+  const trees = response.data
+  return trees
+}
 export async function getTreesFromDB(projectId: string) {
   const response = await HTTP.post("get-trees-from-db", projectId);
   const treeLayer = new MapboxLayer({

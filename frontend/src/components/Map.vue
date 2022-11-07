@@ -42,6 +42,7 @@ import type { ProjectSpecification } from "@/store/modules/aoi";
 import { HTTP } from "@/utils/http-common";
 import { pulseLayer } from "@/utils/pulseLayer";
 import { TreeModel } from "@/utils/TreeModel";
+import { ThreejsScene } from "@/utils/ThreejsScene";
 import { MapboxLayer } from "@deck.gl/mapbox/typed";
 import { ScenegraphLayer } from "@deck.gl/mesh-layers/typed";
 import * as turf from '@turf/turf';
@@ -182,7 +183,11 @@ const addThreejsShape = () => {
   // @ts-ignore
   addLayerToMap(TreeModel(13.74647, 51.068646, 100));
 }
-
+function deleteOwnComment(){
+    map.removeLayer('ownComments')
+    map.removeSource('ownComments')
+    map.removeImage('comment.png')
+}
 
 const addCommentToMap = (source: any, layer: any) => {
 
@@ -222,7 +227,7 @@ store.commit("map/addLayer", {
 
 
 const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
-
+  //console.log(layer.id)
   const addedlayer = map.getLayer(layer.id)
   if (typeof addedlayer !== 'undefined') {
     removeLayerFromMap(layer.id)
@@ -266,9 +271,11 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
     layerHirarchy.push({ layer: drivinglane, orderId: 70 })
   }
   const treeLayer = map.getLayer("trees")
-  if (typeof treeLayer !== 'undefined') {
-    layerHirarchy.push({ layer: treeLayer, orderId: 80 })
-  }
+  if(typeof treeLayer !== 'undefined'){
+  layerHirarchy.push({layer: treeLayer, orderId: 80})}
+  const treeLayer3js = map.getLayer("Tree2.glb")
+  if(typeof treeLayer3js !== 'undefined'){
+  layerHirarchy.push({layer: treeLayer3js, orderId: 80})}
   const routesLayer = map.getLayer("routes")
   if (typeof routesLayer !== 'undefined') {
     layerHirarchy.push({ layer: routesLayer, orderId: 75 })
@@ -285,11 +292,12 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
 
   for (let index = 0; index < layerHirarchy.length; index++) {
     const x = layerHirarchy[index];
-    for (let index = 0; index < layerHirarchy.length; index++) {
-      const y = layerHirarchy[index];
-      if (x.layer !== y.layer && x.orderId > y.orderId) {
-        map.moveLayer(y.layer.id, x.layer.id)
-      }
+      for (let index = 0; index < layerHirarchy.length; index++) {
+        const y = layerHirarchy[index];
+         if(x.layer !== y.layer && x.orderId>y.orderId){
+           map.moveLayer(y.layer.id,x.layer.id)
+           //console.log("move layer " + x.layer.id + " over " +y.layer.id)
+         }
     }
   }
 
