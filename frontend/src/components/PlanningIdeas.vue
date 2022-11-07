@@ -4,7 +4,7 @@
       class="mx-auto planning-ideas-options"
       
   >
-    <v-btn :key="100"
+    <v-btn v-if = "store.state.ui.planningIdeasLoaded" :key="100"
       size="small" 
       :color="activeBtn==100 ? 'grey': 'white'" 
       rounded 
@@ -68,7 +68,10 @@ onMounted(() => {
 const sendRouteRequest = async () => {
 
     const routeData = await getRoutesFromDB(store.state.aoi.projectSpecification.project_id)
-   
+   if (routeData.data.features == null) {
+    return
+   }
+
     planningData.routes = routeData.data
     store.commit("map/addSource", {
       id: "routes",
@@ -115,6 +118,7 @@ const sendRouteRequest = async () => {
         "text-size": 10
       }
     })
+    store.commit("ui/planningIdeasLoaded",true)
 
 };
 
@@ -125,7 +129,7 @@ const activateSelectedPlanningIdea = (route)=>{
 
 
 watch(store.state.ui, function (state) {
-  if (state.aoiMapPopulated ==true && state.projectsLoaded ==true){
+  if (state.aoiMapPopulated ==true && state.projectsLoaded ==true && state.planningIdeasLoaded == true){
     const planningIdeaBBOX = bbox(planningData.routes);
     emit("navigateToPlanningIdea", planningIdeaBBOX)
   }
