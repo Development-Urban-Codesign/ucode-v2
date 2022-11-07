@@ -33,7 +33,6 @@ const comment = {
             
             // TH 2022-11-07: if the timestamp is already modified, skip the modifikation
             if (puretimestamp.includes("GMT"))  {
-
                 date = new Date(Date.parse(date));
                 date = date.toUTCString();
                 let day = new Date(date).getDate();
