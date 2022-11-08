@@ -14,12 +14,13 @@ export async function getQuestsFromDB(projectId: string) {
 export async function getbuildingsFromDB(projectId: string) {
   const response = await HTTP.post("get-buildings-from-db", projectId);
   // @ts-ignore
-  const emptygeom = (d:Feature) => d.geometry.coordinates.length == 1;
+  const emptygeom = (d:Feature) => d.geometry?.coordinates?.length == 1;
   const nonEmptyFeatures = response.data.features.filter(emptygeom);
-  //const colorPalette = [[123, 222, 242, 255], [178, 247, 239, 255],[239, 247, 246,255], [247, 214, 224, 255], [242, 181, 211,255]];
-  //const colorPalette = [[232, 222, 197, 255], [237, 236, 221, 255], [255, 241, 230, 255], [235, 237, 232, 255], [237, 220, 210, 255], [235, 238, 240, 255]];
+  const colorPalette = ['#7bdef2', '#b2f7ef','#eff7f6', '#f7d6e0', '#f2b5d3'];
+  
+  
   // Color palette values from Apple Maps
-  const colorPalette = [
+  /*const colorPalette = [
     [194, 224, 242, 255],
     [196, 226, 242, 255],
     [206, 214, 216, 255],
@@ -223,9 +224,31 @@ export async function getbuildingsFromDB(projectId: string) {
     [250, 229, 212, 255],
     [250, 238, 226, 255],
     [251, 228, 220, 255],
-  ];
+  ];*/
+  const randomColoreFromColorPalette =()=>{
+    const lengthColors = colorPalette.length - 1;
+    return colorPalette[Math.floor(Math.random() * lengthColors)];
+  }
+  // @ts-ignore
+  response.data.features.forEach((feature) => {
+    feature.properties.color = randomColoreFromColorPalette();
+    
+  })
 
-  return new MapboxLayer({
+  return {
+    id: "overpass_buildings",
+    type: 'fill-extrusion',
+    source: {
+      type: "geojson",
+      data: response.data
+    },
+    paint: {
+      'fill-extrusion-color': ["get", 'color'],
+      'fill-extrusion-height': ["get", "estimatedheight"],
+      'fill-extrusion-opacity': 1
+    }
+  }
+  /*return new MapboxLayer({
     id: "overpass_buildings",
     // @ts-ignore
     type: PolygonLayer,
@@ -244,7 +267,7 @@ export async function getbuildingsFromDB(projectId: string) {
     wireframe: false,
     pickable: true,
     //extensions: [new BuildingFilter()],
-  });
+  });*/
 }
 
 export async function getbuildingsFromOSM(bbox: BoundingBox, projectId: string) {
