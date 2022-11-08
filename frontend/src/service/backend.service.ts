@@ -6,6 +6,7 @@ import type { Feature } from "maplibre-gl";
 import store from "@/store/store";
 import { HTTP } from "@/utils/http-common.js";
 import type {BoundingBox } from "@/store/modules/aoi"
+import { PROJECTION_MODE } from "@deck.gl/core/typed/lib/constants";
 
 export async function getQuestsFromDB(projectId: string) {
   const response = await HTTP.post("get-quests-from-db", projectId);
@@ -14,7 +15,8 @@ export async function getQuestsFromDB(projectId: string) {
 export async function getbuildingsFromDB(projectId: string) {
   const response = await HTTP.post("get-buildings-from-db", projectId);
   // @ts-ignore
-  const emptygeom = (d:Feature) => d.geometry?.coordinates?.length == 1;
+
+  const emptygeom = (d:Feature) => d?.geometry?.coordinates?.length == 1;
   const nonEmptyFeatures = response.data.features.filter(emptygeom);
   const colorPalette = ['#7bdef2', '#b2f7ef','#eff7f6', '#f7d6e0', '#f2b5d3'];
   
@@ -268,6 +270,7 @@ export async function getbuildingsFromDB(projectId: string) {
     pickable: true,
     //extensions: [new BuildingFilter()],
   });*/
+
 }
 
 export async function getbuildingsFromOSM(bbox: BoundingBox, projectId: string) {
@@ -315,7 +318,7 @@ export async function storeGreeneryFromOSM(
   usedTagsForGreenery: unknown[],
   projectId: string
 ) {
-  HTTP.post("store-greenery-from-osm", {
+  HTTP.post("get-greenery-from-osm", {
     bbox: bbox,
     usedTagsForGreenery: usedTagsForGreenery,
     projectId: projectId,
@@ -371,12 +374,17 @@ export async function getCommentsFromDB(projectId: string) {
   return iconlayer;
 }
 
-export async function getTreesFromOSM(bbox: BoundingBox) {
+export async function getTreesFromOSM(bbox: BoundingBox,projectId: string) {
   HTTP.post("get-trees-from-osm", {
     bbox: bbox,
+    projectId: projectId,
   }).then(() => store.dispatch("aoi/setDataIsLoaded"));
 }
-
+export async function getTreeJsonFromDB(projectId: string) {
+  const response = await HTTP.post("get-trees-from-db", projectId);
+  const trees = response.data
+  return trees
+}
 export async function getTreesFromDB(projectId: string) {
   const response = await HTTP.post("get-trees-from-db", projectId);
   const treeLayer = new MapboxLayer({
@@ -396,9 +404,11 @@ export async function getTreesFromDB(projectId: string) {
   return treeLayer;
 }
 
-export async function getDrivingLaneFromOSM(bbox: BoundingBox) {
+export async function getDrivingLaneFromOSM(bbox: BoundingBox, projectId: string) {
+  console.log("Backend-ProjectID: " + projectId)
   HTTP.post("get-driving-lane-from-osm", {
     bbox: bbox,
+    projectId: projectId,
   }).then(() => store.dispatch("aoi/setDataIsLoaded"));
 }
 
@@ -407,9 +417,10 @@ export async function getDrivingLaneFromDB(projectId: string) {
   return response;
 }
 
-export async function getTrafficLightsFromOSM(bbox: BoundingBox) {
+export async function getTrafficLightsFromOSM(bbox: BoundingBox,projectId: string) {
   HTTP.post("get-traffic-lights-from-osm", {
     bbox: bbox,
+    projectId: projectId,
   }).then(() => store.dispatch("aoi/setDataIsLoaded"));
 }
 

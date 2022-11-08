@@ -31,13 +31,13 @@ watch(
     if (routeQueries.devmode == "true") {
       store.commit("ui/toggleDevMode", true);
     }
-    if (routeQueries.projectId != null) {
-      store.commit("aoi/setProjectId", routeQueries.projectId);
+    if (routeQueries.project != null) {
+      store.commit("aoi/setProjectId", routeQueries.project);
     } else {
       store.commit("aoi/setProjectId", "0"); // if no project is set then projectId is "0" = Mainz
     }
-    if (routeQueries.userId != null) {
-      store.commit("aoi/setUserId", routeQueries.userId);
+    if (routeQueries.user != null) {
+      store.commit("aoi/setUserId", routeQueries.user);
     } else {
       store.commit("aoi/setUserId", Math.round(new Date().getTime() / 1000)); // if no userId is set then the user gets the seconds since 1.1.1970 as ID
     }

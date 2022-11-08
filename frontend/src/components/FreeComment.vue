@@ -61,7 +61,7 @@
 <script lang="ts" setup>
 import { useStore } from 'vuex';
 import { HTTP } from '@/utils/http-common';
-import { reactive, ref } from 'vue';
+import { reactive, ref, watch } from 'vue';
 import type { FeatureCollection } from 'geojson';
 const store = useStore()
 let flexOrder = ref<number>(-1)
@@ -72,30 +72,38 @@ let allMarker = reactive<FeatureCollection>({ type: "FeatureCollection", feature
 
 const props = defineProps({
     clickedCoordinates: Array<Number>,
+    
 })
 
-const emit = defineEmits(["addComment", "getCenterOnMap", "centerMapOnComment", "mapCancelComment"])
+const emit = defineEmits(["addComment", "getCenterOnMap", "centerMapOnLocation", "deleteCommentLayer", "updateSourceData",])
 function cancelComment() {
     store.commit('freecomment/setMoveComment', false)
     commentStep.value = 0
     flexOrder.value = -1
     commentText.value = ""
     paddingBot.value = "20px"
+    
     if (allMarker.features.length > 1) {
-        allMarker.features.splice(allMarker.features.length - 1, 1)
-        let mapsource = {
-            id: "ownComments",
-            geojson: {
-                "type": "geojson",
-                "data": allMarker
-            }
-        }
-        emit('addComment', mapsource, 0)
+       
+        allMarker.features.pop()
+        
+        emit('updateSourceData', 'ownComments', allMarker)
     }
     else {
-        emit('mapCancelComment')
+        emit('deleteCommentLayer')
         allMarker.features.splice(allMarker.features.length - 1, 1)
     }
+}
+
+watch(()=> props.clickedCoordinates? props.clickedCoordinates : null, changePositionOfLastMarker)
+
+function changePositionOfLastMarker(){
+    if(!store.state.freecomment.moveComment){return}
+    //console.log("changePosition")
+    //@ts-ignore
+    
+    allMarker.features[allMarker.features.length-1].geometry.coordinates = props.clickedCoordinates
+    emit('updateSourceData', 'ownComments', allMarker)
 }
 function createComment() {
     store.commit('freecomment/setMoveComment', true)
@@ -108,6 +116,7 @@ function createComment() {
     }
     //@ts-ignore
     allMarker.features.push(marker)
+    
 
     let mapsource = {
         id: "ownComments",
@@ -139,7 +148,7 @@ function createComment() {
 }
 const positionOkay = () => {
     commentStep.value++
-    emit('centerMapOnComment')
+    emit('centerMapOnLocation', allMarker.features[allMarker.features.length-1].geometry.coordinates)
 
 
 }

@@ -17,8 +17,9 @@
 
       <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
         @navigateToPlanningIdea="navigateToPlanningIdea" />
-      <FreeComment @mapCancelComment="deleteOwnComment" @centerMapOnComment="centerMapOnComment" @addComment="addCommentToMap" @getCenterOnMap="getMapCenter"
-        :clickedCoordinates="commentClicks.commentCoordinates" />
+      <FreeComment @deleteCommentLayer="deleteCommentLayer" @centerMapOnLocation="centerMapOnLocation"
+        @addComment="addCommentToMap" @getCenterOnMap="getMapCenter"
+        :clickedCoordinates="commentClicks.commentCoordinates" @updateSourceData="updateSourceData" />
       <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
         @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
         :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
@@ -41,11 +42,12 @@ import type { ProjectSpecification } from "@/store/modules/aoi";
 import { HTTP } from "@/utils/http-common";
 import { pulseLayer } from "@/utils/pulseLayer";
 import { TreeModel } from "@/utils/TreeModel";
+import { ThreejsScene } from "@/utils/ThreejsScene";
 import { MapboxLayer } from "@deck.gl/mapbox/typed";
 import { ScenegraphLayer } from "@deck.gl/mesh-layers/typed";
 import * as turf from '@turf/turf';
-import { Map, type CustomLayerInterface, type Feature, type IControl, type LayerSpecification, type LngLatBoundsLike, type Popup } from "maplibre-gl";
-import { computed, onMounted, onUnmounted, reactive, ref, shallowRef } from "vue";
+import { Map, type CustomLayerInterface, type Feature, type IControl, type LayerSpecification, type LngLatBoundsLike, type LngLatLike, type Popup } from "maplibre-gl";
+import { computed, onMounted, onUnmounted, reactive, ref, shallowRef, watch } from "vue";
 import { useStore } from "vuex";
 import { deckLightingEffect } from "@/utils/deckLighting";
 
@@ -57,10 +59,10 @@ const devMode = computed(() => store.getters["ui/devMode"]);
 const mapContainer = shallowRef(null);
 let map: Map = {} as Map;
 const mapClicks = reactive({ clickedCoordinates: [] })
-const commentClicks = reactive({ commentCoordinates: [] })
+const commentClicks = reactive<{commentCoordinates: number[]}>({ commentCoordinates: [] })
 let lineDrawCreated = ref(0)
 let mapStyleLoaded = ref(false)
-let activeMarker = reactive<any>({});
+//let activeMarker = reactive<any>({});
 
 
 let unsubscribeFromStore = () => { };
@@ -137,53 +139,44 @@ onMounted(() => {
 
   map.on('mousedown', 'ownComments', (e) => {
     // Prevent the default map drag behavior.
-    if(!store.state.freecomment.moveComment){
+    if (!store.state.freecomment.moveComment) {
       return
     }
     e.preventDefault();
-    //@ts-ignore TODO Dobo help
-    activeMarker = map.getSource('ownComments')._data;
-    map.on('mousemove', onMove);
+    map.on('mousemove', onMoveComment);
     map.once('mouseup', onUp);
   });
 
   map.on('touchstart', 'ownComments', (e) => {
     if (e.points.length !== 1) return;
-    if(!store.state.freecomment.moveComment){
+    if (!store.state.freecomment.moveComment) {
       return
     }
-    //@ts-ignore TODO Dobo help
-    activeMarker = map.getSource('ownComments')._data;
-    // Prevent the default map drag behavior.
     e.preventDefault();
-    map.on('touchmove', onMove);
+    map.on('touchmove', onMoveComment);
     map.once('touchend', onUp);
 
   })
 });
+function updateSourceData(sourceId: string, data: any) {
+  map.getSource(sourceId)?.setData(data)
+}
 function onUp() {
-  map.off('mousemove', onMove);
-  map.off('touchmove', onMove);
+  map.off('mousemove', onMoveComment);
+  map.off('touchmove', onMoveComment);
 }
-function onMove(e: { lngLat: { lng: number; lat: number; }; }) {
-  //@ts-ignore
-  let index = map.getSource('ownComments')?._data.features.length -1
-  //@ts-ignore
-  activeMarker.features[index].geometry.coordinates = [e.lngLat.lng, e.lngLat.lat]
-  //@ts-ignore
-  map.getSource('ownComments').setData(activeMarker)
-  // @ts-ignore
-  commentClicks.commentCoordinates = [e.lngLat.lng, e.lngLat.lat]
-  // map.panTo([e.lngLat.lng, e.lngLat.lat]);
-}
-function centerMapOnComment(){
-  map.panTo(activeMarker.features[activeMarker.features.length-1].geometry.coordinates);
+function onMoveComment(e: { lngLat: { lng: number; lat: number; }; }) { commentClicks.commentCoordinates = [e.lngLat.lng, e.lngLat.lat];}
+
+function centerMapOnLocation(location: LngLatLike) { map.panTo(location);}
+
+function getMapCenter() { commentClicks.commentCoordinates = ([map.getCenter().lng, map.getCenter().lat]);}
+
+function deleteCommentLayer() {
+  map.removeLayer('ownComments')
+  map.removeSource('ownComments')
+  map.removeImage('comment.png')
 }
 
-function getMapCenter() {
-  //@ts-ignore
-  commentClicks.commentCoordinates = ([map.getCenter().lng, map.getCenter().lat])
-}
 // threejs layer
 const addThreejsShape = () => {
   //TODO type treemodel 
@@ -198,24 +191,21 @@ function deleteOwnComment(){
 
 const addCommentToMap = (source: any, layer: any) => {
 
-  if (map.getSource(source.id) !== undefined) {
-    // console.log("already in use")
-    addSourceToMap(source)
-    //@ts-ignore TODO Dobo help
-    activeMarker = map.getSource('ownComments')._data;
-    return
-  }
+  // if (map.getSource(source.id) !== undefined) {
+  //   // console.log("already in use")
+  //   addSourceToMap(source)
+  //   //@ts-ignore TODO Dobo help
+  //   activeMarker = map.getSource('ownComments')._data;
+  //   return
+  // }
   addSourceToMap(source)
   map?.loadImage('comment.png', (error, image) => {
     if (error) throw error;
     map?.addImage('comment.png', image!);
     addLayerToMap(layer)
   });
-  
-  
   //@ts-ignore TODO Dobo help
-  activeMarker = map.getSource('ownComments')._data;
-  
+  //activeMarker = map.getSource('ownComments')._data;
 }
 
 store.commit("map/addLayer", {
@@ -237,7 +227,7 @@ store.commit("map/addLayer", {
 
 
 const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
-
+  //console.log(layer.id)
   const addedlayer = map.getLayer(layer.id)
   if (typeof addedlayer !== 'undefined') {
     removeLayerFromMap(layer.id)
@@ -253,7 +243,7 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
     }
   }
   map?.addLayer(layer);
-  const layerHirarchy: any[]=[]// = reactive<[{layer: any, orderId: Number}]>([{}])
+  const layerHirarchy: any[] = []// = reactive<[{layer: any, orderId: Number}]>([{}])
 
   const buildinglayer = map.getLayer("overpass_buildings")
   // @ts-ignore
@@ -261,33 +251,44 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
     effects: [deckLightingEffect]
   });
 
-  if(typeof buildinglayer !== 'undefined'){
-  layerHirarchy.push({layer: buildinglayer, orderId: 99})}
+  if (typeof buildinglayer !== 'undefined') {
+    layerHirarchy.push({ layer: buildinglayer, orderId: 99 })
+  }
   const greenerylayer = map.getLayer("overpass_greenery")
-  if(typeof greenerylayer !== 'undefined'){
-  layerHirarchy.push({layer: greenerylayer, orderId: 10})}
+  if (typeof greenerylayer !== 'undefined') {
+    layerHirarchy.push({ layer: greenerylayer, orderId: 10 })
+  }
   const commentlayer = map.getLayer("comments")
-  if(typeof commentlayer !== 'undefined'){
-  layerHirarchy.push({layer: commentlayer, orderId: 90})}
+  if (typeof commentlayer !== 'undefined') {
+    layerHirarchy.push({ layer: commentlayer, orderId: 90 })
+  }
   const drivinglanelayer = map.getLayer("driving_lane_polygon")
-  if(typeof drivinglanelayer !== 'undefined'){
-  layerHirarchy.push({layer: drivinglanelayer, orderId: 60})}
+  if (typeof drivinglanelayer !== 'undefined') {
+    layerHirarchy.push({ layer: drivinglanelayer, orderId: 60 })
+  }
   const drivinglane = map.getLayer("driving_lane")
-  if(typeof drivinglane !== 'undefined'){
-  layerHirarchy.push({layer: drivinglane, orderId: 70})}
+  if (typeof drivinglane !== 'undefined') {
+    layerHirarchy.push({ layer: drivinglane, orderId: 70 })
+  }
   const treeLayer = map.getLayer("trees")
   if(typeof treeLayer !== 'undefined'){
   layerHirarchy.push({layer: treeLayer, orderId: 80})}
+  const treeLayer3js = map.getLayer("Tree2.glb")
+  if(typeof treeLayer3js !== 'undefined'){
+  layerHirarchy.push({layer: treeLayer3js, orderId: 80})}
   const routesLayer = map.getLayer("routes")
-  if(typeof routesLayer !== 'undefined'){
-  layerHirarchy.push({layer: routesLayer, orderId: 75})}
+  if (typeof routesLayer !== 'undefined') {
+    layerHirarchy.push({ layer: routesLayer, orderId: 75 })
+  }
   const routesSymbolLayer = map.getLayer("routes-symbols")
-  if(typeof routesSymbolLayer !== 'undefined'){
-  layerHirarchy.push({layer: routesSymbolLayer, orderId: 76})}
+  if (typeof routesSymbolLayer !== 'undefined') {
+    layerHirarchy.push({ layer: routesSymbolLayer, orderId: 76 })
+  }
   const ownCommentLayer = map.getLayer("ownComments")
-  if(typeof ownCommentLayer !== 'undefined'){
-  layerHirarchy.push({layer: ownCommentLayer, orderId: 100})}
-  
+  if (typeof ownCommentLayer !== 'undefined') {
+    layerHirarchy.push({ layer: ownCommentLayer, orderId: 100 })
+  }
+
 
   for (let index = 0; index < layerHirarchy.length; index++) {
     const x = layerHirarchy[index];
@@ -295,6 +296,7 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
         const y = layerHirarchy[index];
          if(x.layer !== y.layer && x.orderId>y.orderId){
            map.moveLayer(y.layer.id,x.layer.id)
+           //console.log("move layer " + x.layer.id + " over " +y.layer.id)
          }
     }
   }
@@ -476,7 +478,8 @@ onUnmounted(() => {
   height: 100%;
   width: 100%;
   position: absolute;
-  background-color: darkgray;
+  /* background-color: darkgray; */
+  background: linear-gradient(rgba(195,245,255,1), rgba(255,199,111,1));
   margin: auto;
   display: flex;
   flex-direction: column;
