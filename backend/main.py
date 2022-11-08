@@ -4,8 +4,9 @@ import osmnx as ox
 import requests
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from osmtogeojson import osmtogeojson
 
-from buildings import create_building_polygons, persist_building_polygons
+from buildings import create_building_holes_polygons, create_building_polygons, persist_building_holes_polygons, persist_building_polygons
 from db import (add_comment, add_drawn_line, add_fulfillment, connect,
                 dislike_comment, drop_building_table, drop_driving_lane_table,
                 drop_greenery_table, drop_traffic_signal_table,
@@ -186,9 +187,39 @@ async def get_buildings_from_osm_api(request: Request):
     response_building = requests.get(
         overpass_url, params={"data": overpass_query_building_parts}
     )
-    
     building_polygons = create_building_polygons(projectId, response_building.json())
     persist_building_polygons(connect(), building_polygons)
+
+    ###############
+    overpass_query_building_with_hole = """
+        [out:json];
+           
+                (
+                    way["building"](%s,%s,%s,%s);
+                    relation["building"](%s,%s,%s,%s);
+                   
+                );
+                
+            (._;>;);
+            out geom;
+
+        """ % (
+            ymin,
+            xmin,
+            ymax,
+            xmax,
+            ymin,
+            xmin,
+            ymax,
+            xmax,
+           
+        )
+    response_building_with_hole = requests.get(
+        overpass_url, params={"data": overpass_query_building_with_hole}
+    )
+    bhole = osmtogeojson.process_osm_json(response_building_with_hole.json())
+    building_hole_polygons = create_building_holes_polygons(projectId, bhole)
+    persist_building_holes_polygons(connect(), building_hole_polygons)
     
     return "fine"
 
