@@ -26,15 +26,13 @@ const comment = {
             - make difference
             - if difference -> "created before" string
 
-
             */
 
-
             let date = new Date(payload.properties.created_at);
-            let timestamp = date.toString()
+            let puretimestamp = date.toString()
             
             // TH 2022-11-07: if the timestamp is already modified, skip the modifikation
-            if (timestamp.includes("GMT"))  {
+            if (puretimestamp.includes("GMT"))  {
 
                 date = new Date(Date.parse(date));
                 date = date.toUTCString();
