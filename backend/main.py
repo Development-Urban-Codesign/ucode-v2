@@ -5,6 +5,7 @@ import osmnx as ox
 import geopandas
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from osmtogeojson import osmtogeojson
 
 from db import (
     add_comment,
@@ -206,6 +207,105 @@ async def get_buildings_from_osm_api(request: Request):
     )
 
     data_building = response_building.json()
+
+    ###############
+    overpass_query_building_with_hole = """
+        [out:json];
+           
+                (
+                    way["building"](%s,%s,%s,%s);
+                    relation["building"](%s,%s,%s,%s);
+                   
+                );
+                
+            (._;>;);
+            out geom;
+
+        """ % (
+            ymin,
+            xmin,
+            ymax,
+            xmax,
+            ymin,
+            xmin,
+            ymax,
+            xmax,
+           
+        )
+    response_building_with_hole = requests.get(
+        overpass_url, params={"data": overpass_query_building_with_hole}
+    )
+    bhole = osmtogeojson.process_osm_json(response_building_with_hole.json())
+    
+    connectionn = connect()
+    cursorr = connectionn.cursor()
+    insert_query_buildingg = """
+        INSERT INTO building (project_id,wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
+    """
+    for f in bhole["features"]:
+        
+        if "type" in f["properties"] and f["properties"]["type"] == "multipolygon":
+              
+            wallcolor = None
+            if "building:colour" in f["properties"]:
+                wallcolor = f["properties"]["building:colour"]
+            wallmaterial = None
+            if "building:material" in f["properties"]:
+                wallmaterial = f["properties"]["building:material"]
+            roofcolor = None
+            if "roof:colour" in f["properties"]:
+                roofcolor = f["properties"]["roof:colour"]
+            roofmaterial = None
+            if "roof:material" in f["properties"]:
+                roofmaterial = f["properties"]["roof:material"]
+            roofshape = None
+            if "roof:shape" in f["properties"]:
+                roofshape = f["properties"]["roof:shape"]
+            roofheight = None
+            if "roof:height" in f["properties"]:
+                roofheight = f["properties"]["roof:height"]
+                if "," in roofheight:
+                    roofheight = roofheight.replace(",", ".")
+            height = None
+            if "height" in f["properties"]:
+                height = f["properties"]["height"]
+                height = sure_float(height)
+            floors = None
+            if "building:levels" in f["properties"]:
+                floors = f["properties"]["building:levels"]
+                floors = sure_float(floors)
+
+            estimatedheight = None
+            if height is not None:
+                estimatedheight = sure_float(height)
+            elif floors is not None:
+                estimatedheight = sure_float(floors) * 3.5
+            else:
+                estimatedheight = 15
+                
+            cursorr.execute(
+                    insert_query_buildingg,
+                    (
+                        projectId,
+                        wallcolor,
+                        wallmaterial,
+                        roofcolor,
+                        roofmaterial,
+                        roofshape,
+                        roofheight,
+                        height,
+                        floors,
+                        estimatedheight,
+                        json.dumps(f["geometry"]),
+                    ),
+            )
+         
+    connectionn.commit()
+    cursorr.close()
+    connectionn.close()
+
+    
+    
     
     connection = connect()
     cursor = connection.cursor()
