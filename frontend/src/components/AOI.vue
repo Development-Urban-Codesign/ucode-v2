@@ -84,8 +84,8 @@ const sendDrivingLaneRequest = async () => {
     'type': 'fill',
     'source': "driving_lane_polygon",
     'paint': {
-      'fill-color': '#888',
-      'fill-opacity': 0.8
+      'fill-color': '#798999',
+      'fill-opacity': 1
     }
   })
 

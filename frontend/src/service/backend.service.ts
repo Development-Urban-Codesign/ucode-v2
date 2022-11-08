@@ -18,7 +18,8 @@ export async function getbuildingsFromDB(projectId: string) {
 
   const emptygeom = (d:Feature) => d?.geometry?.coordinates?.length == 1;
   const nonEmptyFeatures = response.data.features.filter(emptygeom);
-  const colorPalette = ['#7bdef2', '#b2f7ef','#eff7f6', '#f7d6e0', '#f2b5d3'];
+  // const colorPalette = ['#7bdef2', '#b2f7ef','#eff7f6', '#f7d6e0', '#f2b5d3'];
+  const colorPalette = ['#f7f3ee', '#f8f2e9','#f7f3ee', '#EEE9E2', '#f7f3ee'];
   
   
   // Color palette values from Apple Maps
