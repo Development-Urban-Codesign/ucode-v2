@@ -1,43 +1,24 @@
 import json
-from smtpd import DebuggingServer
 
-import requests
 import osmnx as ox
-import geopandas
+import requests
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from osmtogeojson import osmtogeojson
 
-from db import (
-    add_comment,
-    add_drawn_line,
-    dislike_comment,
-    get_buildings_from_db,
-    connect,
-    get_comments,
-    get_greenery_from_db,
-    get_table_names,
-    get_trees_from_db,
-    like_comment,
-    dislike_comment,
-    undislike_comment,
-    unlike_comment,
-    get_driving_lane_from_db,
-    get_driving_lane_polygon_from_db,
-    add_fulfillment,
-    get_quests_from_db,
-    get_driving_lane_polygon_from_db,
-    drop_greenery_table,
-    drop_building_table,
-    drop_tree_table,
-    drop_driving_lane_table,
-    drop_traffic_signal_table,
-    get_traffic_signal_from_db,
-    get_project_specification_from_db,
-    get_routes_from_db
-
-)
+from buildings import create_building_holes_polygons, create_building_polygons, persist_building_holes_polygons, persist_building_polygons
+from db import (add_comment, add_drawn_line, add_fulfillment, connect,
+                dislike_comment, drop_building_table, drop_driving_lane_table,
+                drop_greenery_table, drop_traffic_signal_table,
+                drop_tree_table, get_buildings_from_db, get_comments,
+                get_driving_lane_from_db, get_driving_lane_polygon_from_db,
+                get_greenery_from_db, get_project_specification_from_db,
+                get_quests_from_db, get_routes_from_db, get_table_names,
+                get_traffic_signal_from_db, get_trees_from_db, like_comment,
+                undislike_comment, unlike_comment)
 from db_migrations import run_database_migrations
+from utils import sure_float
+
 try:
     run_database_migrations()
 except Exception as err:
@@ -206,8 +187,8 @@ async def get_buildings_from_osm_api(request: Request):
     response_building = requests.get(
         overpass_url, params={"data": overpass_query_building_parts}
     )
-
-    data_building = response_building.json()
+    building_polygons = create_building_polygons(projectId, response_building.json())
+    persist_building_polygons(connect(), building_polygons)
 
     ###############
     overpass_query_building_with_hole = """
@@ -237,151 +218,9 @@ async def get_buildings_from_osm_api(request: Request):
         overpass_url, params={"data": overpass_query_building_with_hole}
     )
     bhole = osmtogeojson.process_osm_json(response_building_with_hole.json())
+    building_hole_polygons = create_building_holes_polygons(projectId, bhole)
+    persist_building_holes_polygons(connect(), building_hole_polygons)
     
-    connectionn = connect()
-    cursorr = connectionn.cursor()
-    insert_query_buildingg = """
-        INSERT INTO building (project_id,wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
-    """
-    for f in bhole["features"]:
-        
-        if "type" in f["properties"] and f["properties"]["type"] == "multipolygon":
-              
-            wallcolor = None
-            if "building:colour" in f["properties"]:
-                wallcolor = f["properties"]["building:colour"]
-            wallmaterial = None
-            if "building:material" in f["properties"]:
-                wallmaterial = f["properties"]["building:material"]
-            roofcolor = None
-            if "roof:colour" in f["properties"]:
-                roofcolor = f["properties"]["roof:colour"]
-            roofmaterial = None
-            if "roof:material" in f["properties"]:
-                roofmaterial = f["properties"]["roof:material"]
-            roofshape = None
-            if "roof:shape" in f["properties"]:
-                roofshape = f["properties"]["roof:shape"]
-            roofheight = None
-            if "roof:height" in f["properties"]:
-                roofheight = f["properties"]["roof:height"]
-                if "," in roofheight:
-                    roofheight = roofheight.replace(",", ".")
-            height = None
-            if "height" in f["properties"]:
-                height = f["properties"]["height"]
-                height = sure_float(height)
-            floors = None
-            if "building:levels" in f["properties"]:
-                floors = f["properties"]["building:levels"]
-                floors = sure_float(floors)
-
-            estimatedheight = None
-            if height is not None:
-                estimatedheight = sure_float(height)
-            elif floors is not None:
-                estimatedheight = sure_float(floors) * 3.5
-            else:
-                estimatedheight = 15
-                
-            cursorr.execute(
-                    insert_query_buildingg,
-                    (
-                        projectId,
-                        wallcolor,
-                        wallmaterial,
-                        roofcolor,
-                        roofmaterial,
-                        roofshape,
-                        roofheight,
-                        height,
-                        floors,
-                        estimatedheight,
-                        json.dumps(f["geometry"]),
-                    ),
-            )
-         
-    connectionn.commit()
-    cursorr.close()
-    connectionn.close()
-
-    
-    
-    
-    connection = connect()
-    cursor = connection.cursor()
-       # INSERT INTO building (wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
-    insert_query_building = """
-        INSERT INTO building (project_id,wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, (st_buffer(st_buffer(ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326)::geography, 1,'side=right'),1)::geography)::geometry);
-    """
-    for f in data_building["elements"]:
-        #print(f)
-        f["geometry"]["type"] = "Polygon"
-        f["geometry"]["coordinates"] = [f["geometry"]["coordinates"]]
-
-    for f in data_building["elements"]:
-       # print(f)
-        wallcolor = None
-        if "building:colour" in f["tags"]:
-            wallcolor = f["tags"]["building:colour"]
-        wallmaterial = None
-        if "building:material" in f["tags"]:
-            wallmaterial = f["tags"]["building:material"]
-        roofcolor = None
-        if "roof:colour" in f["tags"]:
-            roofcolor = f["tags"]["roof:colour"]
-        roofmaterial = None
-        if "roof:material" in f["tags"]:
-            roofmaterial = f["tags"]["roof:material"]
-        roofshape = None
-        if "roof:shape" in f["tags"]:
-            roofshape = f["tags"]["roof:shape"]
-        roofheight = None
-        if "roof:height" in f["tags"]:
-            roofheight = f["tags"]["roof:height"]
-            if "," in roofheight:
-                roofheight = roofheight.replace(",", ".")
-        height = None
-        if "height" in f["tags"]:
-            height = f["tags"]["height"]
-            height = sure_float(height)
-        floors = None
-        if "building:levels" in f["tags"]:
-            floors = f["tags"]["building:levels"]
-            floors = sure_float(floors)
-
-        estimatedheight = None
-        if height is not None:
-            estimatedheight = sure_float(height)
-        elif floors is not None:
-            estimatedheight = sure_float(floors) * 3.5
-        else:
-            estimatedheight = 15
-
-        geom = json.dumps(f["geometry"])
-        #print(geom)
-        # get_buildings_from_osm(wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom)
-        cursor.execute(
-            insert_query_building,
-            (
-                projectId,
-                wallcolor,
-                wallmaterial,
-                roofcolor,
-                roofmaterial,
-                roofshape,
-                roofheight,
-                height,
-                floors,
-                estimatedheight,
-                geom,
-            ),
-        )
-
-    connection.commit()
-    cursor.close()
-    connection.close()
-
     return "fine"
 
 
@@ -579,24 +418,6 @@ async def get_driving_lane_from_db_api(request: Request):
     projectId = await request.json()
     return {"lane": get_driving_lane_from_db(projectId), "polygon": get_driving_lane_polygon_from_db(projectId)}
 
-def sure_float(may_be_number):  
-    # function which extracts surely the integer or float inside a string
-    # will handle strings like "23m" or "23,5 m" or "23.0 m" correctly
-    my_sure_float = "0"
-    try:
-        my_sure_float = float(may_be_number)
-    except:
-        may_be_number = may_be_number.strip()
-        may_be_number = may_be_number.replace(",", ".")
-        may_be_number = may_be_number.replace("'", ".")
-        for x in may_be_number:
-            if x in "0123456789.":
-                my_sure_float = my_sure_float + x
-            elif x.isspace():
-                break
-        my_sure_float = float(my_sure_float)
-
-    return my_sure_float
 
 #TH:add projectId to insert command
 @app.post("/get-traffic-lights-from-osm")
