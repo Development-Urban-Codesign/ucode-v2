@@ -48,6 +48,7 @@ const aoi = {
         "landuse:allotments",
         "landuse:forest",
         "natural:scrub",
+        "landuse:village_green",
       ],
     },
     overpassGreenery: null,

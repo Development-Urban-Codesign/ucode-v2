@@ -41,14 +41,16 @@ export const ThreejsScene = (lng: number, lat: number, geoJson: any, glbModel: s
       this.camera = new THREE.Camera();
       this.scene = new THREE.Scene();
 
+      
+      const hemiLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 0.5);
 
-      const hemiLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
       this.scene.add(hemiLight);
 
-      // let sky = new Sky();
-      // sky.scale.setScalar(450000);
-      // this.scene.add(sky);
-
+      const dirLight = new THREE.DirectionalLight(0xFFFDDA, .8);
+      dirLight.color.setHSL(0.1, 1, 0.95);
+      dirLight.position.set(- 2, 3, 1);
+      dirLight.position.multiplyScalar(300);
+      this.scene.add(dirLight);
 
       // use the three.js GLTF loader to add the 3D model to the three.js scene
       const loader = new GLTFLoader();
@@ -63,12 +65,13 @@ export const ThreejsScene = (lng: number, lat: number, geoJson: any, glbModel: s
         }) => {
           currentMeshes = { mesh: [], material: [] }
           getAllMeshes(gltf.scene)
-
+          
           localSceneCoordinates = generateTreeCoordinates(geoJson);
           const clusters = createGeoInstances(localSceneCoordinates);
 
           for (let index = 0; index < clusters.length; index++) {
             this.scene.add(clusters[index]);
+            
           }
         }
       );
@@ -81,6 +84,9 @@ export const ThreejsScene = (lng: number, lat: number, geoJson: any, glbModel: s
         context: gl,
         antialias: true
       });
+      
+      this.renderer.outputEncoding = THREE.sRGBEncoding;
+
 
       this.renderer.autoClear = false;
       //console.count("onAdd")
@@ -120,6 +126,7 @@ export const ThreejsScene = (lng: number, lat: number, geoJson: any, glbModel: s
         .multiply(rotationZ);
 
       this.camera.projectionMatrix = m.multiply(l);
+      
       //this.renderer.state.reset();
       this.renderer.resetState();
       this.renderer.render(this.scene, this.camera);
@@ -164,12 +171,12 @@ export const ThreejsScene = (lng: number, lat: number, geoJson: any, glbModel: s
         const element = _geoJson.features[index].geometry.coordinates;
 
         let rot = getRndNumber(0, Math.PI / 2)
-        let scl = getRndNumber(hasRandomSize? hasRandomSize[0]: 1, hasRandomSize? hasRandomSize[1]: 1)
+        let scl = getRndNumber(hasRandomSize ? hasRandomSize[0] : 1, hasRandomSize ? hasRandomSize[1] : 1)
 
         let localPos = { position: [((localCord(element, 0).x) - modelAsMercatorCoordinate.x) * 1 / modelAsMercatorCoordinate.meterInMercatorCoordinateUnits(), 0, (modelAsMercatorCoordinate.y - localCord(element, 0).y) * 1 / modelAsMercatorCoordinate.meterInMercatorCoordinateUnits()], rotation: rot, scale: scl }//problematic getting position for the trees
 
         localSceneCoordinates.push(localPos)
-        
+
       }
     }
     else {
@@ -209,13 +216,13 @@ export const ThreejsScene = (lng: number, lat: number, geoJson: any, glbModel: s
 
         if (hasRandomSize !== undefined) {
           scale = new THREE.Vector3(localSceneCoordinates[index].scale, localSceneCoordinates[index].scale, localSceneCoordinates[index].scale)
-          
+
         }
         if (hasRandomRot) {
           let rot = localSceneCoordinates[index].rotation
           let eulerRot = new THREE.Euler(0, rot, 0, 'XYZ');
           rotation = rotation.setFromEuler(eulerRot)
-          
+
         }
 
         matrix.compose(position, rotation, scale)

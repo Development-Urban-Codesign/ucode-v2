@@ -89,15 +89,15 @@ const sendRouteRequest = async () => {
             'line-cap': 'round',
         },
         'paint': {
-            'line-color': ['get', 'color']/*[
+            'line-color': [
                 "match",
                     ["get", "id"],
                     1,
-                    "rgba(255,0,0,1)",
+                    "#d3504e",
                     2,
-                    "rgba(0,255,0,1)",
-                    "rgba(0,0,255,1)",
-            ]*/,
+                    "#81d144",
+                    "#4e76d3",
+            ],//['get', 'color']
             'line-width': 5,
             'line-offset': {
               property: "id",
@@ -156,5 +156,12 @@ watch(store.state.ui, function (state) {
   backdrop-filter: blur(5px);
 
 }
+.col
+{
+  color: #df4947;
+  color: #82e139;
+  color: #225de6;
+}
+
 
 </style>
