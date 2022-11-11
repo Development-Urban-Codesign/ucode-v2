@@ -1,5 +1,5 @@
 import type { BoundingBox } from "@/store/modules/aoi"
-import maplibregl, { type LngLatLike } from 'maplibre-gl'
+import maplibregl, { MercatorCoordinate, type LngLatLike } from 'maplibre-gl'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
@@ -36,9 +36,6 @@ export const AddGeoOnPointsToThreejsScene = (scene: THREE.Scene, geoJson: any, g
     )
   };
 
-  function getRndNumber(min: number, max: number) {
-    return (Math.random() * (max - min)) + min;
-  }
   const getAllMeshes = (scene: { children: any; clone: () => any; }) => {
     if (scene.children != undefined) {
       for (let index = 0; index < scene.children.length; index++) {
@@ -134,6 +131,11 @@ export const AddGeoOnPointsToThreejsScene = (scene: THREE.Scene, geoJson: any, g
   )
 }
 
-export function localCordsFromWorldCords(worldCords: LngLatLike, height=0) {
+
+function getRndNumber(min: number, max: number):number {
+    return Math.random() * (max - min) + min;
+}
+
+export function localCordsFromWorldCords(worldCords: LngLatLike, height=0):MercatorCoordinate {
     return maplibregl.MercatorCoordinate.fromLngLat(worldCords, height);
 }
