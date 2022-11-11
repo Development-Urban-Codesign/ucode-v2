@@ -6,8 +6,6 @@ import maplibregl, {
 import * as THREE from "three";
 import { Scene } from "three";
 import type * as glMatrix from "gl-matrix";
-//@ts-ignore
-// import { Sky } from 'three/addons/objects/Sky.js';
 
 const hemiLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 0.5);
 
@@ -30,6 +28,7 @@ export class ThreeJsScene extends Scene {
 
 const mainScene = new ThreeJsScene();
 const mainCamera = new THREE.Camera();
+let mainRenderer = new THREE.WebGLRenderer()
 
 export function getProjectionMatrix(
   modelAsMercatorCoordinate: maplibregl.MercatorCoordinate,
@@ -100,14 +99,15 @@ export const ThreejsSceneOnly = (lng: number, lat: number) => {
     renderingMode: "3d",
     onAdd: function (map: Map, gl: any) {
       // use the Mapbox GL JS map canvas for three.js
-      this.renderer = new THREE.WebGLRenderer({
+      
+      mainRenderer = new THREE.WebGLRenderer({
         canvas: map.getCanvas(),
         context: gl,
         antialias: true,
       });
 
-      this.renderer.outputEncoding = THREE.sRGBEncoding;
-      this.renderer.autoClear = false;
+      mainRenderer.outputEncoding = THREE.sRGBEncoding;
+      mainRenderer.autoClear = false;
     },
 
     render: function (gl, matrix) {
@@ -117,8 +117,8 @@ export const ThreejsSceneOnly = (lng: number, lat: number) => {
       );
 
       //this.renderer.state.reset();
-      this.renderer.resetState();
-      this.renderer.render(mainScene, mainCamera);
+      mainRenderer.resetState();
+      mainRenderer.render(mainScene, mainCamera);
       // console.count("triggerRepaint")
       //this.map.triggerRepaint();
     },

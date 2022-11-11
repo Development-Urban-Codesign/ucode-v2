@@ -273,7 +273,7 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
   const treeLayer = map.getLayer("trees")
   if(typeof treeLayer !== 'undefined'){
   layerHirarchy.push({layer: treeLayer, orderId: 80})}
-  const treeLayer3js = map.getLayer("Tree2.glb")
+  const treeLayer3js = map.getLayer("TreeVariants/Tree_02.glb")
   if(typeof treeLayer3js !== 'undefined'){
   layerHirarchy.push({layer: treeLayer3js, orderId: 80})}
   const routesLayer = map.getLayer("routes")
