@@ -4,7 +4,7 @@
 
 <script lang="ts" setup>
 import DevUI from "@/components/DevUI.vue";
-import { AddGeoOnPointsToThreejsScene } from '@/utils/ThreejsGeoOnPoints';
+import { addGeoOnPointsToThreejsScene } from '@/utils/ThreejsGeoOnPoints';
 import { ThreejsSceneOnly } from "@/utils/ThreejsSceneOnly";
 import type { Scene } from "three";
 import { computed, onMounted } from "vue";
@@ -52,7 +52,7 @@ const sendGreeneryRequest = async () => {
 const sendTreeRequest = async () => {
   if (true) {
     const treeJson = await getTreeJsonFromDB(store.state.aoi.projectSpecification.project_id);
-    AddGeoOnPointsToThreejsScene(threeJsScene, treeJson, "TreeVariants/Tree_02.glb", store.state.aoi.projectSpecification.bbox, [0.7, 0.8], true)
+    addGeoOnPointsToThreejsScene(threeJsScene, treeJson, "TreeVariants/Tree_02.glb", store.state.aoi.projectSpecification.bbox, [0.7, 0.8], true)
   }
   else {
   }

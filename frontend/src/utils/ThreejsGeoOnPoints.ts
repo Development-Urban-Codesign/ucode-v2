@@ -15,48 +15,39 @@ type Mesh = {
   material: [];
 };
 
-export const AddGeoOnPointsToThreejsScene = (
+export function addGeoOnPointsToThreejsScene(
   scene: THREE.Scene,
   geoJson: any,
   glbModel: string,
   bbox: BoundingBox,
   hasRandomSize?: number[],
   hasRandomRot?: boolean
-) => {
-  const sceneUpdate = () => {
-    console.log(scene);
+): void {
+  console.log(scene);
 
-    // use the three.js GLTF loader to add the 3D model to the three.js scene
-    const loader = new GLTFLoader();
-    loader.crossOrigin = true;
+  // use the three.js GLTF loader to add the 3D model to the three.js scene
+  const loader = new GLTFLoader();
+  loader.crossOrigin = "true";
 
-    loader.load(
-      glbModel,
-      (gltf: {
-        scene: {
-          children: any;
-          clone: () => any;
-        };
-      }) => {
-        const currentMeshes = getAllMeshes(gltf.scene);
-        const treeCoordinates = generateTreeCoordinates(
-          geoJson,
-          bbox,
-          hasRandomSize
-        );
-        const clusters = createGeoInstances(
-          treeCoordinates,
-          currentMeshes,
-          hasRandomSize,
-          hasRandomRot
-        );
-        clusters.forEach((cluster) => scene.add(cluster));
-      }
-    );
-  };
-
-  return sceneUpdate();
-};
+  loader.load(
+    glbModel,
+    (gltf) => {
+      const currentMeshes = getAllMeshes(gltf.scene);
+      const treeCoordinates = generateTreeCoordinates(
+        geoJson,
+        bbox,
+        hasRandomSize
+      );
+      const clusters = createGeoInstances(
+        treeCoordinates,
+        currentMeshes,
+        hasRandomSize,
+        hasRandomRot
+      );
+      clusters.forEach((cluster) => scene.add(cluster));
+    }
+  );
+}
 
 function getAllMeshes(scene: Group): Mesh[] {
   const extractMesh = (scene: Group, meshes: Mesh[] = []): Mesh[] => {
