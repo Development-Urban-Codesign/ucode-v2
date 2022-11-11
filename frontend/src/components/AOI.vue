@@ -14,21 +14,22 @@ import {
   getbuildingsFromDB, getDrivingLaneFromDB, getGreeneryFromDBTexture, getTrafficSignalFromDB, getTreeJsonFromDB, getTreesFromDB
 } from "../service/backend.service";
 import { TreeModel } from "../utils/TreeModel";
-import DevUI from "@/components/DevUI.vue"
 import { ThreejsScene } from "@/utils/ThreejsScene";
 const store = useStore();
 const devMode = computed(() => store.getters["ui/devMode"]);
-let threeJsScene: Scene;
+let threeJsScene: any;
 
 const emit = defineEmits(["addLayer", "addImage"]);
 const populateMap = async () => {
-  createEmptyThreeJsScene();
+  
   await createAoiPlane()
   await sendBuildingRequest();
   await sendGreeneryRequest();
-  await sendTreeRequest();
+  
   await sendTrafficSignalRequest();
   await sendDrivingLaneRequest();
+  await createEmptyThreeJsScene();
+  await sendTreeRequest();
   store.dispatch("aoi/setMapIsPopulated");
   store.commit("ui/aoiMapPopulated", true);
 }
@@ -38,7 +39,7 @@ onMounted(() => {
 })
 const createEmptyThreeJsScene = async () => {
   const threeJsSceneLayer = await ThreejsSceneOnly(store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin)
-  console.log(threeJsSceneLayer.scene)
+  //console.log(threeJsSceneLayer.scene)
   threeJsScene = threeJsSceneLayer.scene
   emit("addLayer", threeJsSceneLayer.layer)
 }
@@ -95,24 +96,23 @@ const createAoiPlane = async () => {
 }
   const sendTreeRequest = async () => {
     if (true) {//import trees with THREE JS
-      const treeJson = await getTreeJsonFromDB(store.state.aoi.projectSpecification.project_id);
+      const treeJson:FeatureCollection = await getTreeJsonFromDB(store.state.aoi.projectSpecification.project_id);
       if (true) {
         let trees: string[] = ["Tree_01.glb", "Tree_02.glb", "Tree_03.glb"]
         let ArrayIndex: number[] = []
-        for (let index = 0; index < treeJson.features.length; index++) {
+        treeJson.features.forEach(() =>{ 
           let int = Math.round((Math.random() * ((trees.length - 1) - 0)) + 0)
           ArrayIndex.push(int)
-        }
-        for (let index = 0; index < trees.length; index++) {
+        }) 
+        trees.forEach((tree,_index)=>{
           let partJson: { type: string, features: any[] } = { type: "FeatureCollection", features: [] }
-          for (let index1 = 0; index1 < treeJson.features.length; index1++) {
-            if (ArrayIndex[index1] == index) {
-              partJson.features.push(treeJson.features[index1])
+          treeJson.features.forEach((feature,index)=>{
+            if (ArrayIndex[index] == _index) {
+              partJson.features.push(feature)
             }
-          }
-          addGeoOnPointsToThreejsScene(threeJsScene, treeJson, "TreeVariants/" + trees[index], store.state.aoi.projectSpecification.bbox, [0.7, 0.8], true)
-
-        }
+          })
+          addGeoOnPointsToThreejsScene(threeJsScene, partJson, "TreeVariants/" + tree, store.state.aoi.projectSpecification.bbox, [0.7, 0.8], true)
+        })
       }
 
       else { //the old way with threejs, only one treemodel
