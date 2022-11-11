@@ -22,8 +22,6 @@ export const AddGeoOnPointsToThreejsScene = (
   hasRandomSize?: number[],
   hasRandomRot?: boolean
 ) => {
-  let localSceneCoordinates: [TransformationWrapper];
-
 
   let currentMeshes: Meshes = { mesh: [], material: [] };
 
@@ -51,10 +49,7 @@ export const AddGeoOnPointsToThreejsScene = (
           hasRandomSize,
           hasRandomRot
         );
-//        debugger
-        for (let index = 0; index < clusters.length; index++) {
-          scene.add(clusters[index]);
-        }
+        clusters.forEach((cluster) => scene.add(cluster));
       }
     );
   };
