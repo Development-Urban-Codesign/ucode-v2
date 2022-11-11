@@ -1,5 +1,6 @@
 import type { BoundingBox } from "@/store/modules/aoi";
 import maplibregl, { MercatorCoordinate, type LngLatLike } from "maplibre-gl";
+import type { BufferGeometry, Group } from "three";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
@@ -9,10 +10,10 @@ type TransformationWrapper = {
   scale: number;
 };
 
-type Meshes = {
-    mesh: [];
-    material: [];
-  };
+type Mesh = {
+  geometry: BufferGeometry;
+  material: [];
+};
 
 export const AddGeoOnPointsToThreejsScene = (
   scene: THREE.Scene,
@@ -22,9 +23,6 @@ export const AddGeoOnPointsToThreejsScene = (
   hasRandomSize?: number[],
   hasRandomRot?: boolean
 ) => {
-
-  let currentMeshes: Meshes = { mesh: [], material: [] };
-
   const sceneUpdate = () => {
     console.log(scene);
 
@@ -40,9 +38,12 @@ export const AddGeoOnPointsToThreejsScene = (
           clone: () => any;
         };
       }) => {
-        currentMeshes = { mesh: [], material: [] };
-        getAllMeshes(gltf.scene);
-        const treeCoordinates = generateTreeCoordinates(geoJson, bbox, hasRandomSize)
+        const currentMeshes = getAllMeshes(gltf.scene);
+        const treeCoordinates = generateTreeCoordinates(
+          geoJson,
+          bbox,
+          hasRandomSize
+        );
         const clusters = createGeoInstances(
           treeCoordinates,
           currentMeshes,
@@ -54,21 +55,26 @@ export const AddGeoOnPointsToThreejsScene = (
     );
   };
 
-  const getAllMeshes = (scene: { children: any; clone: () => any }) => {
-    if (scene.children != undefined) {
-      for (let index = 0; index < scene.children.length; index++) {
-        const element = scene.children[index];
-        if (element.geometry != undefined) {
-          //console.log("geo is: " + element.geometry)
-          currentMeshes.mesh.push(element.geometry);
-          currentMeshes.material.push(element.material);
-        } else {
-          getAllMeshes(element);
-        }
+  const getAllMeshes = (scene: Group) => {
+    const extractMesh = (scene: Group, meshes: Mesh[] = []): Mesh[] => {
+      if (scene.children == undefined) {
+        console.log("no more Children...");
+        return meshes;
       }
-    } else {
-      console.log("no more Children...");
-    }
+      scene.children.forEach((sceneChild: any) => {
+        if (sceneChild.geometry != undefined) {
+          //console.log("geo is: " + element.geometry)
+          meshes.push({
+            geometry: sceneChild.geometry,
+            material: sceneChild.material,
+          });
+        } else {
+          extractMesh(sceneChild, meshes);
+        }
+      });
+      return meshes;
+    };
+    return extractMesh(scene);
   };
 
   return sceneUpdate();
@@ -76,50 +82,62 @@ export const AddGeoOnPointsToThreejsScene = (
 
 function createGeoInstances(
   localSceneCoordinates: TransformationWrapper[],
-  currentMeshes: Meshes,
+  currentMeshes: Mesh[],
   hasRandomSize?: number[],
   hasRandomRot = false
 ): THREE.InstancedMesh[] {
-  const clusters: THREE.InstancedMesh[] = [];
+  return currentMeshes.map((mesh) => {
+    return createMeshInstance(
+      mesh.geometry,
+      mesh.material,
+      localSceneCoordinates,
+      hasRandomSize,
+      hasRandomRot
+    );
+  });
+}
 
-  for (let index = 0; index < currentMeshes.mesh.length; index++) {
-    const mesh = currentMeshes.mesh[index];
-    const material = currentMeshes.material[index];
-    var cluster = new THREE.InstancedMesh(
-      mesh,
-      material,
-      localSceneCoordinates.length
+function createMeshInstance(
+  mesh: BufferGeometry,
+  material: [],
+  localSceneCoordinates: TransformationWrapper[],
+  hasRandomSize: number[] | undefined,
+  hasRandomRot: boolean
+) {
+  const cluster = new THREE.InstancedMesh(
+    mesh,
+    material,
+    localSceneCoordinates.length
+  );
+
+  localSceneCoordinates.forEach((localSceneCoordinate, index) => {
+    let scale = new THREE.Vector3(1, 1, 1);
+    let rotation = new THREE.Quaternion();
+    let position = new THREE.Vector3(
+      localSceneCoordinate.position[2],
+      localSceneCoordinate.position[1],
+      localSceneCoordinate.position[0]
     );
 
-    for (let index = 0; index < localSceneCoordinates.length; index++) {
-      const matrix = new THREE.Matrix4();
-      let scale = new THREE.Vector3(1, 1, 1);
-      let rotation = new THREE.Quaternion();
-      let position = new THREE.Vector3(
-        localSceneCoordinates[index].position[2],
-        localSceneCoordinates[index].position[1],
-        localSceneCoordinates[index].position[0]
+    if (hasRandomSize !== undefined) {
+      scale = new THREE.Vector3(
+        localSceneCoordinate.scale,
+        localSceneCoordinate.scale,
+        localSceneCoordinate.scale
       );
-
-      if (hasRandomSize !== undefined) {
-        scale = new THREE.Vector3(
-          localSceneCoordinates[index].scale,
-          localSceneCoordinates[index].scale,
-          localSceneCoordinates[index].scale
-        );
-      }
-      if (hasRandomRot) {
-        let rot = localSceneCoordinates[index].rotation;
-        let eulerRot = new THREE.Euler(0, rot, 0, "XYZ");
-        rotation = rotation.setFromEuler(eulerRot);
-      }
-
-      matrix.compose(position, rotation, scale);
-      cluster.setMatrixAt(index, matrix);
     }
-    clusters.push(cluster);
-  }
-  return clusters;
+    if (hasRandomRot) {
+      let rot = localSceneCoordinate.rotation;
+      let eulerRot = new THREE.Euler(0, rot, 0, "XYZ");
+      rotation = rotation.setFromEuler(eulerRot);
+    }
+
+    const matrix = new THREE.Matrix4();
+    matrix.compose(position, rotation, scale);
+    cluster.setMatrixAt(index, matrix);
+  });
+
+  return cluster;
 }
 
 function generateTreeCoordinates(
