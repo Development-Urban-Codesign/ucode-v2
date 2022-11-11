@@ -12,7 +12,7 @@
           Deckgl
         </v-btn>
       </v-row>
-      <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
+      <AOI  v-if="mapStyleLoaded" @addLayer="addLayerToMap" @addImage="addImageToMap" />
       <Quests />
 
       <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"

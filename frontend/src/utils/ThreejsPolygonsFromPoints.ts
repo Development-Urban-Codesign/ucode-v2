@@ -1,17 +1,18 @@
 import type { BoundingBox } from '@/store/modules/aoi'
 import maplibregl, { Map, type CustomLayerInterface, type LngLatLike } from 'maplibre-gl'
 import * as THREE from 'three'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
 
-export const ThreejsScene = (bbox:BoundingBox, geoJson: any, glbModel: string, hasRandomSize?: number[], hasRandomRot?: boolean) => {
+//@ts-ignore
+// import { Sky } from 'three/addons/objects/Sky.js';
+
+export const ThreejsPolygon = (bbox: BoundingBox, geoJson: FeatureCollection) => {
   let localSceneCoordinates: [{ position: number[], rotation: number, scale: number }]
-  let currentMeshes: { mesh: any, material: any } = { mesh: [], material: [] }
- 
+
   const modelAltitude = 0;
-  const modelRotate = [Math.PI / 2, Math.PI / 2, 0];
-  const lng: number = bbox.xmin;
-  const lat: number = bbox.ymin;
+  const modelRotate = [0, 0, 0];
+  const lng: number = bbox.xmin
+  const lat: number = bbox.ymin
   const modelorigin: LngLatLike = maplibregl.LngLat.convert([lng, lat])
   const modelAsMercatorCoordinate = maplibregl.MercatorCoordinate.fromLngLat(
     modelorigin,
@@ -34,15 +35,15 @@ export const ThreejsScene = (bbox:BoundingBox, geoJson: any, glbModel: string, h
 
   // configuration of the custom layer for a 3D model per the CustomLayerInterface
   const customLayer: CustomLayerInterface = {
-    id: glbModel,
+    id: "ThreeJsPolygon_" + Date.now(),
     type: 'custom',
     renderingMode: '3d',
-    onAdd: function (map: Map, gl: any)  {
-      debugger
+    onAdd: function (map: Map, gl: any) {
+
       this.camera = new THREE.Camera();
       this.scene = new THREE.Scene();
 
-      
+
       const hemiLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 0.5);
 
       this.scene.add(hemiLight);
@@ -53,29 +54,44 @@ export const ThreejsScene = (bbox:BoundingBox, geoJson: any, glbModel: string, h
       dirLight.position.multiplyScalar(300);
       this.scene.add(dirLight);
 
-      // use the three.js GLTF loader to add the 3D model to the three.js scene
-      const loader = new GLTFLoader();
-      loader.crossOrigin = true;
+      // geoJson.features.forEach(console.log(worldPointInRelativeCoord(geoJson.features.geometry.coordinates)))
+      const vertAr: THREE.Vector2[] = []
+      //   -1.0, -1.0,  1.0,
+      //    1.0, -1.0,  1.0,
+      //    1.0,  1.0,  1.0,
 
-      loader.load(
-        glbModel,
-        (gltf: {
-          scene: {
-            children: any; clone: () => any;
-          };
-        }) => {
-          currentMeshes = { mesh: [], material: [] }
-          getAllMeshes(gltf.scene)
-          
-          localSceneCoordinates = generateTreeCoordinates(geoJson);
-          const clusters = createGeoInstances(localSceneCoordinates);
+      //    1.0,  1.0,  1.0,
+      //   -1.0,  1.0,  1.0,
+      //   -1.0, -1.0,  1.0
+      // ] );
+      for (let index = 0; index < geoJson.features.length; index++) {
+        let pos: THREE.Vector3 = worldPointInRelativeCoord(geoJson.features[index].geometry.coordinates)
+        
+        vertAr.push(new THREE.Vector2(pos.x, pos.z))
+      }
+      console.log(vertAr)
+      const shape = new THREE.Shape(vertAr);
+      //shape.moveTo(0,0)
+      // for (let verts in vertAr) {
+      //   shape.bezierCurveTo(verts)
+        
+      // }
+      const geometry = new THREE.ShapeGeometry(shape);
 
-          for (let index = 0; index < clusters.length; index++) {
-            this.scene.add(clusters[index]);
-            
-          }
-        }
-      );
+      // const extrudeSettings = { depth: 0, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
+      // const geometry = new THREE.ExtrudeGeometry( shape, extrudeSettings );
+
+      // const vertices = new Float32Array(vertAr);
+      // console.log(vertices)
+      // var indices = THREE.Earcut.triangulate(vertAr, [], 3);
+      // geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertAr, 3));
+      // geometry.setIndex(indices);
+      const material = new THREE.MeshBasicMaterial({ color: 0x2C343D, side: THREE.DoubleSide });//A4766D E9E9DD E8D3B0 8697AF 4A5666 2C343D
+      const mesh = new THREE.Mesh(geometry, material);
+      
+      this.scene.add(mesh)
+
+       
 
       this.map = map;
 
@@ -85,10 +101,7 @@ export const ThreejsScene = (bbox:BoundingBox, geoJson: any, glbModel: string, h
         context: gl,
         antialias: true
       });
-      
       this.renderer.outputEncoding = THREE.sRGBEncoding;
-
-
       this.renderer.autoClear = false;
       //console.count("onAdd")
     },
@@ -127,7 +140,7 @@ export const ThreejsScene = (bbox:BoundingBox, geoJson: any, glbModel: string, h
         .multiply(rotationZ);
 
       this.camera.projectionMatrix = m.multiply(l);
-      
+
       //this.renderer.state.reset();
       this.renderer.resetState();
       this.renderer.render(this.scene, this.camera);
@@ -138,28 +151,20 @@ export const ThreejsScene = (bbox:BoundingBox, geoJson: any, glbModel: string, h
   function getRndNumber(min: number, max: number) {
     return (Math.random() * (max - min)) + min;
   }
-  const getAllMeshes = (scene: { children: any; clone: () => any; }) => {
-    if (scene.children != undefined) {
-      for (let index = 0; index < scene.children.length; index++) {
-        const element = scene.children[index];
-        if (element.geometry != undefined) {
-          //console.log("geo is: " + element.geometry)
-          currentMeshes.mesh.push(element.geometry)
-          currentMeshes.material.push(element.material)
-        }
-        else {
-          getAllMeshes(element)
-        }
-      }
-    }
-    else { console.log("no more Children...") }
-  }
   const localCord = (worldCords: LngLatLike, height: number) => {
     const local = maplibregl.MercatorCoordinate.fromLngLat(
       worldCords,
       height
     );
     return local
+  }
+  function worldPointInRelativeCoord(LngLatPoint: LngLatLike) {
+    const relativePosition: THREE.Vector3 = new THREE.Vector3(
+      ((localCord(LngLatPoint, 0).x) - modelAsMercatorCoordinate.x) * 1 / modelAsMercatorCoordinate.meterInMercatorCoordinateUnits(),
+      0,
+      (modelAsMercatorCoordinate.y - localCord(LngLatPoint, 0).y) * 1 / modelAsMercatorCoordinate.meterInMercatorCoordinateUnits()
+    );
+    return relativePosition
   }
   function generateTreeCoordinates(_geoJson: any) {
     localSceneCoordinates = [];
