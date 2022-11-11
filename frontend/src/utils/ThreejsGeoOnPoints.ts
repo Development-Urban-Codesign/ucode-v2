@@ -55,13 +55,7 @@ export const AddGeoOnPointsToThreejsScene = (scene: THREE.Scene, geoJson: any, g
     }
     else { console.log("no more Children...") }
   }
-  const localCord = (worldCords: LngLatLike, height: number) => {
-    const local = maplibregl.MercatorCoordinate.fromLngLat(
-      worldCords,
-      height
-    );
-    return local
-  }
+
   function generateTreeCoordinates(_geoJson: any) {
     localSceneCoordinates = [];
     // for (let index = 0; index < 100; index++) {
@@ -74,8 +68,8 @@ export const AddGeoOnPointsToThreejsScene = (scene: THREE.Scene, geoJson: any, g
 
         let rot = getRndNumber(0, Math.PI / 2)
         let scl = getRndNumber(hasRandomSize ? hasRandomSize[0] : 1, hasRandomSize ? hasRandomSize[1] : 1)
-        let cords= localCord(maplibregl.LngLat.convert([bbox.xmin, bbox.ymin]),0)
-        let localPos = { position: [((localCord(element, 0).x) - cords.x) * 1 / cords.meterInMercatorCoordinateUnits(), 0, (cords.y - localCord(element, 0).y) * 1 / cords.meterInMercatorCoordinateUnits()], rotation: rot, scale: scl }//problematic getting position for the trees
+        let cords= localCordsFromWorldCords(maplibregl.LngLat.convert([bbox.xmin, bbox.ymin]),0)
+        let localPos = { position: [((localCordsFromWorldCords(element, 0).x) - cords.x) * 1 / cords.meterInMercatorCoordinateUnits(), 0, (cords.y - localCordsFromWorldCords(element, 0).y) * 1 / cords.meterInMercatorCoordinateUnits()], rotation: rot, scale: scl }//problematic getting position for the trees
 
         localSceneCoordinates.push(localPos)
 
@@ -138,9 +132,8 @@ export const AddGeoOnPointsToThreejsScene = (scene: THREE.Scene, geoJson: any, g
   return (
     sceneUpdate()
   )
-
-
-
 }
 
-
+export function localCordsFromWorldCords(worldCords: LngLatLike, height=0) {
+    return maplibregl.MercatorCoordinate.fromLngLat(worldCords, height);
+}
