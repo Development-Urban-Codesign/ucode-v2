@@ -55,30 +55,30 @@ export const AddGeoOnPointsToThreejsScene = (
     );
   };
 
-  const getAllMeshes = (scene: Group) => {
-    const extractMesh = (scene: Group, meshes: Mesh[] = []): Mesh[] => {
-      if (scene.children == undefined) {
-        console.log("no more Children...");
-        return meshes;
-      }
-      scene.children.forEach((sceneChild: any) => {
-        if (sceneChild.geometry != undefined) {
-          //console.log("geo is: " + element.geometry)
-          meshes.push({
-            geometry: sceneChild.geometry,
-            material: sceneChild.material,
-          });
-        } else {
-          extractMesh(sceneChild, meshes);
-        }
-      });
-      return meshes;
-    };
-    return extractMesh(scene);
-  };
-
   return sceneUpdate();
 };
+
+function getAllMeshes(scene: Group): Mesh[] {
+  const extractMesh = (scene: Group, meshes: Mesh[] = []): Mesh[] => {
+    if (scene.children == undefined) {
+      console.log("no more Children...");
+      return meshes;
+    }
+    scene.children.forEach((sceneChild: any) => {
+      if (sceneChild.geometry != undefined) {
+        //console.log("geo is: " + element.geometry)
+        meshes.push({
+          geometry: sceneChild.geometry,
+          material: sceneChild.material,
+        });
+      } else {
+        extractMesh(sceneChild, meshes);
+      }
+    });
+    return meshes;
+  };
+  return extractMesh(scene);
+}
 
 function createGeoInstances(
   localSceneCoordinates: TransformationWrapper[],
