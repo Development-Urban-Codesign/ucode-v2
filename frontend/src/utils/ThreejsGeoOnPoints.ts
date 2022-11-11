@@ -1,10 +1,10 @@
-import maplibregl, { GeoJSONFeature, Map, type CustomLayerInterface, type LngLatLike } from 'maplibre-gl'
+import type { BoundingBox } from "@/store/modules/aoi"
+import maplibregl, { type LngLatLike } from 'maplibre-gl'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import { useStore } from 'vuex'
 
 
-export const AddGeoOnPointsToThreejsScene = (scene: THREE.Scene, geoJson: any, glbModel: string, hasRandomSize?: number[], hasRandomRot?: boolean) => {
+export const AddGeoOnPointsToThreejsScene = (scene: THREE.Scene, geoJson: any, glbModel: string, bbox:BoundingBox, hasRandomSize?: number[], hasRandomRot?: boolean) => {
   let localSceneCoordinates: [{ position: number[], rotation: number, scale: number }]
   let currentMeshes: { mesh: any, material: any } = { mesh: [], material: [] }
   
@@ -74,10 +74,7 @@ export const AddGeoOnPointsToThreejsScene = (scene: THREE.Scene, geoJson: any, g
 
         let rot = getRndNumber(0, Math.PI / 2)
         let scl = getRndNumber(hasRandomSize ? hasRandomSize[0] : 1, hasRandomSize ? hasRandomSize[1] : 1)
-        const store = useStore()
-        debugger
-        console.log(store.state.aoi.projectSpecification.bbox.xmin)
-        let cords= localCord(maplibregl.LngLat.convert([store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin]),0)
+        let cords= localCord(maplibregl.LngLat.convert([bbox.xmin, bbox.ymin]),0)
         let localPos = { position: [((localCord(element, 0).x) - cords.x) * 1 / cords.meterInMercatorCoordinateUnits(), 0, (cords.y - localCord(element, 0).y) * 1 / cords.meterInMercatorCoordinateUnits()], rotation: rot, scale: scl }//problematic getting position for the trees
 
         localSceneCoordinates.push(localPos)
