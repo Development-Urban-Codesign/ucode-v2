@@ -14,7 +14,24 @@ type Mesh = {
   geometry: BufferGeometry;
   material: [];
 };
+export function addPolygonsFromCoordsAr(scene: THREE.Scene, bbox: BoundingBox, geoJson: FeatureCollection): void {
+  const vertAr: THREE.Vector2[] = []
+  for (let index = 0; index < geoJson.features.length; index++) {
+    let pos: THREE.Vector3 = worldPointInRelativeCoord(geoJson.features[index].geometry.coordinates, bbox) 
+    console.log(pos)
+    vertAr.push(new THREE.Vector2(pos.z,pos.x))
+  }
+  //console.log(vertAr)
+  const shape = new THREE.Shape(vertAr);
+  const geometry = new THREE.ShapeGeometry(shape);
+  geometry.rotateX(Math.PI/2)// .rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2)
+  const material = new THREE.MeshBasicMaterial({ color: 0x2C343D, side: THREE.DoubleSide });//A4766D E9E9DD E8D3B0 8697AF 4A5666 2C343D
+  const mesh = new THREE.Mesh(geometry, material);
+  // mesh.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2)
+  scene.add(mesh)
 
+
+}
 export function addGeoOnPointsToThreejsScene(
   scene: THREE.Scene,
   geoJson: any,
@@ -47,6 +64,17 @@ export function addGeoOnPointsToThreejsScene(
       clusters.forEach((cluster) => scene.add(cluster));
     }
   );
+}
+function worldPointInRelativeCoord(LngLatPoint: LngLatLike, bbox: BoundingBox) {
+  let wrapperCords = localCordsFromWorldCords(maplibregl.LngLat.convert([bbox.xmin, bbox.ymin]), 0);
+  let objectCords = localCordsFromWorldCords(LngLatPoint, 0);
+
+  const relativePosition: THREE.Vector3 = new THREE.Vector3(
+    ((objectCords.x - wrapperCords.x) * 1) / wrapperCords.meterInMercatorCoordinateUnits(),
+    0,
+    ((wrapperCords.y - objectCords.y) * 1) / wrapperCords.meterInMercatorCoordinateUnits(),
+  );
+  return relativePosition
 }
 
 function getAllMeshes(scene: Group): Mesh[] {
@@ -157,10 +185,10 @@ function generateTreeCoordinates(
       let localPos = {
         position: [
           ((localCordsFromWorldCords(element, 0).x - cords.x) * 1) /
-            cords.meterInMercatorCoordinateUnits(),
+          cords.meterInMercatorCoordinateUnits(),
           0,
           ((cords.y - localCordsFromWorldCords(element, 0).y) * 1) /
-            cords.meterInMercatorCoordinateUnits(),
+          cords.meterInMercatorCoordinateUnits(),
         ],
         rotation: rot,
         scale: scl,

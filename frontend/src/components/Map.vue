@@ -12,7 +12,7 @@
           Deckgl
         </v-btn>
       </v-row>
-      <AOI v-if="mapStyleLoaded" @addLayer="addLayerToMap" @addImage="addImageToMap" />
+      <AOI v-if="mapStyleLoaded" @addLayer="addLayerToMap" @addImage="addImageToMap" @triggerRepaint="triggerRepaint" />
       <Quests />
 
       <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
@@ -42,7 +42,6 @@ import type { ProjectSpecification } from "@/store/modules/aoi";
 import { HTTP } from "@/utils/http-common";
 import { pulseLayer } from "@/utils/pulseLayer";
 import { TreeModel } from "@/utils/TreeModel";
-import { ThreejsScene } from "@/utils/ThreejsScene";
 import { MapboxLayer } from "@deck.gl/mapbox/typed";
 import { ScenegraphLayer } from "@deck.gl/mesh-layers/typed";
 import * as turf from '@turf/turf';
@@ -176,12 +175,15 @@ function deleteCommentLayer() {
   map.removeSource('ownComments')
   map.removeImage('comment.png')
 }
-
+const triggerRepaint= () =>{
+  map.triggerRepaint()
+}
 // threejs layer
 const addThreejsShape = () => {
   //TODO type treemodel 
   // @ts-ignore
   addLayerToMap(TreeModel(13.74647, 51.068646, 100));
+  map.triggerRepaint()
 }
 function deleteOwnComment(){
     map.removeLayer('ownComments')
@@ -287,6 +289,10 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
   const ownCommentLayer = map.getLayer("ownComments")
   if (typeof ownCommentLayer !== 'undefined') {
     layerHirarchy.push({ layer: ownCommentLayer, orderId: 100 })
+  }
+  const ThreeJsScene = map.getLayer("ThreeJsScene")
+  if (typeof ThreeJsScene !== 'undefined') {
+    layerHirarchy.push({ layer: ThreeJsScene, orderId: 5 })
   }
 
 
