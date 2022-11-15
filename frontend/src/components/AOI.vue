@@ -6,13 +6,13 @@
 import DevUI from "@/components/DevUI.vue";
 import { addGeoOnPointsToThreejsScene, addPolygonsFromCoordsAr } from '@/utils/ThreejsGeometryCreation';
 import { ThreejsSceneOnly } from "@/utils/ThreejsSceneOnly";
-import type { FeatureCollection } from "geojson";
 import { computed, onMounted } from "vue";
 import { useStore } from "vuex";
 import {
-  getbuildingsFromDB, getDrivingLaneFromDB, getGreeneryFromDBTexture, getTrafficSignalFromDB, getTreeJsonFromDB, getTreesFromDB
+  getbuildingsFromDB, getDrivingLaneFromDB, getGreeneryFromDBTexture, getGreeneryJsonFromDB, getTrafficSignalFromDB, getTreeJsonFromDB, getTreesFromDB
 } from "../service/backend.service";
 import { ThreejsScene } from "@/utils/ThreejsScene";
+import { type FeatureCollection } from "@turf/helpers";
 const store = useStore();
 const devMode = computed(() => store.getters["ui/devMode"]);
 let threeJsScene: any;
@@ -21,7 +21,8 @@ const emit = defineEmits(["addLayer", "addImage", "triggerRepaint"]);
 const populateMap = async () => {
   await sendBuildingRequest();
   await createEmptyThreeJsScene();
-  await sendGreeneryRequest();
+  // await sendGreeneryRequest();
+  await sendGreeneryRequestTHREE();
   await sendTrafficSignalRequest();
   await sendDrivingLaneRequest();
   await createEmptyThreeJsScene();
@@ -51,46 +52,49 @@ const sendGreeneryRequest = async () => {
   emit("addLayer", newLayer);
 
 };
+const sendGreeneryRequestTHREE = async () => {
+  const greeneryJson: FeatureCollection = await getGreeneryJsonFromDB(store.state.aoi.projectSpecification.project_id);
+  console.log(greeneryJson)
+  
+  addPolygonsFromCoordsAr({
+    scene: threeJsScene,
+    bbox: store.state.aoi.projectSpecification.bbox,
+    geoJson: greeneryJson,
+    color: "#9EBB64",
+    zIndex: 0,
+    extrude: 0.1
+  })
+  
+
+};
 const createAoiPlane = async () => {
+  console.log("AOIPlane")
   const data: FeatureCollection = {
-    'type': 'FeatureCollection',
+    'type': 'FeatureCollection',//redo as polygon..be smart
     'features': [
       {
         'type': 'Feature',
         'geometry': {
-          'type': 'Point',
-          'coordinates': [store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin]
-        },
-        'properties': {}
-      },
-      {
-        'type': 'Feature',
-        'geometry': {
-          'type': 'Point',
-          'coordinates': [store.state.aoi.projectSpecification.bbox.xmax, store.state.aoi.projectSpecification.bbox.ymin]
-        },
-        'properties': {}
-      },
-      {
-        'type': 'Feature',
-        'geometry': {
-          'type': 'Point',
-          'coordinates': [store.state.aoi.projectSpecification.bbox.xmax, store.state.aoi.projectSpecification.bbox.ymax]
-        },
-        'properties': {}
-      },
-      {
-        'type': 'Feature',
-        'geometry': {
-          'type': 'Point',
-          'coordinates': [store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymax]
+          'type': 'Polygon',
+          'coordinates': 
+          [[[store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin],
+          [store.state.aoi.projectSpecification.bbox.xmax, store.state.aoi.projectSpecification.bbox.ymin],
+          [store.state.aoi.projectSpecification.bbox.xmax, store.state.aoi.projectSpecification.bbox.ymax],
+          [store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymax]]]
         },
         'properties': {}
       }
     ]
   }
   //emit("addLayer", ThreejsPolygon(store.state.aoi.projectSpecification.bbox, data))
-  addPolygonsFromCoordsAr(threeJsScene, store.state.aoi.projectSpecification.bbox, data)
+  addPolygonsFromCoordsAr({
+    scene: threeJsScene,
+    bbox: store.state.aoi.projectSpecification.bbox,
+    geoJson: data,
+    color: "#2C343D",
+    zIndex: 0,
+    extrude: 0
+  })
   // emit("triggerRepaint")
 }
 const sendTreeRequest = async () => {

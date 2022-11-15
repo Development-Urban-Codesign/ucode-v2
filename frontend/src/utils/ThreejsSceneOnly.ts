@@ -4,7 +4,7 @@ import maplibregl, {
   type LngLatLike,
 } from "maplibre-gl";
 import * as THREE from "three";
-import { Scene } from "three";
+import { FogExp2, Scene } from "three";
 import type * as glMatrix from "gl-matrix";
 
 const hemiLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 0.5);
@@ -23,6 +23,7 @@ export class ThreeJsScene extends Scene {
   setup() {
     this.add(hemiLight);
     this.add(dirLight);
+    // this.fog = new FogExp2(0xffffff,.1)
   }
 }
 

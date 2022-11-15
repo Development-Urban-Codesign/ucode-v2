@@ -1,4 +1,5 @@
 import type { BoundingBox } from "@/store/modules/aoi";
+import type { Feature, FeatureCollection, Polygon, Position } from "@turf/turf";
 import maplibregl, { MercatorCoordinate, type LngLatLike } from "maplibre-gl";
 import type { BufferGeometry, Group } from "three";
 import * as THREE from "three";
@@ -14,24 +15,66 @@ type Mesh = {
   geometry: BufferGeometry;
   material: [];
 };
-export function addPolygonsFromCoordsAr(scene: THREE.Scene, bbox: BoundingBox, geoJson: FeatureCollection): void {
-  const vertAr: THREE.Vector2[] = []
-  for (let index = 0; index < geoJson.features.length; index++) {
-    let pos: THREE.Vector3 = worldPointInRelativeCoord(geoJson.features[index].geometry.coordinates, bbox) 
-    console.log(pos)
-    vertAr.push(new THREE.Vector2(pos.z,pos.x))
-  }
-  //console.log(vertAr)
-  const shape = new THREE.Shape(vertAr);
-  const geometry = new THREE.ShapeGeometry(shape);
-  geometry.rotateX(Math.PI/2)// .rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2)
-  const material = new THREE.MeshBasicMaterial({ color: 0x2C343D, side: THREE.DoubleSide });//A4766D E9E9DD E8D3B0 8697AF 4A5666 2C343D
-  const mesh = new THREE.Mesh(geometry, material);
-  // mesh.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2)
-  scene.add(mesh)
-
-
+export interface THREEPolygonSettings{
+  scene: THREE.Scene, bbox: BoundingBox, geoJson: FeatureCollection, color: string, zIndex: number, extrude: number
 }
+export function addPolygonsFromCoordsAr(settings: THREEPolygonSettings): void {
+  
+  const material = new THREE.MeshStandardMaterial({ color: settings.color, side: THREE.DoubleSide })//THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
+  settings.geoJson.features.forEach((feature: Feature, index: number) => {
+    console.log(index + ": " + feature.geometry)
+    const vertAr: THREE.Vector2[] = []
+    feature.geometry.coordinates[0].forEach((coord: Position, index: number) => {
+      console.log(index + ": " + coord)
+      let pos: THREE.Vector3 = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), settings.bbox)
+      // console.log(pos)
+      vertAr.push(new THREE.Vector2(pos.z, pos.x))
+
+    })
+
+    const shape = new THREE.Shape(vertAr);
+    let geometry: BufferGeometry
+    if (settings.extrude == 0) {
+      geometry = new THREE.ShapeGeometry(shape, 0);
+      // .rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2)
+    }
+    else {
+      const extrudeSettings = {
+        steps: 1,
+        depth: settings.extrude,
+        bevelEnabled: false,
+        bevelThickness: settings.extrude,
+        bevelSize: 0,
+        bevelOffset: 0,
+        bevelSegments: 1
+      };
+      geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings)
+      // geometry.translate(0, 0,100)
+      
+    }
+    //const material = new THREE.MeshBasicMaterial({ color: 0x2C343D, side: THREE.DoubleSide });//A4766D E9E9DD E8D3B0 8697AF 4A5666 2C343D
+    geometry.rotateX(-Math.PI / 2)
+    // geometry.computeVertexNormals()
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.translateY(settings.extrude/2)
+    // mesh.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2)
+    settings.scene.add(mesh)
+  })
+  // for (let index = 0; index < geoJson.features.length; index++) {
+  //   let pos: THREE.Vector3 = worldPointInRelativeCoord(geoJson.features[index].geometry.coordinates, bbox)
+  //   //console.log(pos)
+  //   vertAr.push(new THREE.Vector2(pos.z, pos.x))
+  // }
+  // //console.log(vertAr)
+  // const shape = new THREE.Shape(vertAr);
+  // const geometry = new THREE.ShapeGeometry(shape);
+  // geometry.rotateX(Math.PI / 2)// .rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2)
+  // const material = new THREE.MeshBasicMaterial({ color: 0x2C343D, side: THREE.DoubleSide });//A4766D E9E9DD E8D3B0 8697AF 4A5666 2C343D
+  // const mesh = new THREE.Mesh(geometry, material);
+  // // mesh.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2)
+  // scene.add(mesh)
+}
+
 export function addGeoOnPointsToThreejsScene(
   scene: THREE.Scene,
   geoJson: any,
@@ -40,7 +83,7 @@ export function addGeoOnPointsToThreejsScene(
   hasRandomSize?: number[],
   hasRandomRot?: boolean
 ): void {
-  console.log(scene);
+  //console.log(scene);
 
   // use the three.js GLTF loader to add the 3D model to the three.js scene
   const loader = new GLTFLoader();
@@ -70,7 +113,7 @@ function worldPointInRelativeCoord(LngLatPoint: LngLatLike, bbox: BoundingBox) {
   let objectCords = localCordsFromWorldCords(LngLatPoint, 0);
 
   const relativePosition: THREE.Vector3 = new THREE.Vector3(
-    ((objectCords.x - wrapperCords.x) * 1) / wrapperCords.meterInMercatorCoordinateUnits(),
+    ((wrapperCords.x-objectCords.x) * 1) / wrapperCords.meterInMercatorCoordinateUnits(),
     0,
     ((wrapperCords.y - objectCords.y) * 1) / wrapperCords.meterInMercatorCoordinateUnits(),
   );

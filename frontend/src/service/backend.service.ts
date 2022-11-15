@@ -6,7 +6,6 @@ import type { Feature } from "maplibre-gl";
 import store from "@/store/store";
 import { HTTP } from "@/utils/http-common.js";
 import type {BoundingBox } from "@/store/modules/aoi"
-import { PROJECTION_MODE } from "@deck.gl/core/typed/lib/constants";
 
 export async function getQuestsFromDB(projectId: string) {
   const response = await HTTP.post("get-quests-from-db", projectId);
@@ -299,8 +298,9 @@ export async function getGreeneryFromDB() {
     pickable: true,
   });
 }
-export async function getGreeneryFromDBTexture(projectID: string) {
-  const response = await HTTP.post("get-greenery-from-db", projectID);
+
+export async function getGreeneryFromDBTexture(projectId: string) {
+  const response = await HTTP.post("get-greenery-from-db", projectId);
   // console.log(response);
   return {
     id: "overpass_greenery",
@@ -385,6 +385,10 @@ export async function getTreeJsonFromDB(projectId: string) {
   const response = await HTTP.post("get-trees-from-db", projectId);
   const trees = response.data
   return trees
+}
+export async function getGreeneryJsonFromDB(projectId: string) {
+  const response = await HTTP.post("get-greenery-from-db", projectId);
+  return response.data
 }
 export async function getTreesFromDB(projectId: string) {
   const response = await HTTP.post("get-trees-from-db", projectId);
