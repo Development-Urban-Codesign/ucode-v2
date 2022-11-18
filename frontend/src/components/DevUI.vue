@@ -20,6 +20,8 @@
       @update:modelValue="sendDrivingLaneRequest"></v-select>
     <v-select :items="['get', 'retrieve']" label="traffic signal" variant="outlined"
       @update:modelValue="sendTrafficSignalRequest"></v-select>
+    <v-select :items="['get', 'retrieve']" label="water" variant="outlined"
+      @update:modelValue="sendwaterRequest"></v-select>
     <v-alert type="success" v-if="store.state.aoi.dataIsLoaded">
       stored
     </v-alert>
@@ -42,6 +44,7 @@ import {
   getDrivingLaneFromDB,
   getTrafficLightsFromOSM,
   getTrafficSignalFromDB,
+  getWaterFromOSM,
 } from "../service/backend.service";
 
 const store = useStore();
@@ -177,6 +180,18 @@ const sendTrafficSignalRequest = async (mode) => {
   if (mode == "get") {
     store.dispatch("aoi/setDataIsLoading");
     await getTrafficLightsFromOSM(
+      store.state.aoi.projectSpecification.bbox,
+      store.state.aoi.projectSpecification.project_id
+    );
+  } else {
+    const trafficSignalLayer = await getTrafficSignalFromDB();
+    emit("addLayer", trafficSignalLayer);
+  }
+};
+const sendwaterRequest = async (mode) => {
+  if (mode == "get") {
+    store.dispatch("aoi/setDataIsLoading");
+    await getWaterFromOSM(
       store.state.aoi.projectSpecification.bbox,
       store.state.aoi.projectSpecification.project_id
     );

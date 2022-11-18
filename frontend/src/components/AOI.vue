@@ -4,29 +4,31 @@
 
 <script lang="ts" setup>
 import DevUI from "@/components/DevUI.vue";
-import { addGeoOnPointsToThreejsScene, addPolygonsFromCoordsAr } from '@/utils/ThreejsGeometryCreation';
+import { addGeoOnPointsToThreejsScene, addLineFromCoordsAr, addPolygonsFromCoordsAr } from '@/utils/ThreejsGeometryCreation';
 import { ThreejsSceneOnly } from "@/utils/ThreejsSceneOnly";
 import { computed, onMounted } from "vue";
 import { useStore } from "vuex";
 import {
-  getbuildingsFromDB, getDrivingLaneFromDB, getGreeneryFromDBTexture, getGreeneryJsonFromDB, getTrafficSignalFromDB, getTreeJsonFromDB, getTreesFromDB
+  getbuildingsFromDB, getDrivingLaneFromDB, getGreeneryFromDBTexture, getGreeneryJsonFromDB, getTrafficSignalFromDB, getTreeJsonFromDB, getTreesFromDB, getWaterFromDB
 } from "../service/backend.service";
 import { ThreejsScene } from "@/utils/ThreejsScene";
-import { type FeatureCollection } from "@turf/helpers";
+import type { FeatureCollection } from "@turf/helpers";
 const store = useStore();
 const devMode = computed(() => store.getters["ui/devMode"]);
 let threeJsScene: any;
 
 const emit = defineEmits(["addLayer", "addImage", "triggerRepaint"]);
 const populateMap = async () => {
-  await sendBuildingRequest();
+  // await sendBuildingRequest();
   await createEmptyThreeJsScene();
-  // await sendGreeneryRequest();
-  await sendGreeneryRequestTHREE();
-  await sendTrafficSignalRequest();
-  await sendDrivingLaneRequest();
-  await createEmptyThreeJsScene();
-  await sendTreeRequest();
+  // // await sendGreeneryRequest();
+  // await sendGreeneryRequestTHREE();
+  // await sendTrafficSignalRequest();
+  // //  await sendDrivingLaneRequest();
+  // await sendDrivingLaneRequestTHREE();
+  // await createEmptyThreeJsScene();
+  // await sendTreeRequest();
+  await sendWaterRequestTHREE();
   await createAoiPlane();
   store.dispatch("aoi/setMapIsPopulated");
   store.commit("ui/aoiMapPopulated", true);
@@ -63,6 +65,21 @@ const sendGreeneryRequestTHREE = async () => {
     color: "#9EBB64",
     zIndex: 0,
     extrude: 0.1
+  })
+  
+
+};
+const sendWaterRequestTHREE = async () => {
+  const waterJson: FeatureCollection = await getWaterFromDB(store.state.aoi.projectSpecification.project_id);
+  console.log(waterJson)
+  
+  addPolygonsFromCoordsAr({
+    scene: threeJsScene,
+    bbox: store.state.aoi.projectSpecification.bbox,
+    geoJson: waterJson,
+    color: "#64A4BB",
+    zIndex: 0,
+    extrude: 0.2
   })
   
 
@@ -129,6 +146,27 @@ const sendTreeRequest = async () => {
 }
 
 
+const sendDrivingLaneRequestTHREE = async () => {
+  const drivingLanedata: {lane:FeatureCollection, polygon: FeatureCollection} = await getDrivingLaneFromDB(store.state.aoi.projectSpecification.project_id)
+  console.log(drivingLanedata.lane)
+  addPolygonsFromCoordsAr({
+    scene: threeJsScene,
+    bbox: store.state.aoi.projectSpecification.bbox,
+    geoJson: drivingLanedata.polygon,
+    color: "#262829",
+    zIndex: 0,
+    extrude: 0.12
+  })
+  addLineFromCoordsAr({
+    scene: threeJsScene,
+    bbox: store.state.aoi.projectSpecification.bbox,
+    geoJson: drivingLanedata.lane,
+    color: "#ffffff",
+    zIndex: 0.15,
+    extrude: 0.2
+  })
+
+}
 const sendDrivingLaneRequest = async () => {
   const drivingLanedata = await getDrivingLaneFromDB(store.state.aoi.projectSpecification.project_id)
 
@@ -136,7 +174,7 @@ const sendDrivingLaneRequest = async () => {
     id: "driving_lane_polygon",
     geojson: {
       "type": "geojson",
-      "data": drivingLanedata.data.polygon
+      "data": drivingLanedata.polygon
     }
   })
   store.commit("map/addLayer", {
@@ -153,7 +191,7 @@ const sendDrivingLaneRequest = async () => {
     id: "driving_lane",
     geojson: {
       "type": "geojson",
-      "data": drivingLanedata.data.lane
+      "data": drivingLanedata.lane
     }
   })
   store.commit("map/addLayer", {

@@ -419,7 +419,11 @@ export async function getDrivingLaneFromOSM(bbox: BoundingBox, projectId: string
 
 export async function getDrivingLaneFromDB(projectId: string) {
   const response = await HTTP.post("get-driving-lane-from-db", projectId);
-  return response;
+  return response.data;
+}
+export async function getWaterFromDB(projectId: string) {
+  const response = await HTTP.post("get-water-from-db", projectId);
+  return response.data;
 }
 
 export async function getTrafficLightsFromOSM(bbox: BoundingBox,projectId: string) {
@@ -451,4 +455,12 @@ export async function getTrafficSignalFromDB(projectId: string) {
 export async function getRoutesFromDB(projectId: string) {
   const response = await HTTP.post("get-routes-from-db", projectId);
   return response;
+}
+
+
+export async function getWaterFromOSM(bbox: BoundingBox,projectId: string) {
+  HTTP.post("get-water-from-osm", {
+    bbox: bbox,
+    projectId: projectId,
+  }).then(() => store.dispatch("aoi/setDataIsLoaded"));
 }

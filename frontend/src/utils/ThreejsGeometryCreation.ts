@@ -1,9 +1,12 @@
 import type { BoundingBox } from "@/store/modules/aoi";
 import type { Feature, FeatureCollection, Polygon, Position } from "@turf/turf";
 import maplibregl, { MercatorCoordinate, type LngLatLike } from "maplibre-gl";
-import type { BufferGeometry, Group } from "three";
+import { DoubleSide, Vector2, Vector3, type BufferGeometry, type Group } from "three";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
+import { Line2 } from 'three/examples/jsm/lines/Line2.js';
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 
 type TransformationWrapper = {
   position: number[];
@@ -15,28 +18,75 @@ type Mesh = {
   geometry: BufferGeometry;
   material: [];
 };
-export interface THREEPolygonSettings{
+export interface THREEGeoSettings {
   scene: THREE.Scene, bbox: BoundingBox, geoJson: FeatureCollection, color: string, zIndex: number, extrude: number
 }
-export function addPolygonsFromCoordsAr(settings: THREEPolygonSettings): void {
+export function addLineFromCoordsAr(settings: THREEGeoSettings): void {
+  // const material = new THREE.LineBasicMaterial({ color: 0xffffff });
+  let matLine = new LineMaterial( {
+
+    color: 0xffffff,
+    linewidth: 1, // in world units with size attenuation, pixels otherwise
+    worldUnits: true,
+    vertexColors: false,
+
+    resolution: new Vector2(1,1), // to be set by renderer, eventually
+    dashed: true,
+    gapSize:1,
+    dashSize:3,
+    alphaToCoverage: true,
+  } );
   
-  const material = new THREE.MeshStandardMaterial({ color: settings.color, side: THREE.DoubleSide })//THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
-  settings.geoJson.features.forEach((feature: Feature, index: number) => {
-    console.log(index + ": " + feature.geometry)
+  const material = new THREE.LineDashedMaterial( {
+    color: settings.color,
+    linewidth: 10,
+    scale: 1,
+    dashSize: 5,
+    gapSize: 2,
+  } );
+  // let geometry: BufferGeometry = new THREE.BufferGeometry()
+  matLine.side = THREE.DoubleSide
+  settings.geoJson.features.forEach((feature: Feature) => {
+    const points: number[] = []
+    feature.geometry.coordinates.forEach((coord: Position) => {
+      let point = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), settings.bbox)
+      points.push(point.x, point.y, point.z)
+      // console.log(worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), settings.bbox))
+    })
+    // console.log(points)
+    //geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const lineGeo = new LineGeometry ();
+    lineGeo.setPositions( points );
+    // lineGeo.normalizeNormals();
+    // debugger
+    // lineGeo.computeVertexNormals();
+    // lineGeo.rotateX(Math.PI/2)
+    const line = new Line2( lineGeo, matLine );
+    line.computeLineDistances()
+    settings.scene.add(line);
+    
+
+  })
+  
+
+}
+export function addPolygonsFromCoordsAr(settings: THREEGeoSettings): void {
+
+  const material = new THREE.MeshStandardMaterial({ color: settings.color, side: DoubleSide })//A4766D E9E9DD E8D3B0 8697AF 4A5666 2C343D
+  settings.geoJson.features.forEach((feature: Feature) => {
+    console.log(feature.geometry)
     const vertAr: THREE.Vector2[] = []
-    feature.geometry.coordinates[0].forEach((coord: Position, index: number) => {
-      console.log(index + ": " + coord)
+    feature.geometry.coordinates[0].forEach((coord: Position) => {
+      // console.log(coord)
       let pos: THREE.Vector3 = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), settings.bbox)
       // console.log(pos)
-      vertAr.push(new THREE.Vector2(pos.z, pos.x))
+      vertAr.push(new THREE.Vector2(pos.x, pos.z))
 
     })
-
     const shape = new THREE.Shape(vertAr);
     let geometry: BufferGeometry
     if (settings.extrude == 0) {
       geometry = new THREE.ShapeGeometry(shape, 0);
-      // .rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2)
     }
     else {
       const extrudeSettings = {
@@ -49,30 +99,13 @@ export function addPolygonsFromCoordsAr(settings: THREEPolygonSettings): void {
         bevelSegments: 1
       };
       geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings)
-      // geometry.translate(0, 0,100)
-      
+
     }
-    //const material = new THREE.MeshBasicMaterial({ color: 0x2C343D, side: THREE.DoubleSide });//A4766D E9E9DD E8D3B0 8697AF 4A5666 2C343D
-    geometry.rotateX(-Math.PI / 2)
-    // geometry.computeVertexNormals()
+    geometry.rotateX(Math.PI / 2)
     const mesh = new THREE.Mesh(geometry, material);
-    mesh.translateY(settings.extrude/2)
-    // mesh.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2)
+    mesh.translateY(settings.extrude / 2)
     settings.scene.add(mesh)
   })
-  // for (let index = 0; index < geoJson.features.length; index++) {
-  //   let pos: THREE.Vector3 = worldPointInRelativeCoord(geoJson.features[index].geometry.coordinates, bbox)
-  //   //console.log(pos)
-  //   vertAr.push(new THREE.Vector2(pos.z, pos.x))
-  // }
-  // //console.log(vertAr)
-  // const shape = new THREE.Shape(vertAr);
-  // const geometry = new THREE.ShapeGeometry(shape);
-  // geometry.rotateX(Math.PI / 2)// .rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2)
-  // const material = new THREE.MeshBasicMaterial({ color: 0x2C343D, side: THREE.DoubleSide });//A4766D E9E9DD E8D3B0 8697AF 4A5666 2C343D
-  // const mesh = new THREE.Mesh(geometry, material);
-  // // mesh.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2)
-  // scene.add(mesh)
 }
 
 export function addGeoOnPointsToThreejsScene(
@@ -113,10 +146,21 @@ function worldPointInRelativeCoord(LngLatPoint: LngLatLike, bbox: BoundingBox) {
   let objectCords = localCordsFromWorldCords(LngLatPoint, 0);
 
   const relativePosition: THREE.Vector3 = new THREE.Vector3(
-    ((wrapperCords.x-objectCords.x) * 1) / wrapperCords.meterInMercatorCoordinateUnits(),
-    0,
+    
     ((wrapperCords.y - objectCords.y) * 1) / wrapperCords.meterInMercatorCoordinateUnits(),
+    0,
+    (( objectCords.x- wrapperCords.x) * 1) / wrapperCords.meterInMercatorCoordinateUnits()
+    
   );
+  // const relativePosition: THREE.Vector3 = new THREE.Vector3(
+    
+    
+    
+  //   (( objectCords.x- wrapperCords.x) * 1) / wrapperCords.meterInMercatorCoordinateUnits(),
+  //   ((wrapperCords.y - objectCords.y) * 1) / wrapperCords.meterInMercatorCoordinateUnits(),
+  //   0,
+    
+  // );
   return relativePosition
 }
 

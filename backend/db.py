@@ -323,6 +323,15 @@ def drop_traffic_signal_table(projectId):
   cursor.close()
   connection.close()
 
+def drop_water_table(projectId):
+  connection = connect()
+  cursor = connection.cursor()
+  drop_water_table_query =f''' delete from water where project_id='{projectId}';'''
+  cursor.execute(drop_water_table_query)
+  connection.commit()
+  cursor.close()
+  connection.close()
+
 def get_traffic_signal_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
@@ -359,6 +368,23 @@ def get_routes_from_db(projectId):
         'features', json_agg(ST_AsGeoJSON(routes.*)::json)
         )
         from routes
+        where project_id = '{projectId}'
+      ;
+  '''
+  cursor.execute(get_routes_query)
+  routes = cursor.fetchall()[0][0]
+  cursor.close()
+  connection.close()
+  return routes
+
+def get_water_from_db(projectId):
+  connection = connect()
+  cursor = connection.cursor()
+  get_routes_query = f''' select json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(ST_AsGeoJSON(water.*)::json)
+        )
+        from water
         where project_id = '{projectId}'
       ;
   '''

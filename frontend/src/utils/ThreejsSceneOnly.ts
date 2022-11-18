@@ -28,13 +28,14 @@ export class ThreeJsScene extends Scene {
 }
 
 const mainScene = new ThreeJsScene();
-const mainCamera = new THREE.Camera();
+const mainCamera = new THREE.PerspectiveCamera()
 let mainRenderer = new THREE.WebGLRenderer()
 
 export function getProjectionMatrix(
   modelAsMercatorCoordinate: maplibregl.MercatorCoordinate,
   matrix: glMatrix.mat4
 ): THREE.Matrix4 {
+  //  const sceneRotate = [0, 0, 0];
   const sceneRotate = [Math.PI / 2, Math.PI / 2, 0];
   // transformation parameters to position, rotate and scale the 3D scene onto the map
   const modelTransform = {
@@ -106,7 +107,7 @@ export const ThreejsSceneOnly = (lng: number, lat: number) => {
         context: gl,
         antialias: true,
       });
-
+      
       mainRenderer.outputEncoding = THREE.sRGBEncoding;
       mainRenderer.autoClear = false;
     },
@@ -116,8 +117,8 @@ export const ThreejsSceneOnly = (lng: number, lat: number) => {
         modelAsMercatorCoordinate,
         matrix
       );
-
-      //this.renderer.state.reset();
+      // console.log(mainCamera.position)
+      // mainRenderer.state.reset();
       mainRenderer.resetState();
       mainRenderer.render(mainScene, mainCamera);
       // console.count("triggerRepaint")

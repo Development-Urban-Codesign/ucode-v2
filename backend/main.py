@@ -34,7 +34,9 @@ from db import (
     drop_traffic_signal_table,
     get_traffic_signal_from_db,
     get_project_specification_from_db,
-    get_routes_from_db
+    get_routes_from_db,
+    drop_water_table,
+    get_water_from_db
 
 )
 from db_migrations import run_database_migrations
@@ -666,3 +668,116 @@ async def get_routes_from_db_api(request: Request):
     projectId = await request.json()
     return get_routes_from_db(projectId)
 
+@app.post("/get-water-from-db")
+async def get_water_from_db_api(request: Request):
+    projectId = await request.json()
+    return get_water_from_db(projectId)
+
+@app.post("/get-water-from-osm")
+async def get_water_from_osm_api(request: Request):
+    data = await request.json()
+    projectId = data["projectId"] 
+    drop_water_table(projectId)
+    xmin = data["bbox"]["xmin"]
+    ymin = data["bbox"]["ymin"]
+    xmax = data["bbox"]["xmax"]
+    ymax = data["bbox"]["ymax"]
+    
+
+    overpass_url = "http://overpass-api.de/api/interpreter"
+    overpass_query_water = f"""
+        [out:json];
+        
+        way["natural"="water"]({ymin},{xmin},{ymax},{xmax});
+        (._;>;);
+        out geom;
+    """
+    overpass_query_water_outer = f"""
+        [out:json];
+        relation["natural"="water"]({ymin},{xmin},{ymax},{xmax})-> .relation;
+        way(r.relation:"outer");
+        (._;>;);
+        out geom;
+    """
+    overpass_query_water_inner = f"""
+        [out:json];
+        relation["natural"="water"]({ymin},{xmin},{ymax},{xmax})-> .relation;
+        way(r.relation:"inner");
+        (._;>;);
+        out geom;
+    """
+
+    response_water = requests.get(
+        overpass_url, params={"data": overpass_query_water}
+    )
+    response_water_multiPolygon_outer = requests.get(
+        overpass_url, params={"data": overpass_query_water_outer}
+    )
+    response_water_multiPolygon_inner = requests.get(
+        overpass_url, params={"data": overpass_query_water_inner}
+    )
+    data_water = osmtogeojson.process_osm_json(response_water.json())
+    data_water_outer = osmtogeojson.process_osm_json(response_water_multiPolygon_outer.json())
+    data_water_inner = osmtogeojson.process_osm_json(response_water_multiPolygon_inner.json())
+
+    connection = connect()
+    cursor = connection.cursor()
+    insert_query_water = """
+        INSERT INTO water (project_id, geom) VALUES (%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
+
+    """
+    print("outer: " )
+    print(data_water_outer)
+    # print("inner: " )
+    # print(data_water_inner)
+    
+    for f in data_water_outer["features"]:
+        if(f["geometry"]["type"]=="LineString"):
+            f["geometry"]["type"] = "Polygon"
+            f["geometry"]["coordinates"] = [f["geometry"]["coordinates"]]
+            geom = json.dumps(f["geometry"])
+            cursor.execute(
+            insert_query_water,
+            (projectId,
+            geom
+            ))
+        elif(f["geometry"]["type"]=="Polygon"):
+            geom = json.dumps(f["geometry"])
+            cursor.execute(
+            insert_query_water,
+            (projectId,
+            geom
+            ))
+
+        # elif(f["type"]=="Feature"):
+        #     for f in f["geometry"]:
+        #         print(f)
+        #     if(f["type"]=="LineString"):
+        #         f["geometry"]["type"] = "Polygon"
+        #         f["geometry"]["coordinates"] = [f["geometry"]["coordinates"]]
+        #         geom = json.dumps(f["geometry"])
+            
+        # if(f["type"]=="GeometryCollection"):
+        #     print("hey")
+    # for f in data_water_inner["features"]:
+    #     print(f)
+    #     f["geometry"]["type"] = "Polygon"
+    #     f["geometry"]["coordinates"] = [f["geometry"]["coordinates"]]
+    #     geom = json.dumps(f["geometry"])
+    # for f in data_water["features"]:
+        
+    #     f["geometry"]["type"] = "Polygon"
+    #     f["geometry"]["coordinates"] = [f["geometry"]["coordinates"]]
+    #     geom = json.dumps(f["geometry"])
+        
+        # cursor.execute(
+        #     insert_query_water,
+        #     (projectId,
+        #     geom
+        #     ),
+        # )
+    
+    connection.commit()
+    cursor.close()
+    connection.close()
+    return "gg"
