@@ -19,15 +19,15 @@ let threeJsScene: any;
 
 const emit = defineEmits(["addLayer", "addImage", "triggerRepaint"]);
 const populateMap = async () => {
-  // await sendBuildingRequest();
+  await sendBuildingRequest();
   await createEmptyThreeJsScene();
-  // // await sendGreeneryRequest();
-  // await sendGreeneryRequestTHREE();
-  // await sendTrafficSignalRequest();
-  // //  await sendDrivingLaneRequest();
-  // await sendDrivingLaneRequestTHREE();
-  // await createEmptyThreeJsScene();
-  // await sendTreeRequest();
+  // await sendGreeneryRequest();
+  await sendGreeneryRequestTHREE();
+  await sendTrafficSignalRequest();
+  //  await sendDrivingLaneRequest();
+  await sendDrivingLaneRequestTHREE();
+  await createEmptyThreeJsScene();
+  await sendTreeRequest();
   await sendWaterRequestTHREE();
   await createAoiPlane();
   store.dispatch("aoi/setMapIsPopulated");
@@ -79,7 +79,7 @@ const sendWaterRequestTHREE = async () => {
     geoJson: waterJson,
     color: "#64A4BB",
     zIndex: 0,
-    extrude: 0.2
+    extrude: 0.12
   })
   
 
@@ -155,7 +155,7 @@ const sendDrivingLaneRequestTHREE = async () => {
     geoJson: drivingLanedata.polygon,
     color: "#262829",
     zIndex: 0,
-    extrude: 0.12
+    extrude: 0.15
   })
   addLineFromCoordsAr({
     scene: threeJsScene,

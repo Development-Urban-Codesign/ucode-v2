@@ -685,98 +685,62 @@ async def get_water_from_osm_api(request: Request):
     
 
     overpass_url = "http://overpass-api.de/api/interpreter"
+    
     overpass_query_water = f"""
         [out:json];
-        
         way["natural"="water"]({ymin},{xmin},{ymax},{xmax});
+        relation["natural"="water"]({ymin},{xmin},{ymax},{xmax});
         (._;>;);
         out geom;
     """
-    overpass_query_water_outer = f"""
-        [out:json];
-        relation["natural"="water"]({ymin},{xmin},{ymax},{xmax})-> .relation;
-        way(r.relation:"outer");
-        (._;>;);
-        out geom;
-    """
-    overpass_query_water_inner = f"""
-        [out:json];
-        relation["natural"="water"]({ymin},{xmin},{ymax},{xmax})-> .relation;
-        way(r.relation:"inner");
-        (._;>;);
-        out geom;
-    """
-
+    
+    
     response_water = requests.get(
         overpass_url, params={"data": overpass_query_water}
     )
-    response_water_multiPolygon_outer = requests.get(
-        overpass_url, params={"data": overpass_query_water_outer}
-    )
-    response_water_multiPolygon_inner = requests.get(
-        overpass_url, params={"data": overpass_query_water_inner}
-    )
+    
     data_water = osmtogeojson.process_osm_json(response_water.json())
-    data_water_outer = osmtogeojson.process_osm_json(response_water_multiPolygon_outer.json())
-    data_water_inner = osmtogeojson.process_osm_json(response_water_multiPolygon_inner.json())
-
+    
     connection = connect()
     cursor = connection.cursor()
     insert_query_water = """
         INSERT INTO water (project_id, geom) VALUES (%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
 
     """
-    print("outer: " )
-    print(data_water_outer)
-    # print("inner: " )
-    # print(data_water_inner)
     
-    for f in data_water_outer["features"]:
-        if(f["geometry"]["type"]=="LineString"):
-            f["geometry"]["type"] = "Polygon"
-            f["geometry"]["coordinates"] = [f["geometry"]["coordinates"]]
-            geom = json.dumps(f["geometry"])
+    for f in data_water["features"]:
+        if(f["geometry"]["type"]=="GeometryCollection"):
+            polygon = {"type": "Polygon", "coordinates": []}
+            outerPolygon = {"type": "Polygon", "coordinates": []}
+            for g in f["geometry"]["geometries"]:
+                if(g["type"]=="LineString"):
+                    outerPolygon["coordinates"] += g["coordinates"]
+                # if(g["type"]=="Polygon"):
+                #     multipolygon["coordinates"].append(g["coordinates"])
+            polygon["coordinates"] = [outerPolygon["coordinates"]]
+            
+            for g in f["geometry"]["geometries"]:
+                if(g["type"]=="Polygon"):
+                    polygon["coordinates"].append(g["coordinates"][0])
+
+            # print(polygon)
+            geom = json.dumps(polygon)
             cursor.execute(
             insert_query_water,
             (projectId,
             geom
             ))
         elif(f["geometry"]["type"]=="Polygon"):
+            
             geom = json.dumps(f["geometry"])
             cursor.execute(
             insert_query_water,
             (projectId,
             geom
             ))
+        else:
+            print(f'''Some other type in Waterpolygons: {f["geometry"]["type"]}''')
 
-        # elif(f["type"]=="Feature"):
-        #     for f in f["geometry"]:
-        #         print(f)
-        #     if(f["type"]=="LineString"):
-        #         f["geometry"]["type"] = "Polygon"
-        #         f["geometry"]["coordinates"] = [f["geometry"]["coordinates"]]
-        #         geom = json.dumps(f["geometry"])
-            
-        # if(f["type"]=="GeometryCollection"):
-        #     print("hey")
-    # for f in data_water_inner["features"]:
-    #     print(f)
-    #     f["geometry"]["type"] = "Polygon"
-    #     f["geometry"]["coordinates"] = [f["geometry"]["coordinates"]]
-    #     geom = json.dumps(f["geometry"])
-    # for f in data_water["features"]:
-        
-    #     f["geometry"]["type"] = "Polygon"
-    #     f["geometry"]["coordinates"] = [f["geometry"]["coordinates"]]
-    #     geom = json.dumps(f["geometry"])
-        
-        # cursor.execute(
-        #     insert_query_water,
-        #     (projectId,
-        #     geom
-        #     ),
-        # )
-    
     connection.commit()
     cursor.close()
     connection.close()

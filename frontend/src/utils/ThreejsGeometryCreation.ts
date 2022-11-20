@@ -1,7 +1,7 @@
 import type { BoundingBox } from "@/store/modules/aoi";
-import type { Feature, FeatureCollection, Polygon, Position } from "@turf/turf";
+import type { Feature, FeatureCollection, Geometry, Position, Properties } from "@turf/turf";
 import maplibregl, { MercatorCoordinate, type LngLatLike } from "maplibre-gl";
-import { DoubleSide, Vector2, Vector3, type BufferGeometry, type Group } from "three";
+import { DoubleSide, Vector2, type BufferGeometry, type Group } from "three";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
@@ -21,7 +21,7 @@ type Mesh = {
 export interface THREEGeoSettings {
   scene: THREE.Scene, bbox: BoundingBox, geoJson: FeatureCollection, color: string, zIndex: number, extrude: number
 }
-export function addLineFromCoordsAr(settings: THREEGeoSettings): void {
+export function addLineFromCoordsAr(settings: THREEGeoSettings): void {//Lines not working due to Camera not being moved
   // const material = new THREE.LineBasicMaterial({ color: 0xffffff });
   let matLine = new LineMaterial( {
 
@@ -72,18 +72,29 @@ export function addLineFromCoordsAr(settings: THREEGeoSettings): void {
 }
 export function addPolygonsFromCoordsAr(settings: THREEGeoSettings): void {
 
-  const material = new THREE.MeshStandardMaterial({ color: settings.color, side: DoubleSide })//A4766D E9E9DD E8D3B0 8697AF 4A5666 2C343D
+  const material = new THREE.MeshStandardMaterial({ color: settings.color, side: DoubleSide })
   settings.geoJson.features.forEach((feature: Feature) => {
-    console.log(feature.geometry)
+    // console.log(feature.geometry)
     const vertAr: THREE.Vector2[] = []
-    feature.geometry.coordinates[0].forEach((coord: Position) => {
-      // console.log(coord)
-      let pos: THREE.Vector3 = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), settings.bbox)
-      // console.log(pos)
+    const holeAr: THREE.Vector2[][] = [[]]
+    feature.geometry.coordinates[0].forEach((coord: Position) => {// console.log(coord)
+      let pos: THREE.Vector3 = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), settings.bbox)// console.log(pos)
       vertAr.push(new THREE.Vector2(pos.x, pos.z))
 
     })
     const shape = new THREE.Shape(vertAr);
+    //Create holes in geometry
+    if(feature.geometry.coordinates.length > 1){
+      for (let index = 1; index < feature.geometry.coordinates.length; index++) {
+        let pathPoints: THREE.Vector2[] = []
+        feature.geometry.coordinates[index].forEach((coord: Position) => {
+          let pos: THREE.Vector3 = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), settings.bbox)// console.log(pos)
+          pathPoints.push(new THREE.Vector2(pos.x,pos.z))
+        })
+        let path = new THREE.Path(pathPoints)
+        shape.holes[index-1]=path
+      }
+    }    
     let geometry: BufferGeometry
     if (settings.extrude == 0) {
       geometry = new THREE.ShapeGeometry(shape, 0);
