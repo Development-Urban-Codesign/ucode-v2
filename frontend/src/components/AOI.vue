@@ -51,11 +51,13 @@ const sendBuildingRequestTHREE = async () => {
     scene: threeJsScene,
     bbox: store.state.aoi.projectSpecification.bbox,
     geoJson: buildingData,
-    color: "",
+    color: ['#C8D6E8', '#A5B1C2', '#BAC3C9'],
     zIndex: 0,
     extrude: .99
   })
-
+  // let colorPalette = ['#F3E6D6', '#DED4C6', '#EEE9E2'];//yellowish
+  //  const colorPalette = ['#C8D6E8', '#A5B1C2', '#BAC3C9'];//blueish
+  // const colorPalette = ['#E9B9B9', '#EBC8BC', '#F5C4BE'];//redish
 };
 const sendBuildingRequest = async () => {
   const newLayer = await getbuildingsFromDB(store.state.aoi.projectSpecification.project_id);
