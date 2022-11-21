@@ -20,139 +20,47 @@ type Mesh = {
   material: [];
 };
 export interface THREEGeoSettings {
-  scene: THREE.Scene, bbox: BoundingBox, geoJson: FeatureCollection, color: string, zIndex: number, extrude: number
+  scene: THREE.Scene, bbox: BoundingBox, geoJson: FeatureCollection, color: string | string[], zIndex: number, extrude: number
 }
-export function addLineFromCoordsAr(settings: THREEGeoSettings): void {//Lines not working due to Camera not being moved
-  // const material = new THREE.LineBasicMaterial({ color: 0xffffff });
-  let matLine = new LineMaterial({
 
-    color: 0xffffff,
-    linewidth: 1, // in world units with size attenuation, pixels otherwise
-    worldUnits: true,
-    vertexColors: false,
-
-    resolution: new Vector2(1, 1), // to be set by renderer, eventually
-    dashed: true,
-    gapSize: 1,
-    dashSize: 3,
-    alphaToCoverage: true,
-  });
-
-  const material = new THREE.LineDashedMaterial({
-    color: settings.color,
-    linewidth: 10,
-    scale: 1,
-    dashSize: 5,
-    gapSize: 2,
-  });
-  // let geometry: BufferGeometry = new THREE.BufferGeometry()
-  matLine.side = THREE.DoubleSide
-  settings.geoJson.features.forEach((feature: Feature) => {
-    const points: number[] = []
-    feature.geometry.coordinates.forEach((coord: Position) => {
-      let point = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), settings.bbox)
-
-
-      points.push(point.x, point.y, point.z)
-      // console.log(worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), settings.bbox))
-    })
-    // console.log(points)
-    //geometry = new THREE.BufferGeometry().setFromPoints(points);
-    const lineGeo = new LineGeometry();
-    lineGeo.setPositions(points);
-
-    // lineGeo.normalizeNormals();
-    // debugger
-    // lineGeo.computeVertexNormals();
-    // lineGeo.rotateX(Math.PI/2)
-    const line = new Line2(lineGeo, matLine);
-    line.computeLineDistances()
-    line.updateMorphTargets()
-    settings.scene.add(line);
-
-
-  })
-}
 export function addPolygonsFromCoordsAr(settings: THREEGeoSettings): void {
   let polygeom = new THREE.BufferGeometry()
   //let shapes: THREE.Shape[] =[]
-  let geoms: THREE.BufferGeometry[][] = settings.extrude==.99? [[],[],[]]:[[]]
-  // let colorPalette = ['#F3E6D6', '#DED4C6', '#EEE9E2'];//yellowish
-  const colorPalette = ['#C8D6E8', '#A5B1C2', '#BAC3C9'];//blueish
-  // const colorPalette = ['#E9B9B9', '#EBC8BC', '#F5C4BE'];//redish
+  // console.log(settings.color.length)
+  let geoms: THREE.BufferGeometry[][] = settings.color instanceof Array ? [[], [], []] : [[]]
+  if (settings.color instanceof Array) {
+    geoms = createGeometryForBuildings(settings)
+  }
+  else{
   settings.geoJson.features.forEach((feature: Feature) => {
     if (feature.geometry.type !== "Polygon" || feature.geometry.coordinates.length == 0) {
       return
     }
-    // console.log(feature.geometry)
-    const vertAr: THREE.Vector2[] = []
-    feature.geometry.coordinates[0].forEach((coord: Position) => {// console.log(coord)
-      let pos: THREE.Vector3 = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), settings.bbox)// console.log(pos)
-      vertAr.push(new THREE.Vector2(pos.x, pos.z))
-
-    })
-    const shape = new THREE.Shape(vertAr);
-    //Create holes in geometry
-    if (feature.geometry.coordinates.length > 1) {
-      for (let index = 1; index < feature.geometry.coordinates.length; index++) {
-        let pathPoints: THREE.Vector2[] = []
-        feature.geometry.coordinates[index].forEach((coord: Position) => {
-          let pos: THREE.Vector3 = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), settings.bbox)// console.log(pos)
-          pathPoints.push(new THREE.Vector2(pos.x, pos.z))
-        })
-        let path = new THREE.Path(pathPoints)
-        shape.holes[index - 1] = path
-      }
-    }    //shapes.push(shape)
     let geometry: BufferGeometry
 
     if (settings.extrude == 0) {
-      geometry = new THREE.ShapeGeometry(shape, 0);
+      geometry = new THREE.ShapeGeometry(createSinglePolygon(feature, settings.bbox), 0);
       geoms[0].push(geometry)
-    }
-    else if (settings.extrude == .99) {
-      const extrudeSettings = {
-        steps: 1,
-        depth: feature.properties?.estimatedheight,
-        bevelEnabled: true,
-        bevelThickness: .2,
-        bevelSize: .2,
-        bevelOffset: 0,
-        bevelSegments: 1
-      };
-      geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings)
-      geometry.translate(0, 0, -feature.properties?.estimatedheight)
-
-      const randomColoreFromColorPalette = () => {
-        const lengthColors = colorPalette.length;
-        return colorPalette[Math.floor(Math.random() * lengthColors)];
-      }
-      let color = randomColoreFromColorPalette()
-      for (let index = 0; index < colorPalette.length; index++) {
-        if (color == colorPalette[index]) {
-          geoms[index].push(geometry)
-        }
-      }
     }
     else {
       const extrudeSettings = {
         steps: 1,
         depth: settings.extrude,
         bevelEnabled: false,
-        bevelThickness: settings.extrude,
+        bevelThickness: 0,
         bevelSize: 0,
         bevelOffset: 0,
         bevelSegments: 1
       };
-      geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings)
+      geometry = new THREE.ExtrudeGeometry(createSinglePolygon(feature, settings.bbox), extrudeSettings)
       geoms[0].push(geometry)
     }
     geometry.rotateX(Math.PI / 2)
-  })
+  })}
   // console.log(geoms)
   geoms.forEach((geom, index) => {
     polygeom = BufferGeometryUtils.mergeBufferGeometries(geom)
-    let material = new THREE.MeshStandardMaterial({ color: geoms.length == 1? settings.color : colorPalette[index], side: DoubleSide, roughness: 1 })
+    let material = new THREE.MeshStandardMaterial({ color: geoms.length == 1 ? settings.color : settings.color[index], side: DoubleSide, roughness: 1 })
 
     const mesh = new THREE.Mesh(polygeom, material);
     if (settings.extrude == .99) {
@@ -374,4 +282,108 @@ export function localCordsFromWorldCords(
   height = 0
 ): MercatorCoordinate {
   return maplibregl.MercatorCoordinate.fromLngLat(worldCords, height);
+}
+function createSinglePolygon(feature: Feature, bbox: BoundingBox) {
+  const vertAr: THREE.Vector2[] = []
+  feature.geometry.coordinates[0].forEach((coord: Position) => {
+    let pos: THREE.Vector3 = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), bbox)
+    vertAr.push(new THREE.Vector2(pos.x, pos.z))
+  })
+  const shape = new THREE.Shape(vertAr);
+  //Create holes in geometry
+  if (feature.geometry.coordinates.length > 1) {
+    for (let index = 1; index < feature.geometry.coordinates.length; index++) {
+      let pathPoints: THREE.Vector2[] = []
+      feature.geometry.coordinates[index].forEach((coord: Position) => {
+        let pos: THREE.Vector3 = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), bbox)// console.log(pos)
+        pathPoints.push(new THREE.Vector2(pos.x, pos.z))
+      })
+      let path = new THREE.Path(pathPoints)
+      shape.holes[index - 1] = path
+    }
+  }
+  return shape
+}
+
+function createGeometryForBuildings(settings: THREEGeoSettings) {
+  let geoms: THREE.BufferGeometry[][] = [[], [], []]
+  settings.geoJson.features.forEach((feature: Feature) => {
+    if (feature.geometry.type !== "Polygon" || feature.geometry.coordinates.length == 0) {
+      return
+    }
+    const extrudeSettings = {
+      steps: 1,
+      depth: feature.properties?.estimatedheight,
+      bevelEnabled: true,
+      bevelThickness: .2,
+      bevelSize: .2,
+      bevelOffset: 0,
+      bevelSegments: 1
+    };
+
+    let geometry = new THREE.ExtrudeGeometry(createSinglePolygon(feature, settings.bbox), extrudeSettings)
+    geometry.translate(0, 0, -feature.properties?.estimatedheight)
+    geometry.rotateX(Math.PI / 2)
+    const randomColoreFromColorPalette = () => {
+      const lengthColors = settings.color.length;
+      return settings.color[Math.floor(Math.random() * lengthColors)];
+    }
+    let color = randomColoreFromColorPalette()
+    for (let index = 0; index < settings.color.length; index++) {
+      if (color == settings.color[index]) {
+        geoms[index].push(geometry)
+      }
+    }
+  })
+  return geoms
+}
+
+export function addLineFromCoordsAr(settings: THREEGeoSettings): void {//Lines not working due to Camera not being moved
+  // const material = new THREE.LineBasicMaterial({ color: 0xffffff });
+  let matLine = new LineMaterial({
+
+    color: 0xffffff,
+    linewidth: 1, // in world units with size attenuation, pixels otherwise
+    worldUnits: true,
+    vertexColors: false,
+
+    resolution: new Vector2(1, 1), // to be set by renderer, eventually
+    dashed: true,
+    gapSize: 1,
+    dashSize: 3,
+    alphaToCoverage: true,
+  });
+
+  const material = new THREE.LineDashedMaterial({
+    color: settings.color,
+    linewidth: 10,
+    scale: 1,
+    dashSize: 5,
+    gapSize: 2,
+  });
+  // let geometry: BufferGeometry = new THREE.BufferGeometry()
+  matLine.side = THREE.DoubleSide
+  settings.geoJson.features.forEach((feature: Feature) => {
+    const points: number[] = []
+    feature.geometry.coordinates.forEach((coord: Position) => {
+      let point = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), settings.bbox)
+
+
+      points.push(point.x, point.y, point.z)
+      // console.log(worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), settings.bbox))
+    })
+    // console.log(points)
+    //geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const lineGeo = new LineGeometry();
+    lineGeo.setPositions(points);
+
+    // lineGeo.normalizeNormals();
+    // debugger
+    // lineGeo.computeVertexNormals();
+    // lineGeo.rotateX(Math.PI/2)
+    const line = new Line2(lineGeo, matLine);
+    line.computeLineDistances()
+    line.updateMorphTargets()
+    settings.scene.add(line);
+  })
 }
