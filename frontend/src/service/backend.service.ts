@@ -1,4 +1,3 @@
-import { BuildingFilter } from "@/deckgl/building-filter";
 import { PolygonLayer} from "@deck.gl/layers/typed";
 import { MapboxLayer } from "@deck.gl/mapbox/typed";
 import { ScenegraphLayer } from "@deck.gl/mesh-layers/typed";
@@ -9,6 +8,10 @@ import type {BoundingBox } from "@/store/modules/aoi"
 
 export async function getQuestsFromDB(projectId: string) {
   const response = await HTTP.post("get-quests-from-db", projectId);
+  return response.data;
+}
+export async function getbuildingsDataFromDB(projectId: string) {
+  const response = await HTTP.post("get-buildings-from-db", projectId);
   return response.data;
 }
 export async function getbuildingsFromDB(projectId: string) {
@@ -236,7 +239,7 @@ export async function getbuildingsFromDB(projectId: string) {
     feature.properties.color = randomColoreFromColorPalette();
     
   })
-
+  
   return {
     id: "overpass_buildings",
     type: 'fill-extrusion',
@@ -433,6 +436,10 @@ export async function getTrafficLightsFromOSM(bbox: BoundingBox,projectId: strin
   }).then(() => store.dispatch("aoi/setDataIsLoaded"));
 }
 
+export async function getTrafficSignalDataFromDB(projectId: string) {
+  const response = await HTTP.post("get-traffic-signal-from-db", projectId);
+  return response.data}
+  
 export async function getTrafficSignalFromDB(projectId: string) {
   const response = await HTTP.post("get-traffic-signal-from-db", projectId);
   const trafficSignalLayer = new MapboxLayer({

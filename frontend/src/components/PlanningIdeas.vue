@@ -89,15 +89,16 @@ const sendRouteRequest = async () => {
             'line-cap': 'round',
         },
         'paint': {
-            'line-color': [
-                "match",
-                    ["get", "id"],
-                    1,
-                    "#d3504e",
-                    2,
-                    "#81d144",
-                    "#4e76d3",
-            ],//['get', 'color']
+            // 'line-color': [
+            //     "match",
+            //         ["get", "id"],
+            //         1,
+            //         "#d3504e",
+            //         2,
+            //         "#81d144",
+            //         "#4e76d3",
+            // ],//
+            'line-color':['get', 'color'],
             'line-width': 5,
             'line-offset': {
               property: "id",

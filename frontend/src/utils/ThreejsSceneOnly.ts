@@ -9,10 +9,10 @@ import type * as glMatrix from "gl-matrix";
 
 const hemiLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 0.5);
 
-const dirLight = new THREE.DirectionalLight(0xfffdda, 0.8);
-dirLight.color.setHSL(0.1, 1, 0.95);
+const dirLight = new THREE.DirectionalLight(0xFFFFFF, 0.8);
+// dirLight.color.setHSL(0.1, 1, 0.95);
 dirLight.position.set(-2, 3, 1);
-dirLight.position.multiplyScalar(300);
+dirLight.position.multiplyScalar(1);  
 
 export class ThreeJsScene extends Scene {
   constructor() {
@@ -28,7 +28,7 @@ export class ThreeJsScene extends Scene {
 }
 
 const mainScene = new ThreeJsScene();
-const mainCamera = new THREE.PerspectiveCamera()
+const mainCamera = new THREE.Camera()
 let mainRenderer = new THREE.WebGLRenderer()
 
 export function getProjectionMatrix(
@@ -117,6 +117,8 @@ export const ThreejsSceneOnly = (lng: number, lat: number) => {
         modelAsMercatorCoordinate,
         matrix
       );
+      // console.log(matrix)
+      mainCamera.updateWorldMatrix(true,true)
       // console.log(mainCamera.position)
       // mainRenderer.state.reset();
       mainRenderer.resetState();
