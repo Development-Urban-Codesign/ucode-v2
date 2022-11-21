@@ -85,7 +85,7 @@ export function getProjectionMatrix(
   return m.multiply(l);
 }
 
-export const ThreejsSceneOnly = (lng: number, lat: number) => {
+export const ThreejsSceneOnly = (lng: number, lat: number, customId?: string) => {
   const sceneAltitude = 0;
 
   const modelorigin: LngLatLike = maplibregl.LngLat.convert([lng, lat]);
@@ -96,7 +96,7 @@ export const ThreejsSceneOnly = (lng: number, lat: number) => {
 
   // configuration of the custom layer for a 3D model per the CustomLayerInterface
   const customLayer: CustomLayerInterface = {
-    id: "ThreeJsScene",
+    id: customId? customId:"ThreeJsScene",
     type: "custom",
     renderingMode: "3d",
     onAdd: function (map: Map, gl: any) {
@@ -127,5 +127,6 @@ export const ThreejsSceneOnly = (lng: number, lat: number) => {
       //this.map.triggerRepaint();
     },
   };
+  // console.log(customLayer.id)
   return { layer: customLayer, scene: mainScene };
 };
