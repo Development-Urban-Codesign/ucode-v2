@@ -52,7 +52,7 @@ const sendBuildingRequestTHREE = async () => {
     bbox: store.state.aoi.projectSpecification.bbox,
     geoJson: buildingData,
     color: ['#C8D6E8', '#A5B1C2', '#BAC3C9'],
-    zIndex: 0,
+    height: 0,
     extrude: .99
   })
   // let colorPalette = ['#F3E6D6', '#DED4C6', '#EEE9E2'];//yellowish
@@ -78,7 +78,7 @@ const sendGreeneryRequestTHREE = async () => {
     bbox: store.state.aoi.projectSpecification.bbox,
     geoJson: greeneryJson,
     color: "#9EBB64",
-    zIndex: 0,
+    height: 0,
     extrude: 0.1
   })
   
@@ -93,7 +93,7 @@ const sendWaterRequestTHREE = async () => {
     bbox: store.state.aoi.projectSpecification.bbox,
     geoJson: waterJson,
     color: "#64A4BB",
-    zIndex: 0,
+    height: 0,
     extrude: 0.12
   })
   
@@ -123,7 +123,7 @@ const createAoiPlane = async () => {
     bbox: store.state.aoi.projectSpecification.bbox,
     geoJson: data,
     color: "#E8E8E8",
-    zIndex: 0,
+    height: 0,
     extrude: 0
   })
 }
@@ -167,7 +167,7 @@ const sendDrivingLaneRequestTHREE = async () => {
     bbox: store.state.aoi.projectSpecification.bbox,
     geoJson: drivingLanedata.polygon,
     color: "#262829",
-    zIndex: 0,
+    height: 0,
     extrude: 0.15
   })
   addLineFromCoordsAr({
@@ -175,7 +175,7 @@ const sendDrivingLaneRequestTHREE = async () => {
     bbox: store.state.aoi.projectSpecification.bbox,
     geoJson: drivingLanedata.lane,
     color: "#ffffff",
-    zIndex: 0.15,
+    height: 0.15,
     extrude: 0.2
   })
 
@@ -234,7 +234,6 @@ const sendTrafficSignalRequest = async () => {
 const sendTrafficSignalRequestTHREE = async () => {
 
   const trafficSignalData = await getTrafficSignalDataFromDB(store.state.aoi.projectSpecification.project_id);
-  // console.log(trafficSignalData)
   addGeoOnPointsToThreejsScene(threeJsScene, trafficSignalData, "TrafficLight.glb", store.state.aoi.projectSpecification.bbox)
 }
 </script>
