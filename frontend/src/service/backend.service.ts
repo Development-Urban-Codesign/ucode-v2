@@ -7,7 +7,10 @@ import store from "@/store/store";
 import { HTTP } from "@/utils/http-common.js";
 import type {BoundingBox } from "@/store/modules/aoi"
 import { PROJECTION_MODE } from "@deck.gl/core/typed/lib/constants";
+import * as turf from '@turf/turf';
+import {IconLayer, TextLayer} from '@deck.gl/layers/typed';
 
+let amenityGeojson: any = []
 export async function getQuestsFromDB(projectId: string) {
   const response = await HTTP.post("get-quests-from-db", projectId);
   return response.data;
@@ -19,7 +22,24 @@ export async function getbuildingsFromDB(projectId: string) {
   const emptygeom = (d:Feature) => d?.geometry?.coordinates?.length == 1;
   const nonEmptyFeatures = response.data.features.filter(emptygeom);
   const colorPalette = ['#7bdef2', '#b2f7ef','#eff7f6', '#f7d6e0', '#f2b5d3'];
+  const detectAmenities = (d:Feature) => d?.properties?.amenity != null;
+  const amenities = response.data.features.filter(detectAmenities);
+  console.log(amenities)
   
+  for (let feat of amenities){
+    if (feat.geometry.coordinates.length==1){
+      let centroid = turf.centroid((feat.geometry))
+      centroid.properties = feat.properties
+      amenityGeojson.push(centroid)
+      //console.log(turf.centroid((feat.geometry)))
+    }
+    
+  }
+  //console.log(amenityGeojson)
+  //emit("addLayer", newLayer);
+  
+  
+
   
   // Color palette values from Apple Maps
   /*const colorPalette = [
@@ -271,6 +291,45 @@ export async function getbuildingsFromDB(projectId: string) {
     //extensions: [new BuildingFilter()],
   });*/
 
+}
+
+export async function getAmenities() {
+  const ICON_MAPPING = {
+    marker: {x: 0, y: 0, width: 128, height: 128, mask: true}
+  };
+
+  const amenityIconlayer = new MapboxLayer({
+    id: 'amenity-icon-layer',
+    // @ts-ignore
+    type: IconLayer,
+    data: amenityGeojson,
+    pickable: true,
+    iconAtlas: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/icon-atlas.png',
+    iconMapping: ICON_MAPPING,
+    getIcon: (d:Feature) => 'marker',
+    sizeScale: 2,
+    sizeUnits: "meters",
+     // @ts-ignore
+    getPosition: (d:Feature) => [...d.geometry.coordinates, d.properties.estimatedheight+6],
+    getSize: 5,
+    getColor: [255,0,0,255],
+  }) 
+  const amenityTextlayer = new MapboxLayer({
+    id: 'amenity-text-layer',
+    // @ts-ignore
+    type: TextLayer,
+    data: amenityGeojson,
+    pickable: true,
+    // @ts-ignore
+    getPosition: (d:Feature) => [...d.geometry.coordinates, d.properties.estimatedheight+6],
+    getText:(d:Feature) => d.properties.amenity,
+    getSize: 5,
+    sizeUnits: "meters",
+    getAngle: 0,
+    getTextAnchor: 'start',
+    getAlignmentBaseline: 'bottom'
+  })
+  return {amenityIconlayer, amenityTextlayer}
 }
 
 export async function getbuildingsFromOSM(bbox: BoundingBox, projectId: string) {
