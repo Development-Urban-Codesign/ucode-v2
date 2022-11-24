@@ -6,7 +6,7 @@
 import { onMounted, computed } from "vue";
 import { useStore } from "vuex";
 import {
-  getbuildingsFromDB, getDrivingLaneFromDB, getGreeneryFromDBTexture, getTrafficSignalFromDB, getTreesFromDB, getTreeJsonFromDB, getTreesFromOSM
+  getbuildingsFromDB, getDrivingLaneFromDB, getGreeneryFromDBTexture, getTrafficSignalFromDB, getTreesFromDB, getTreeJsonFromDB, getTreesFromOSM, getAmenities
 } from "../service/backend.service";
 import { TreeModel } from "../utils/TreeModel";
 import DevUI from "@/components/DevUI.vue"
@@ -16,7 +16,9 @@ const devMode = computed(() => store.getters["ui/devMode"]);
 
 const emit = defineEmits(["addLayer", "addImage"]);
 const populateMap = async () => {
+  
   await sendBuildingRequest();
+  await addAmenities();
   await sendGreeneryRequest();
   await sendTreeRequest();
   await sendTrafficSignalRequest();
@@ -31,6 +33,12 @@ onMounted(() => {
 const sendBuildingRequest = async () => {
   const newLayer = await getbuildingsFromDB(store.state.aoi.projectSpecification.project_id);
   emit("addLayer", newLayer);
+
+};
+const addAmenities =  async () => {
+  const amenityData =  await getAmenities();
+  emit("addLayer", amenityData.amenityIconlayer);
+  emit("addLayer", amenityData.amenityTextlayer);
 
 };
 const sendGreeneryRequest = async () => {
