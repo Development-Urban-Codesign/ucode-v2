@@ -64,6 +64,7 @@ let mapStyleLoaded = ref(false)
 //let activeMarker = reactive<any>({});
 
 
+
 let unsubscribeFromStore = () => { };
 
 onUnmounted(() => {

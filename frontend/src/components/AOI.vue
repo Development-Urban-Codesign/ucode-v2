@@ -4,7 +4,7 @@
 
 <script lang="ts" setup>
 import DevUI from "@/components/DevUI.vue";
-import { addGeoOnPointsToThreejsScene, addLineFromCoordsAr, addPolygonsFromCoordsAr } from '@/utils/ThreejsGeometryCreation';
+import { addGeoOnPointsToThreejsScene, addLineFromCoordsAr, addLineFromCoordsAr1, addPolygonsFromCoordsAr } from '@/utils/ThreejsGeometryCreation';
 import { ThreejsSceneOnly } from "@/utils/ThreejsSceneOnly";
 import { computed, onMounted } from "vue";
 import { useStore } from "vuex";
@@ -170,13 +170,13 @@ const sendDrivingLaneRequestTHREE = async () => {
     height: 0,
     extrude: 0.15
   })
-  addLineFromCoordsAr({
+  addLineFromCoordsAr1({
     scene: threeJsScene,
     bbox: store.state.aoi.projectSpecification.bbox,
     geoJson: drivingLanedata.lane,
     color: "#ffffff",
     height: 0.15,
-    extrude: 0.2
+    extrude: .5
   })
 
 }

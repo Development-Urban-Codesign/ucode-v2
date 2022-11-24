@@ -31,32 +31,33 @@ export function addPolygonsFromCoordsAr(settings: THREEGeoSettings): void {
   if (settings.color instanceof Array) {
     geoms = createGeometryForBuildings(settings)
   }
-  else{
-  settings.geoJson.features.forEach((feature: Feature) => {
-    if (feature.geometry.type !== "Polygon" || feature.geometry.coordinates.length == 0) {
-      return
-    }
-    let geometry: BufferGeometry
+  else {
+    settings.geoJson.features.forEach((feature: Feature) => {
+      if (feature.geometry.type !== "Polygon" || feature.geometry.coordinates.length == 0) {
+        return
+      }
+      let geometry: BufferGeometry
 
-    if (settings.extrude == 0) {
-      geometry = new THREE.ShapeGeometry(createSinglePolygon(feature, settings.bbox), 0);
-      geoms[0].push(geometry)
-    }
-    else {
-      const extrudeSettings = {
-        steps: 1,
-        depth: settings.extrude,
-        bevelEnabled: false,
-        bevelThickness: 0,
-        bevelSize: 0,
-        bevelOffset: 0,
-        bevelSegments: 1
-      };
-      geometry = new THREE.ExtrudeGeometry(createSinglePolygon(feature, settings.bbox), extrudeSettings)
-      geoms[0].push(geometry)
-    }
-    geometry.rotateX(Math.PI / 2)
-  })}
+      if (settings.extrude == 0) {
+        geometry = new THREE.ShapeGeometry(createSinglePolygon(feature, settings.bbox), 0);
+        geoms[0].push(geometry)
+      }
+      else {
+        const extrudeSettings = {
+          steps: 1,
+          depth: settings.extrude,
+          bevelEnabled: false,
+          bevelThickness: 0,
+          bevelSize: 0,
+          bevelOffset: 0,
+          bevelSegments: 1
+        };
+        geometry = new THREE.ExtrudeGeometry(createSinglePolygon(feature, settings.bbox), extrudeSettings)
+        geoms[0].push(geometry)
+      }
+      geometry.rotateX(Math.PI / 2)
+    })
+  }
   // console.log(geoms)
   geoms.forEach((geom, index) => {
     polygeom = BufferGeometryUtils.mergeBufferGeometries(geom)
@@ -386,4 +387,54 @@ export function addLineFromCoordsAr(settings: THREEGeoSettings): void {//Lines n
     line.updateMorphTargets()
     settings.scene.add(line);
   })
+}
+export function addLineFromCoordsAr1(settings: THREEGeoSettings): void {//workaround until lines work
+  let polygeoms: THREE.BufferGeometry[] = []
+  console.log(settings.geoJson)
+  let material: THREE.MeshBasicMaterial = new THREE.MeshBasicMaterial()
+  settings.geoJson.features.forEach((feature: Feature) => {
+    material = new THREE.MeshBasicMaterial({ color: feature.properties?.color || settings.color });
+    // console.log(material)
+  
+    if (feature.geometry.type == "MultiLineString") {
+      polygeoms =[]
+      feature.geometry.coordinates.forEach((line) => {polygeoms.push(createLinesegments(line, settings))})
+      const geom = BufferGeometryUtils.mergeBufferGeometries(polygeoms)
+      const mesh = new THREE.Mesh(geom, material)
+      settings.scene.add(mesh);
+      console.count("addMesh")
+    }
+    else if (feature.geometry.type == "LineString") {
+      polygeoms.push(createLinesegments(feature.geometry.coordinates, settings))
+    }
+  })
+  if(polygeoms.length>0){
+  const geom = BufferGeometryUtils.mergeBufferGeometries(polygeoms)
+  const mesh = new THREE.Mesh(geom, material)
+  settings.scene.add(mesh);
+  console.count("addMesh,")}
+}
+
+function createLinesegments(coords: any, settings: THREEGeoSettings) {
+  const geoms: THREE.TubeGeometry[] = []
+  let lastPoint: THREE.Vector3 = new THREE.Vector3(0, 0, 0)
+  const curve0: THREE.CurvePath<THREE.Vector3> = new THREE.CurvePath()
+  coords.forEach((coord: Position, index: number) => {
+    let point = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), settings.bbox)
+
+    if (index > 0) {
+
+      let linecurve = new THREE.LineCurve3(lastPoint, point)
+      linecurve.arcLengthDivisions = 1
+      curve0.add(linecurve)
+      geoms.push(new THREE.TubeGeometry(linecurve, 1, settings.extrude, 4, false))
+    }
+    lastPoint = point
+  })
+  if (coords.length - curve0.curves.length != 1) {
+    console.error("not correct")
+  }
+  const polygeom = BufferGeometryUtils.mergeBufferGeometries(geoms)
+  polygeom.translate(0, 0, settings.height)
+  return polygeom
 }
