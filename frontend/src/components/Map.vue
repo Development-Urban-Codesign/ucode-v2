@@ -281,7 +281,7 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
   layerHirarchy.push({layer: treeLayer3js, orderId: 80})}
   const routesLayer = map.getLayer("routes")
   if (typeof routesLayer !== 'undefined') {
-    layerHirarchy.push({ layer: routesLayer, orderId: 75 })
+    layerHirarchy.push({ layer: routesLayer, orderId: 99 })
   }
   const routesSymbolLayer = map.getLayer("routes-symbols")
   if (typeof routesSymbolLayer !== 'undefined') {
@@ -291,10 +291,17 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
   if (typeof ownCommentLayer !== 'undefined') {
     layerHirarchy.push({ layer: ownCommentLayer, orderId: 100 })
   }
-  const ThreeJsScene = map.getLayer("ThreeJsScene")
-  if (typeof ThreeJsScene !== 'undefined') {
-    layerHirarchy.push({ layer: ThreeJsScene, orderId: 5 })
+  const ThreeJsScene3d = map.getLayer("threeJsScene3d")
+  if (typeof ThreeJsScene3d !== 'undefined') {
+    layerHirarchy.push({ layer: ThreeJsScene3d, orderId: 100 })
   }
+  const ThreeJsSceneFlat = map.getLayer("threeJsSceneFlat")
+  if (typeof ThreeJsSceneFlat !== 'undefined') {
+    layerHirarchy.push({ layer: ThreeJsSceneFlat, orderId: 5 })
+  }
+
+
+
 
 
   for (let index = 0; index < layerHirarchy.length; index++) {

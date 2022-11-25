@@ -15,7 +15,8 @@ import { ThreejsScene } from "@/utils/ThreejsScene";
 import type { FeatureCollection } from "@turf/helpers";
 const store = useStore();
 const devMode = computed(() => store.getters["ui/devMode"]);
-let threeJsScene: any;
+let threeJsScene3d: any;
+let threeJsSceneFlat: any;
 
 const emit = defineEmits(["addLayer", "addImage", "triggerRepaint"]);
 const populateMap = async () => {
@@ -39,16 +40,19 @@ onMounted(() => {
   populateMap();
 })
 const createEmptyThreeJsScene = async () => {
-  const threeJsSceneLayer = await ThreejsSceneOnly(store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin)
+  const threeJsSceneLayer3d = await ThreejsSceneOnly(store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin, "threeJsScene3d")
+  const threeJsSceneLayerFlat = await ThreejsSceneOnly(store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin, "threeJsSceneFlat")
   //console.log(threeJsSceneLayer.scene)
-  threeJsScene = threeJsSceneLayer.scene
-  emit("addLayer", threeJsSceneLayer.layer)
+  threeJsScene3d = threeJsSceneLayer3d.scene
+  threeJsSceneFlat = threeJsSceneLayerFlat.scene
+  emit("addLayer", threeJsSceneLayer3d.layer)
+  emit("addLayer", threeJsSceneLayerFlat.layer)
 }
 
 const sendBuildingRequestTHREE = async () => {
   const buildingData = await getbuildingsDataFromDB(store.state.aoi.projectSpecification.project_id);
   addPolygonsFromCoordsAr({
-    scene: threeJsScene,
+    scene: threeJsScene3d,
     bbox: store.state.aoi.projectSpecification.bbox,
     geoJson: buildingData,
     color: ['#C8D6E8', '#A5B1C2', '#BAC3C9'],
@@ -74,7 +78,7 @@ const sendGreeneryRequestTHREE = async () => {
   // console.log(greeneryJson)
   
   addPolygonsFromCoordsAr({
-    scene: threeJsScene,
+    scene: threeJsSceneFlat,
     bbox: store.state.aoi.projectSpecification.bbox,
     geoJson: greeneryJson,
     color: "#9EBB64",
@@ -89,7 +93,7 @@ const sendWaterRequestTHREE = async () => {
   // console.log(waterJson)
   
   addPolygonsFromCoordsAr({
-    scene: threeJsScene,
+    scene: threeJsSceneFlat,
     bbox: store.state.aoi.projectSpecification.bbox,
     geoJson: waterJson,
     color: "#64A4BB",
@@ -119,7 +123,7 @@ const createAoiPlane = async () => {
     ]
   }
   addPolygonsFromCoordsAr({
-    scene: threeJsScene,
+    scene: threeJsSceneFlat,
     bbox: store.state.aoi.projectSpecification.bbox,
     geoJson: data,
     color: "#E8E8E8",
@@ -144,7 +148,7 @@ const sendTreeRequest = async () => {
             partJson.features.push(feature)
           }
         })
-        addGeoOnPointsToThreejsScene(threeJsScene, partJson, "TreeVariants/" + tree, store.state.aoi.projectSpecification.bbox, [0.7, 0.8], true)
+        addGeoOnPointsToThreejsScene(threeJsScene3d, partJson, "TreeVariants/" + tree, store.state.aoi.projectSpecification.bbox, [0.7, 0.8], true)
         
       })
     }
@@ -163,7 +167,7 @@ const sendDrivingLaneRequestTHREE = async () => {
   const drivingLanedata: {lane:FeatureCollection, polygon: FeatureCollection} = await getDrivingLaneFromDB(store.state.aoi.projectSpecification.project_id)
   // console.log(drivingLanedata.lane)
   addPolygonsFromCoordsAr({
-    scene: threeJsScene,
+    scene: threeJsSceneFlat,
     bbox: store.state.aoi.projectSpecification.bbox,
     geoJson: drivingLanedata.polygon,
     color: "#262829",
@@ -171,7 +175,7 @@ const sendDrivingLaneRequestTHREE = async () => {
     extrude: 0.15
   })
   addLineFromCoordsAr1({
-    scene: threeJsScene,
+    scene: threeJsSceneFlat,
     bbox: store.state.aoi.projectSpecification.bbox,
     geoJson: drivingLanedata.lane,
     color: "#ffffff",
@@ -234,7 +238,7 @@ const sendTrafficSignalRequest = async () => {
 const sendTrafficSignalRequestTHREE = async () => {
 
   const trafficSignalData = await getTrafficSignalDataFromDB(store.state.aoi.projectSpecification.project_id);
-  addGeoOnPointsToThreejsScene(threeJsScene, trafficSignalData, "TrafficLight.glb", store.state.aoi.projectSpecification.bbox)
+  addGeoOnPointsToThreejsScene(threeJsScene3d, trafficSignalData, "TrafficLight.glb", store.state.aoi.projectSpecification.bbox)
 }
 </script>
 

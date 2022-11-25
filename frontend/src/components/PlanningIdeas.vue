@@ -69,7 +69,7 @@ onMounted(() => {
   addRouteToMap()
 })
 const createEmptyThreeJsScene = async () => {
-  const threeJsSceneLayer = await ThreejsSceneOnly(store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin)
+  const threeJsSceneLayer = await ThreejsSceneOnly(store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin,"threeJsScenePlanning")
   threeJsScene = threeJsSceneLayer.scene
   store.commit("map/addLayer",threeJsSceneLayer.layer)
 }
