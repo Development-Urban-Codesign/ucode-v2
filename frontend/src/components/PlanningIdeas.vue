@@ -62,8 +62,8 @@ const setActiveBtn = (selectedId:any) =>{
 
 const addRouteToMap = async () => {
 
-  // await sendRouteRequest()
-  await sendRouteRequestTHREE()
+  await sendRouteRequest()
+  // await sendRouteRequestTHREE()
 }
 onMounted(() => {
   addRouteToMap()
@@ -152,7 +152,10 @@ const sendRouteRequest = async () => {
 
 };
 
-const activateSelectedPlanningIdea = (route)=>{
+const activateSelectedPlanningIdea = (route: Feature)=>{
+  // let activeRoute: THREE.Object3D=threeJsScene.getObjectByName(route.properties?.route_name)
+  // console.log(activeRoute)
+  // activeRoute.material.color.setHex("#ffffff");
   emit("activateSelectedPlanningIdea", route)
 }
 
