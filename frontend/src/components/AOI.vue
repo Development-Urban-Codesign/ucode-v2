@@ -176,7 +176,7 @@ const sendDrivingLaneRequestTHREE = async () => {
     geoJson: drivingLanedata.lane,
     color: "#ffffff",
     height: 0.15,
-    extrude: .5
+    extrude: .3
   })
 
 }

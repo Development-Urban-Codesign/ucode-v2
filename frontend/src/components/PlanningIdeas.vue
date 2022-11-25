@@ -82,7 +82,7 @@ const sendRouteRequestTHREE = async () => {
    if (routeData.data.features == null) {
     return
    }
-   console.log(routeData)
+  //  console.log(routeData)
    addLineFromCoordsAr1({
     scene: threeJsScene,
     bbox: store.state.aoi.projectSpecification.bbox,
@@ -153,7 +153,6 @@ const sendRouteRequest = async () => {
 };
 
 const activateSelectedPlanningIdea = (route)=>{
-  
   emit("activateSelectedPlanningIdea", route)
 }
 

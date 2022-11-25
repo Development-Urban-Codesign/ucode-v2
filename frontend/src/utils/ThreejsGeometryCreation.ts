@@ -395,24 +395,27 @@ export function addLineFromCoordsAr1(settings: THREEGeoSettings): void {//workar
   settings.geoJson.features.forEach((feature: Feature) => {
     material = new THREE.MeshBasicMaterial({ color: feature.properties?.color || settings.color });
     // console.log(material)
-  
+
     if (feature.geometry.type == "MultiLineString") {
-      polygeoms =[]
-      feature.geometry.coordinates.forEach((line) => {polygeoms.push(createLinesegments(line, settings))})
+      polygeoms = []
+      feature.geometry.coordinates.forEach((line) => { polygeoms.push(createLinesegments(line, settings)) })
       const geom = BufferGeometryUtils.mergeBufferGeometries(polygeoms)
       const mesh = new THREE.Mesh(geom, material)
+      mesh.name = feature.properties?.route_name
       settings.scene.add(mesh);
-      console.count("addMesh")
+      // console.count("addMesh")
     }
     else if (feature.geometry.type == "LineString") {
       polygeoms.push(createLinesegments(feature.geometry.coordinates, settings))
     }
   })
-  if(polygeoms.length>0){
-  const geom = BufferGeometryUtils.mergeBufferGeometries(polygeoms)
-  const mesh = new THREE.Mesh(geom, material)
-  settings.scene.add(mesh);
-  console.count("addMesh,")}
+  if (polygeoms.length > 0) {
+    const geom = BufferGeometryUtils.mergeBufferGeometries(polygeoms)
+    const mesh = new THREE.Mesh(geom, material)
+    mesh.name = settings.geoJson.features[0].properties?.id
+    settings.scene.add(mesh);
+    // console.count("addMesh,")
+  }
 }
 
 function createLinesegments(coords: any, settings: THREEGeoSettings) {
