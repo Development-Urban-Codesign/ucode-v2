@@ -323,6 +323,15 @@ def drop_traffic_signal_table(projectId):
   cursor.close()
   connection.close()
 
+def drop_tram_line_table(projectId):
+  connection = connect()
+  cursor = connection.cursor()
+  drop_tram_line_table_query =f''' delete from tram_line where project_id='{projectId}';'''
+  cursor.execute(drop_tram_line_table_query)
+  connection.commit()
+  cursor.close()
+  connection.close()
+
 def get_traffic_signal_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
@@ -363,6 +372,23 @@ def get_routes_from_db(projectId):
       ;
   '''
   cursor.execute(get_routes_query)
+  routes = cursor.fetchall()[0][0]
+  cursor.close()
+  connection.close()
+  return routes
+
+def get_tram_line_from_db(projectId):
+  connection = connect()
+  cursor = connection.cursor()
+  get_tram_line_query = f''' select json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(ST_AsGeoJSON(tram_line.*)::json)
+        )
+        from tram_line
+        where project_id = '{projectId}'
+      ;
+  '''
+  cursor.execute(get_tram_line_query)
   routes = cursor.fetchall()[0][0]
   cursor.close()
   connection.close()
