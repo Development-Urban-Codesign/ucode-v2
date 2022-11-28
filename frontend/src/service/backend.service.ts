@@ -8,7 +8,7 @@ import { HTTP } from "@/utils/http-common.js";
 import type {BoundingBox } from "@/store/modules/aoi"
 import { PROJECTION_MODE } from "@deck.gl/core/typed/lib/constants";
 import * as turf from '@turf/turf';
-import {IconLayer, TextLayer} from '@deck.gl/layers/typed';
+import {IconLayer, TextLayer, LineLayer} from '@deck.gl/layers/typed';
 
 let amenityGeojson: any = []
 export async function getQuestsFromDB(projectId: string) {
@@ -24,10 +24,11 @@ export async function getbuildingsFromDB(projectId: string) {
   const colorPalette = ['#7bdef2', '#b2f7ef','#eff7f6', '#f7d6e0', '#f2b5d3'];
   const detectAmenities = (d:Feature) => d?.properties?.amenity != null;
   const amenities = response.data.features.filter(detectAmenities);
-  console.log(amenities)
   
+  const amenity_tags = ["Theatre", "arts_center", "clinic", "townhall", "library",  "place_of_worship", "cinema"]
+   
   for (let feat of amenities){
-    if (feat.geometry.coordinates.length==1){
+    if (feat.geometry.coordinates.length==1 && amenity_tags.includes(feat.properties.amenity)){
       let centroid = turf.centroid((feat.geometry))
       centroid.properties = feat.properties
       amenityGeojson.push(centroid)
@@ -307,13 +308,15 @@ export async function getAmenities() {
     iconAtlas: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/icon-atlas.png',
     iconMapping: ICON_MAPPING,
     getIcon: (d:Feature) => 'marker',
-    sizeScale: 2,
-    sizeUnits: "meters",
+    sizeScale: 5,
+    //sizeUnits: "meters",
      // @ts-ignore
-    getPosition: (d:Feature) => [...d.geometry.coordinates, d.properties.estimatedheight+6],
+    getPosition: (d:Feature) => [...d.geometry.coordinates, d.properties.estimatedheight+20],
     getSize: 5,
     getColor: [255,0,0,255],
-  }) 
+   
+  },
+  ) 
   const amenityTextlayer = new MapboxLayer({
     id: 'amenity-text-layer',
     // @ts-ignore
@@ -321,14 +324,16 @@ export async function getAmenities() {
     data: amenityGeojson,
     pickable: true,
     // @ts-ignore
-    getPosition: (d:Feature) => [...d.geometry.coordinates, d.properties.estimatedheight+6],
+    getPosition: (d:Feature) => [...d.geometry.coordinates, d.properties.estimatedheight+20],
     getText:(d:Feature) => d.properties.amenity,
-    getSize: 5,
-    sizeUnits: "meters",
+    getSize: 10,
+    //sizeUnits: "meters",
     getAngle: 0,
     getTextAnchor: 'start',
-    getAlignmentBaseline: 'bottom'
+    getAlignmentBaseline: 'bottom',
+    
   })
+  
   return {amenityIconlayer, amenityTextlayer}
 }
 
