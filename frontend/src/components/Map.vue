@@ -289,6 +289,11 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
     layerHirarchy.push({ layer: ownCommentLayer, orderId: 100 })
   }
 
+  const TramLayer = map.getLayer("tram_line")
+  if (typeof TramLayer !== 'undefined') {
+    layerHirarchy.push({ layer: TramLayer, orderId: 90 })
+  }
+
 
   for (let index = 0; index < layerHirarchy.length; index++) {
     const x = layerHirarchy[index];
