@@ -288,6 +288,14 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
   if (typeof ownCommentLayer !== 'undefined') {
     layerHirarchy.push({ layer: ownCommentLayer, orderId: 100 })
   }
+  const amenityIconlayer = map.getLayer("amenity-icon-layer")
+  if (typeof amenityIconlayer !== 'undefined') {
+    layerHirarchy.push({ layer: amenityIconlayer, orderId: 98 })
+  }
+  const amenityTextlayer = map.getLayer("amenity-text-layer")
+  if (typeof amenityTextlayer !== 'undefined') {
+    layerHirarchy.push({ layer: amenityTextlayer, orderId: 97 })
+  }
 
 
   for (let index = 0; index < layerHirarchy.length; index++) {
