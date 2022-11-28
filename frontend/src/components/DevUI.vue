@@ -20,6 +20,8 @@
       @update:modelValue="sendDrivingLaneRequest"></v-select>
     <v-select :items="['get', 'retrieve']" label="traffic signal" variant="outlined"
       @update:modelValue="sendTrafficSignalRequest"></v-select>
+    <v-select :items="['get', 'retrieve']" label="tram lines" variant="outlined"
+      @update:modelValue="sendTramLineRequest"></v-select>
     <v-alert type="success" v-if="store.state.aoi.dataIsLoaded">
       stored
     </v-alert>
@@ -42,6 +44,8 @@ import {
   getDrivingLaneFromDB,
   getTrafficLightsFromOSM,
   getTrafficSignalFromDB,
+  getTramLineFromOSM,
+  getTramLineDataFromDB
 } from "../service/backend.service";
 
 const store = useStore();
@@ -185,4 +189,39 @@ const sendTrafficSignalRequest = async (mode) => {
     emit("addLayer", trafficSignalLayer);
   }
 };
+
+const sendTramLineRequest = async (mode) =>{
+  
+  if (mode == "get") {
+    store.dispatch("aoi/setDataIsLoading");
+    await getTramLineFromOSM(
+      store.state.aoi.projectSpecification.bbox,
+      store.state.aoi.projectSpecification.project_id
+    );
+  } else {
+    const tramLaneData = await getTramLineDataFromDB(store.state.aoi.projectSpecification.project_id);
+    store.commit("map/addSource", {
+      id: "tram_line",
+      geojson: {
+        type: "geojson",
+        data: tramLaneData.data,
+      },
+    });
+    store.commit("map/addLayer", {
+      id: "tram_line",
+      type: "line",
+      source: "tram_line",
+      layout: {
+        "line-join": "round",
+        "line-cap": "round",
+      },
+      paint: {
+        "line-color": "#FFFF00",
+        "line-width": 2,
+      
+      },
+    });
+    
+  }
+}
 </script>

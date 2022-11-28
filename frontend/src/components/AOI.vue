@@ -6,7 +6,7 @@
 import { onMounted, computed } from "vue";
 import { useStore } from "vuex";
 import {
-  getbuildingsFromDB, getDrivingLaneFromDB, getGreeneryFromDBTexture, getTrafficSignalFromDB, getTreesFromDB, getTreeJsonFromDB, getTreesFromOSM
+  getbuildingsFromDB, getDrivingLaneFromDB, getGreeneryFromDBTexture, getTrafficSignalFromDB, getTreesFromDB, getTreeJsonFromDB, getTreesFromOSM, getTramLineDataFromDB
 } from "../service/backend.service";
 import { TreeModel } from "../utils/TreeModel";
 import DevUI from "@/components/DevUI.vue"
@@ -21,6 +21,7 @@ const populateMap = async () => {
   await sendTreeRequest();
   await sendTrafficSignalRequest();
   await sendDrivingLaneRequest();
+  await sendTramLineRequest();
   store.dispatch("aoi/setMapIsPopulated");
   store.commit("ui/aoiMapPopulated", true);
 }
@@ -120,6 +121,35 @@ const sendTrafficSignalRequest = async () => {
   emit("addLayer", trafficSignalLayer)
 
 }
+
+const sendTramLineRequest = async () =>{
+  
+ 
+    const tramLaneData = await getTramLineDataFromDB(store.state.aoi.projectSpecification.project_id);
+    store.commit("map/addSource", {
+      id: "tram_line",
+      geojson: {
+        type: "geojson",
+        data: tramLaneData.data,
+      },
+    });
+    store.commit("map/addLayer", {
+      id: "tram_line",
+      type: "line",
+      source: "tram_line",
+      layout: {
+        "line-join": "round",
+        "line-cap": "round",
+      },
+      paint: {
+        "line-color": "#FFFF00",
+        "line-width": 2
+      
+      },
+    });
+    
+  }
+
 </script>
 
 <style scoped>
