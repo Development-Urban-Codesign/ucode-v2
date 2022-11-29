@@ -9,7 +9,7 @@ import { ThreejsSceneOnly } from "@/utils/ThreejsSceneOnly";
 import { computed, onMounted } from "vue";
 import { useStore } from "vuex";
 import {
-  getbuildingsFromDB, getDrivingLaneFromDB, getGreeneryFromDBTexture, getGreeneryJsonFromDB, getTrafficSignalFromDB, getTreeJsonFromDB, getTreesFromDB, getWaterFromDB, getTrafficSignalDataFromDB,getbuildingsDataFromDB
+  getbuildingsFromDB, getDrivingLaneFromDB, getGreeneryFromDBTexture, getGreeneryJsonFromDB, getTrafficSignalFromDB, getTreeJsonFromDB, getTreesFromDB, getWaterFromDB, getTrafficSignalDataFromDB, getbuildingsDataFromDB
 } from "../service/backend.service";
 import { ThreejsScene } from "@/utils/ThreejsScene";
 import type { FeatureCollection } from "@turf/helpers";
@@ -32,6 +32,8 @@ const populateMap = async () => {
   await sendTreeRequest();
   await sendWaterRequestTHREE();
   await createAoiPlane();
+  emit("addLayer", threeJsScene3d.layer)
+  emit("addLayer", threeJsSceneFlat.layer, "routes")
   store.dispatch("aoi/setMapIsPopulated");
   store.commit("ui/aoiMapPopulated", true);
 }
@@ -40,28 +42,20 @@ onMounted(() => {
   populateMap();
 })
 const createEmptyThreeJsScene = async () => {
-  const threeJsSceneLayer3d = await ThreejsSceneOnly(store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin, "threeJsScene3d")
-  const threeJsSceneLayerFlat = await ThreejsSceneOnly(store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin, "threeJsSceneFlat")
-  //console.log(threeJsSceneLayer.scene)
-  threeJsScene3d = threeJsSceneLayer3d.scene
-  threeJsSceneFlat = threeJsSceneLayerFlat.scene
-  emit("addLayer", threeJsSceneLayer3d.layer)
-  emit("addLayer", threeJsSceneLayerFlat.layer)
+  threeJsScene3d = await ThreejsSceneOnly(store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin, "threeJsScene3d")
+  threeJsSceneFlat = await ThreejsSceneOnly(store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin, "threeJsSceneFlat")
 }
 
 const sendBuildingRequestTHREE = async () => {
   const buildingData = await getbuildingsDataFromDB(store.state.aoi.projectSpecification.project_id);
   addPolygonsFromCoordsAr({
-    scene: threeJsScene3d,
+    scene: threeJsScene3d.scene,
     bbox: store.state.aoi.projectSpecification.bbox,
     geoJson: buildingData,
     color: ['#C8D6E8', '#A5B1C2', '#BAC3C9'],
     height: 0,
     extrude: .99
   })
-  // let colorPalette = ['#F3E6D6', '#DED4C6', '#EEE9E2'];//yellowish
-  //  const colorPalette = ['#C8D6E8', '#A5B1C2', '#BAC3C9'];//blueish
-  // const colorPalette = ['#E9B9B9', '#EBC8BC', '#F5C4BE'];//redish
 };
 const sendBuildingRequest = async () => {
   const newLayer = await getbuildingsFromDB(store.state.aoi.projectSpecification.project_id);
@@ -76,31 +70,31 @@ const sendGreeneryRequest = async () => {
 const sendGreeneryRequestTHREE = async () => {
   const greeneryJson: FeatureCollection = await getGreeneryJsonFromDB(store.state.aoi.projectSpecification.project_id);
   // console.log(greeneryJson)
-  
+
   addPolygonsFromCoordsAr({
-    scene: threeJsSceneFlat,
+    scene: threeJsSceneFlat.scene,
     bbox: store.state.aoi.projectSpecification.bbox,
     geoJson: greeneryJson,
     color: "#9EBB64",
     height: 0,
     extrude: 0.1
   })
-  
+
 
 };
 const sendWaterRequestTHREE = async () => {
   const waterJson: FeatureCollection = await getWaterFromDB(store.state.aoi.projectSpecification.project_id);
   // console.log(waterJson)
-  
+
   addPolygonsFromCoordsAr({
-    scene: threeJsSceneFlat,
+    scene: threeJsSceneFlat.scene,
     bbox: store.state.aoi.projectSpecification.bbox,
     geoJson: waterJson,
     color: "#64A4BB",
     height: 0,
     extrude: 0.12
   })
-  
+
 
 };
 const createAoiPlane = async () => {
@@ -112,18 +106,18 @@ const createAoiPlane = async () => {
         'type': 'Feature',
         'geometry': {
           'type': 'Polygon',
-          'coordinates': 
-          [[[store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin],
-          [store.state.aoi.projectSpecification.bbox.xmax, store.state.aoi.projectSpecification.bbox.ymin],
-          [store.state.aoi.projectSpecification.bbox.xmax, store.state.aoi.projectSpecification.bbox.ymax],
-          [store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymax]]]
+          'coordinates':
+            [[[store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin],
+            [store.state.aoi.projectSpecification.bbox.xmax, store.state.aoi.projectSpecification.bbox.ymin],
+            [store.state.aoi.projectSpecification.bbox.xmax, store.state.aoi.projectSpecification.bbox.ymax],
+            [store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymax]]]
         },
         'properties': {}
       }
     ]
   }
   addPolygonsFromCoordsAr({
-    scene: threeJsSceneFlat,
+    scene: threeJsSceneFlat.scene,
     bbox: store.state.aoi.projectSpecification.bbox,
     geoJson: data,
     color: "#E8E8E8",
@@ -148,8 +142,8 @@ const sendTreeRequest = async () => {
             partJson.features.push(feature)
           }
         })
-        addGeoOnPointsToThreejsScene(threeJsScene3d, partJson, "TreeVariants/" + tree, store.state.aoi.projectSpecification.bbox, [0.7, 0.8], true)
-        
+        addGeoOnPointsToThreejsScene(threeJsScene3d.scene, partJson, "TreeVariants/" + tree, store.state.aoi.projectSpecification.bbox, [0.7, 0.8], true)
+
       })
     }
 
@@ -164,24 +158,45 @@ const sendTreeRequest = async () => {
 
 
 const sendDrivingLaneRequestTHREE = async () => {
-  const drivingLanedata: {lane:FeatureCollection, polygon: FeatureCollection} = await getDrivingLaneFromDB(store.state.aoi.projectSpecification.project_id)
+  const drivingLanedata: { lane: FeatureCollection, polygon: FeatureCollection } = await getDrivingLaneFromDB(store.state.aoi.projectSpecification.project_id)
   // console.log(drivingLanedata.lane)
   addPolygonsFromCoordsAr({
-    scene: threeJsSceneFlat,
+    scene: threeJsSceneFlat.scene,
     bbox: store.state.aoi.projectSpecification.bbox,
     geoJson: drivingLanedata.polygon,
     color: "#262829",
     height: 0,
     extrude: 0.15
   })
-  addLineFromCoordsAr1({
-    scene: threeJsSceneFlat,
-    bbox: store.state.aoi.projectSpecification.bbox,
-    geoJson: drivingLanedata.lane,
-    color: "#ffffff",
-    height: 0.15,
-    extrude: .3
+  store.commit("map/addSource", {
+    id: "driving_lane",
+    geojson: {
+      "type": "geojson",
+      "data": drivingLanedata.lane
+    }
   })
+  store.commit("map/addLayer", {
+    'id': "driving_lane",
+    'type': 'line',
+    'source': "driving_lane",
+    'layout': {
+      'line-join': 'round',
+      'line-cap': 'round'
+    },
+    'paint': {
+      'line-color': '#FFFFFF',
+      'line-width': 1,
+      'line-dasharray': [10, 20]
+    }
+  })
+  // addLineFromCoordsAr1({
+  //   scene: threeJsSceneFlat.scene,
+  //   bbox: store.state.aoi.projectSpecification.bbox,
+  //   geoJson: drivingLanedata.lane,
+  //   color: "#ffffff",
+  //   height: 0.15,
+  //   extrude: .3
+  // })
 
 }
 const sendDrivingLaneRequest = async () => {
@@ -238,7 +253,7 @@ const sendTrafficSignalRequest = async () => {
 const sendTrafficSignalRequestTHREE = async () => {
 
   const trafficSignalData = await getTrafficSignalDataFromDB(store.state.aoi.projectSpecification.project_id);
-  addGeoOnPointsToThreejsScene(threeJsScene3d, trafficSignalData, "TrafficLight.glb", store.state.aoi.projectSpecification.bbox)
+  addGeoOnPointsToThreejsScene(threeJsScene3d.scene, trafficSignalData, "TrafficLight.glb", store.state.aoi.projectSpecification.bbox)
 }
 </script>
 

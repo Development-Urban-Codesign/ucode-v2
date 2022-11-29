@@ -95,7 +95,6 @@ onMounted(() => {
 
   
   map.on("load", function () {
-    map.painter.opaquePassEnabledForLayer = function() { return false; }
     mapStyleLoaded.value = true
 
     unsubscribeFromStore = store.subscribe((mutation, state) => {
@@ -229,8 +228,8 @@ store.commit("map/addLayer", {
 })
 
 
-const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
-  //console.log(layer.id)
+const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface, beforeLayer?: string) => {
+  // console.log(layer.id)
   const addedlayer = map.getLayer(layer.id)
   if (typeof addedlayer !== 'undefined') {
     removeLayerFromMap(layer.id)
@@ -245,7 +244,7 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
       addImageToMap(layer.paint["fill-pattern"]);
     }
   }
-  map?.addLayer(layer);
+  map?.addLayer(layer,beforeLayer? beforeLayer: "");
   const layerHirarchy: any[] = []// = reactive<[{layer: any, orderId: Number}]>([{}])
 
   const buildinglayer = map.getLayer("overpass_buildings")
@@ -283,7 +282,7 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
   }
   const routesLayer = map.getLayer("routes")
   if (typeof routesLayer !== 'undefined') {
-    layerHirarchy.push({ layer: routesLayer, orderId: 99 })
+    layerHirarchy.push({ layer: routesLayer, orderId: 1 })
   }
   const routesSymbolLayer = map.getLayer("routes-symbols")
   if (typeof routesSymbolLayer !== 'undefined') {
@@ -295,26 +294,27 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
   }
   const ThreeJsScene3d = map.getLayer("threeJsScene3d")
   if (typeof ThreeJsScene3d !== 'undefined') {
-    layerHirarchy.push({ layer: ThreeJsScene3d, orderId: 100 })
+    layerHirarchy.push({ layer: ThreeJsScene3d, orderId:  2})
   }
   const ThreeJsSceneFlat = map.getLayer("threeJsSceneFlat")
   if (typeof ThreeJsSceneFlat !== 'undefined') {
-    layerHirarchy.push({ layer: ThreeJsSceneFlat, orderId: 5 })
+    layerHirarchy.push({ layer: ThreeJsSceneFlat, orderId: 0 })
   }
 
 
 
 
-  for (let index = 0; index < layerHirarchy.length; index++) {
-    const x = layerHirarchy[index];
-      for (let index = 0; index < layerHirarchy.length; index++) {
-        const y = layerHirarchy[index];
-         if(x.layer !== y.layer && x.orderId>y.orderId){
-           map.moveLayer(y.layer.id,x.layer.id)
-           console.log("move layer " + x.layer.id + " over " +y.layer.id)
-         }
-    }
-  }
+  // for (let index = 0; index < layerHirarchy.length; index++) {
+  //   const x = layerHirarchy[index];
+  //     for (let index = 0; index < layerHirarchy.length; index++) {
+  //       const y = layerHirarchy[index];
+  //        if(x.layer !== y.layer && x.orderId>y.orderId){
+  //          map.moveLayer(y.layer.id,x.layer.id)
+  //          console.log("move layer " + x.layer.id + " over " +y.layer.id)
+  //         //  console.log("map.moveLayer("+y.layer.id+","+x.layer.id+")")
+  //        }
+  //   }
+  // }
 
   // if (typeof buildinglayer !== 'undefined' && typeof greenerylayer !== 'undefined') {
   //   map?.moveLayer("overpass_greenery", "overpass_buildings")

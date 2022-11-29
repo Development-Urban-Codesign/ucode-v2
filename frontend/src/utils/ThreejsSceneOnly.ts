@@ -7,12 +7,7 @@ import * as THREE from "three";
 import { FogExp2, Scene } from "three";
 import type * as glMatrix from "gl-matrix";
 
-const hemiLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 0.5);
 
-const dirLight = new THREE.DirectionalLight(0xFFFFFF, 0.8);
-// dirLight.color.setHSL(0.1, 1, 0.95);
-dirLight.position.set(-2, 3, 1);
-dirLight.position.multiplyScalar(1);  
 
 export class ThreeJsScene extends Scene {
   constructor() {
@@ -21,15 +16,12 @@ export class ThreeJsScene extends Scene {
   }
 
   setup() {
-    this.add(hemiLight);
-    this.add(dirLight);
+
     // this.fog = new FogExp2(0xffffff,.1)
   }
 }
 
-const mainScene = new ThreeJsScene();
-const mainCamera = new THREE.Camera()
-let mainRenderer = new THREE.WebGLRenderer()
+
 
 export function getProjectionMatrix(
   modelAsMercatorCoordinate: maplibregl.MercatorCoordinate,
@@ -86,8 +78,19 @@ export function getProjectionMatrix(
 }
 
 export const ThreejsSceneOnly = (lng: number, lat: number, layerName: string) => {
-  const sceneAltitude = 0;
+  const hemiLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 0.5);
 
+  const dirLight = new THREE.DirectionalLight(0xFFFFFF, 0.8);
+  // dirLight.color.setHSL(0.1, 1, 0.95);
+  dirLight.position.set(-2, 3, 1);
+  dirLight.position.multiplyScalar(1);
+
+  const mainScene = new ThreeJsScene();
+  const mainCamera = new THREE.Camera();
+  let mainRenderer = new THREE.WebGLRenderer();
+  mainScene.add(hemiLight);
+  mainScene.add(dirLight);
+  const sceneAltitude = 0;
   const modelorigin: LngLatLike = maplibregl.LngLat.convert([lng, lat]);
   const modelAsMercatorCoordinate = maplibregl.MercatorCoordinate.fromLngLat(
     modelorigin,
@@ -101,13 +104,13 @@ export const ThreejsSceneOnly = (lng: number, lat: number, layerName: string) =>
     renderingMode: "3d",
     onAdd: function (map: Map, gl: any) {
       // use the Mapbox GL JS map canvas for three.js
-      
+
       mainRenderer = new THREE.WebGLRenderer({
         canvas: map.getCanvas(),
         context: gl,
         antialias: true,
       });
-      
+
       mainRenderer.outputEncoding = THREE.sRGBEncoding;
       mainRenderer.autoClear = false;
     },
@@ -118,7 +121,7 @@ export const ThreejsSceneOnly = (lng: number, lat: number, layerName: string) =>
         matrix
       );
       // console.log(matrix)
-      mainCamera.updateWorldMatrix(true,true)
+      // mainCamera.updateWorldMatrix(true, true)
       // console.log(mainCamera.position)
       // mainRenderer.state.reset();
       mainRenderer.resetState();

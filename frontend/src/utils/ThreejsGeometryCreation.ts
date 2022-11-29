@@ -26,7 +26,7 @@ export interface THREEGeoSettings {
 export function addPolygonsFromCoordsAr(settings: THREEGeoSettings): void {
   let polygeom = new THREE.BufferGeometry()
   //let shapes: THREE.Shape[] =[]
-  // console.log(settings.color.length)
+  // console.log(settings.scene)
   let geoms: THREE.BufferGeometry[][] = settings.color instanceof Array ? [[], [], []] : [[]]
   if (settings.color instanceof Array) {
     geoms = createGeometryForBuildings(settings)
