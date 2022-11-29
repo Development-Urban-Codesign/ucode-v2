@@ -9,7 +9,7 @@ import { ThreejsSceneOnly } from "@/utils/ThreejsSceneOnly";
 import { computed, onMounted } from "vue";
 import { useStore } from "vuex";
 import {
-  getbuildingsFromDB, getDrivingLaneFromDB, getGreeneryFromDBTexture, getGreeneryJsonFromDB, getTrafficSignalFromDB, getTreeJsonFromDB, getTreesFromDB, getWaterFromDB, getTrafficSignalDataFromDB, getbuildingsDataFromDB
+  getbuildingsFromDB, getDrivingLaneFromDB, getGreeneryFromDBTexture, getGreeneryJsonFromDB, getTrafficSignalFromDB, getTreeJsonFromDB, getTreesFromDB, getWaterFromDB, getTrafficSignalDataFromDB, getbuildingsDataFromDB, getTramLineDataFromDB
 } from "../service/backend.service";
 import { ThreejsScene } from "@/utils/ThreejsScene";
 import type { FeatureCollection } from "@turf/helpers";
@@ -34,6 +34,7 @@ const populateMap = async () => {
   await createAoiPlane();
   emit("addLayer", threeJsScene3d.layer)
   emit("addLayer", threeJsSceneFlat.layer, "routes")
+  await sendTramLineRequest();
   store.dispatch("aoi/setMapIsPopulated");
   store.commit("ui/aoiMapPopulated", true);
 }
@@ -250,6 +251,35 @@ const sendTrafficSignalRequest = async () => {
   emit("addLayer", trafficSignalLayer)
 
 }
+
+const sendTramLineRequest = async () =>{
+  
+ 
+    const tramLaneData = await getTramLineDataFromDB(store.state.aoi.projectSpecification.project_id);
+    store.commit("map/addSource", {
+      id: "tram_line",
+      geojson: {
+        type: "geojson",
+        data: tramLaneData.data,
+      },
+    });
+    store.commit("map/addLayer", {
+      id: "tram_line",
+      type: "line",
+      source: "tram_line",
+      layout: {
+        "line-join": "round",
+        "line-cap": "round",
+      },
+      paint: {
+        "line-color": "#FFFF00",
+        "line-width": 2
+      
+      },
+    });
+    
+  }
+
 const sendTrafficSignalRequestTHREE = async () => {
 
   const trafficSignalData = await getTrafficSignalDataFromDB(store.state.aoi.projectSpecification.project_id);

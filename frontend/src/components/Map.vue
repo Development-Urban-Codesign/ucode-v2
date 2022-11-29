@@ -301,6 +301,11 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface, beforeL
     layerHirarchy.push({ layer: ThreeJsSceneFlat, orderId: 0 })
   }
 
+  const TramLayer = map.getLayer("tram_line")
+  if (typeof TramLayer !== 'undefined') {
+    layerHirarchy.push({ layer: TramLayer, orderId: 90 })
+  }
+
 
 
 

@@ -464,6 +464,17 @@ export async function getRoutesFromDB(projectId: string) {
   return response;
 }
 
+export async function getTramLineFromOSM(bbox: BoundingBox,projectId: string) {
+  HTTP.post("get-tram-lines-from-osm", {
+    bbox: bbox,
+    projectId: projectId,
+  }).then(() => store.dispatch("aoi/setDataIsLoaded"));
+}
+
+export async function getTramLineDataFromDB(projectId: string) {
+  const response = await HTTP.post("get-tram-line-from-db", projectId);
+  return response;
+}
 
 export async function getWaterFromOSM(bbox: BoundingBox,projectId: string) {
   HTTP.post("get-water-from-osm", {

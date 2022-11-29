@@ -35,6 +35,8 @@ from db import (
     get_traffic_signal_from_db,
     get_project_specification_from_db,
     get_routes_from_db,
+    drop_tram_line_table,
+    get_tram_line_from_db,
     drop_water_table,
     get_water_from_db
 
@@ -745,3 +747,95 @@ async def get_water_from_osm_api(request: Request):
     cursor.close()
     connection.close()
     return "gg"
+
+@app.post("/get-tram-lines-from-osm")
+async def get_tram_lines_from_osm_api(request: Request):
+    
+    data = await request.json()
+    projectId = data["projectId"]
+    drop_tram_line_table(projectId)
+    xmin = sure_float(data['bbox']["xmin"])
+    ymin = sure_float(data['bbox']["ymin"])
+    xmax = sure_float(data['bbox']["xmax"])
+    ymax = sure_float(data['bbox']["ymax"]) 
+
+    overpass_url = "http://overpass-api.de/api/interpreter"
+    overpass_query_tram_lines = """
+         [out:json];
+         relation["type"="route"]["route"="tram"](%s,%s,%s,%s);
+        
+        convert item ::=::,::geom=geom(),_osm_type=type();
+        out geom;
+     """ % (
+        ymin,
+        xmin,
+        ymax,
+        xmax,
+    )
+
+    response_tram_lines = requests.get(overpass_url, params={"data": overpass_query_tram_lines})
+
+    data_tram_lines = response_tram_lines.json()
+   
+    connection = connect()
+    cursor = connection.cursor()
+
+    insert_query_tram_lane= '''
+        INSERT INTO tram_line (project_id,lane_name,starts_from,arrives_to, geom) VALUES (%s,%s,%s,%s, ST_SetSRID(st_astext(st_geomfromgeojson(%s)), 4326));
+
+    '''
+
+    for elem in data_tram_lines["elements"]:
+       
+        lane_name=None
+        if 'name' in elem["tags"]: lane_name = elem["tags"]['name']
+        starts_from=None
+        if 'from' in elem["tags"]: starts_from = elem["tags"]['from']
+        arrives_to=None
+        if 'to' in elem["tags"]: arrives_to = elem["tags"]['to']
+        
+        for geom in elem["geometry"]['geometries']:
+            
+            if geom["type"]=='LineString':
+                tram_geom = json.dumps(geom)
+                
+                cursor.execute(insert_query_tram_lane, (projectId,lane_name,starts_from,arrives_to, tram_geom,))
+
+    connection.commit()
+    cursor.close()
+    connection.close()
+    
+    
+    connection = connect()
+    cursor = connection.cursor()
+    
+    delete_station_geometries_query= '''
+
+        delete from tram_line where ST_IsClosed(geom);
+        
+        delete FROM tram_line a
+        WHERE NOT EXISTS 
+        (SELECT 1 FROM tram_line b 
+        WHERE a.id != b.id
+        AND ST_Intersects(a.geom, b.geom) AND ST_Touches(a.geom, b.geom));
+
+        update tram_line set geom = st_astext(st_transform(st_setsrid(ST_Collect(
+            ST_OffsetCurve(st_transform(ST_SetSRID(geom, 4326), 26986), 0.4, 'quad_segs=4 join=mitre mitre_limit=2.2'),
+            ST_OffsetCurve(st_transform(ST_SetSRID(geom, 4326), 26986), -0.4, 'quad_segs=4 join=mitre mitre_limit=2.2')
+        ),26986),4326));
+
+       
+    '''
+    cursor.execute(delete_station_geometries_query)
+    
+    connection.commit()
+    cursor.close()
+    connection.close()
+    
+    return "tram lanes retrieved"
+
+@app.post("/get-tram-line-from-db")
+async def get_tram_line_from_db_api(request: Request):
+    projectId = await request.json()
+    print(projectId)
+    return get_tram_line_from_db(projectId)
