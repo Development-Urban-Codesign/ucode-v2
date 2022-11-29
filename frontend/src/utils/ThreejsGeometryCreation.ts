@@ -390,7 +390,7 @@ export function addLineFromCoordsAr(settings: THREEGeoSettings): void {//Lines n
 }
 export function addLineFromCoordsAr1(settings: THREEGeoSettings): void {//workaround until lines work
   let polygeoms: THREE.BufferGeometry[] = []
-  console.log(settings.geoJson)
+  // console.log(settings.geoJson)
   let material: THREE.MeshBasicMaterial = new THREE.MeshBasicMaterial()
   settings.geoJson.features.forEach((feature: Feature) => {
     material = new THREE.MeshBasicMaterial({ color: feature.properties?.color || settings.color });
@@ -402,6 +402,7 @@ export function addLineFromCoordsAr1(settings: THREEGeoSettings): void {//workar
       const geom = BufferGeometryUtils.mergeBufferGeometries(polygeoms)
       const mesh = new THREE.Mesh(geom, material)
       mesh.name = feature.properties?.route_name
+      mesh.translateY(settings.height)
       settings.scene.add(mesh);
       // console.count("addMesh")
     }
@@ -413,8 +414,8 @@ export function addLineFromCoordsAr1(settings: THREEGeoSettings): void {//workar
     const geom = BufferGeometryUtils.mergeBufferGeometries(polygeoms)
     const mesh = new THREE.Mesh(geom, material)
     mesh.name = settings.geoJson.features[0].properties?.id
+    mesh.translateY(settings.height)
     settings.scene.add(mesh);
-    // console.count("addMesh,")
   }
 }
 

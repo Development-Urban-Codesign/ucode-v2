@@ -32,9 +32,11 @@ const populateMap = async () => {
   await sendTreeRequest();
   await sendWaterRequestTHREE();
   await createAoiPlane();
+  // await sendTramLineRequest();
+  await sendTramLineRequestTHREE();
   emit("addLayer", threeJsScene3d.layer)
   emit("addLayer", threeJsSceneFlat.layer, "routes")
-  await sendTramLineRequest();
+  
   store.dispatch("aoi/setMapIsPopulated");
   store.commit("ui/aoiMapPopulated", true);
 }
@@ -190,14 +192,7 @@ const sendDrivingLaneRequestTHREE = async () => {
       'line-dasharray': [10, 20]
     }
   })
-  // addLineFromCoordsAr1({
-  //   scene: threeJsSceneFlat.scene,
-  //   bbox: store.state.aoi.projectSpecification.bbox,
-  //   geoJson: drivingLanedata.lane,
-  //   color: "#ffffff",
-  //   height: 0.15,
-  //   extrude: .3
-  // })
+  
 
 }
 const sendDrivingLaneRequest = async () => {
@@ -252,6 +247,20 @@ const sendTrafficSignalRequest = async () => {
 
 }
 
+const sendTramLineRequestTHREE = async () =>{
+  
+ 
+    const tramLaneData = await getTramLineDataFromDB(store.state.aoi.projectSpecification.project_id);
+    addLineFromCoordsAr1({
+    scene: threeJsSceneFlat.scene,
+    bbox: store.state.aoi.projectSpecification.bbox,
+    geoJson: tramLaneData.data,
+    color: "#676767",
+    height: 0.2,
+    extrude: .12
+  })
+  
+  }
 const sendTramLineRequest = async () =>{
   
  

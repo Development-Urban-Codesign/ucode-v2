@@ -47,7 +47,7 @@ import {
   getTrafficLightsFromOSM,
   getTrafficSignalFromDB,
   getTramLineFromOSM,
-  getTramLineDataFromDB
+  getTramLineDataFromDB,
   getWaterFromOSM,
 } from "../service/backend.service";
 
