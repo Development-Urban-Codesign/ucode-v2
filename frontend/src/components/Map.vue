@@ -58,7 +58,7 @@ const devMode = computed(() => store.getters["ui/devMode"]);
 const mapContainer = shallowRef(null);
 let map: Map = {} as Map;
 const mapClicks = reactive({ clickedCoordinates: [] })
-const commentClicks = reactive<{commentCoordinates: number[]}>({ commentCoordinates: [] })
+const commentClicks = reactive<{ commentCoordinates: number[] }>({ commentCoordinates: [] })
 let lineDrawCreated = ref(0)
 let mapStyleLoaded = ref(false)
 //let activeMarker = reactive<any>({});
@@ -93,9 +93,9 @@ onMounted(() => {
     attributionControl: false
   });
 
-
+  
   map.on("load", function () {
-
+    map.painter.opaquePassEnabledForLayer = function() { return false; }
     mapStyleLoaded.value = true
 
     unsubscribeFromStore = store.subscribe((mutation, state) => {
@@ -165,18 +165,18 @@ function onUp() {
   map.off('mousemove', onMoveComment);
   map.off('touchmove', onMoveComment);
 }
-function onMoveComment(e: { lngLat: { lng: number; lat: number; }; }) { commentClicks.commentCoordinates = [e.lngLat.lng, e.lngLat.lat];}
+function onMoveComment(e: { lngLat: { lng: number; lat: number; }; }) { commentClicks.commentCoordinates = [e.lngLat.lng, e.lngLat.lat]; }
 
-function centerMapOnLocation(location: LngLatLike) { map.panTo(location);}
+function centerMapOnLocation(location: LngLatLike) { map.panTo(location); }
 
-function getMapCenter() { commentClicks.commentCoordinates = ([map.getCenter().lng, map.getCenter().lat]);}
+function getMapCenter() { commentClicks.commentCoordinates = ([map.getCenter().lng, map.getCenter().lat]); }
 
 function deleteCommentLayer() {
   map.removeLayer('ownComments')
   map.removeSource('ownComments')
   map.removeImage('comment.png')
 }
-const triggerRepaint= () =>{
+const triggerRepaint = () => {
   map.triggerRepaint()
 }
 // threejs layer
@@ -186,10 +186,10 @@ const addThreejsShape = () => {
   addLayerToMap(TreeModel(13.74647, 51.068646, 100));
   map.triggerRepaint()
 }
-function deleteOwnComment(){
-    map.removeLayer('ownComments')
-    map.removeSource('ownComments')
-    map.removeImage('comment.png')
+function deleteOwnComment() {
+  map.removeLayer('ownComments')
+  map.removeSource('ownComments')
+  map.removeImage('comment.png')
 }
 
 const addCommentToMap = (source: any, layer: any) => {
@@ -274,11 +274,13 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
     layerHirarchy.push({ layer: drivinglane, orderId: 70 })
   }
   const treeLayer = map.getLayer("trees")
-  if(typeof treeLayer !== 'undefined'){
-  layerHirarchy.push({layer: treeLayer, orderId: 80})}
+  if (typeof treeLayer !== 'undefined') {
+    layerHirarchy.push({ layer: treeLayer, orderId: 80 })
+  }
   const treeLayer3js = map.getLayer("TreeVariants/Tree_02.glb")
-  if(typeof treeLayer3js !== 'undefined'){
-  layerHirarchy.push({layer: treeLayer3js, orderId: 80})}
+  if (typeof treeLayer3js !== 'undefined') {
+    layerHirarchy.push({ layer: treeLayer3js, orderId: 80 })
+  }
   const routesLayer = map.getLayer("routes")
   if (typeof routesLayer !== 'undefined') {
     layerHirarchy.push({ layer: routesLayer, orderId: 99 })
@@ -303,14 +305,13 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
 
 
 
-
   for (let index = 0; index < layerHirarchy.length; index++) {
     const x = layerHirarchy[index];
       for (let index = 0; index < layerHirarchy.length; index++) {
         const y = layerHirarchy[index];
          if(x.layer !== y.layer && x.orderId>y.orderId){
            map.moveLayer(y.layer.id,x.layer.id)
-           //console.log("move layer " + x.layer.id + " over " +y.layer.id)
+           console.log("move layer " + x.layer.id + " over " +y.layer.id)
          }
     }
   }
@@ -493,7 +494,7 @@ onUnmounted(() => {
   width: 100%;
   position: absolute;
   /* background-color: darkgray; */
-  background: linear-gradient(rgba(195,245,255,1), rgba(255,199,111,1));
+  background: linear-gradient(rgba(195, 245, 255, 1), rgba(255, 199, 111, 1));
   margin: auto;
   display: flex;
   flex-direction: column;
