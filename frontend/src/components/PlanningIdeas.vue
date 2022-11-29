@@ -137,17 +137,17 @@ const sendRouteRequest = async () => {
             //'line-dasharray': [1,5]
         }
     })
-    store.commit("map/addLayer", {
-      "id": "routes-symbols",
-      "type": "symbol",
-      "source": "routes",
-      "layout": {
-        "symbol-placement": "line",
-        "text-font": ["Open Sans Regular Bold"],
-        "text-field": '{route_name}',
-        "text-size": 10
-      }
-    })
+    // store.commit("map/addLayer", {
+    //   "id": "routes-symbols",
+    //   "type": "symbol",
+    //   "source": "routes",
+    //   "layout": {
+    //     "symbol-placement": "line",
+    //     "text-font": ["Open Sans Regular Bold"],
+    //     "text-field": '{route_name}',
+    //     "text-size": 10
+    //   }
+    // })
     store.commit("ui/planningIdeasLoaded",true)
 
 };
