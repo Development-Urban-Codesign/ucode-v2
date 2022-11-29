@@ -862,7 +862,9 @@ async def get_side_walk_from_osm_api(request: Request):
     
     projectId = data["projectId"]
     drop_sidewalk_table(projectId)
+
     drop_sidewalk_polygon(projectId)
+
     xmin = sure_float(data['bbox']["xmin"])
     ymin = sure_float(data['bbox']["ymin"])
     xmax = sure_float(data['bbox']["xmax"])
@@ -873,7 +875,6 @@ async def get_side_walk_from_osm_api(request: Request):
     gdf = ox.graph_to_gdfs(G, nodes=False, edges=True)
     walk = json.loads(gdf.to_json())
 
-
     connection = connect()
     cursor = connection.cursor()
 
@@ -881,12 +882,10 @@ async def get_side_walk_from_osm_api(request: Request):
         INSERT INTO sidewalk (project_id, highway, geom) VALUES (%s, %s, ST_SetSRID(st_astext(st_geomfromgeojson(%s)), 4326));
     '''
     for f in walk['features']:
-
         geom = json.dumps(f['geometry'])
         highway=None
         if 'highway' in f['properties']: highway =f['properties']['highway']
         cursor.execute(insert_query_sidewalk, (projectId,highway, geom,))
-    
     
     connection.commit()
     cursor.close()
@@ -934,3 +933,4 @@ async def get_side_walk_from_osm_api(request: Request):
 async def get_sidewalk_from_db_api(request: Request):
     projectId = await request.json()
     return get_sidewalk_from_db(projectId)
+

@@ -55,6 +55,7 @@ import {
   getWaterFromOSM,
   getSideWalkFromOSM,
   getSidewalkFromDB
+
 } from "../service/backend.service";
 
 const store = useStore();
@@ -253,6 +254,7 @@ const sendSideWalkRequest = async (mode)=>{
       store.state.aoi.projectSpecification.bbox,
       store.state.aoi.projectSpecification.project_id
     );
+
   }
   else {
     const sidewalkData = await getSidewalkFromDB(store.state.aoi.projectSpecification.project_id);
@@ -274,5 +276,6 @@ const sendSideWalkRequest = async (mode)=>{
     });
     
   }
+
 }
 </script>
