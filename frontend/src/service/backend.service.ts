@@ -405,7 +405,8 @@ export async function getTramLineDataFromDB(projectId: string) {
   return response;
 }
 
-export async function getWaterFromOSM(bbox: BoundingBox, projectId: string) {
+
+export async function getWaterFromOSM(bbox: BoundingBox,projectId: string) {
   HTTP.post("get-water-from-osm", {
     bbox: bbox,
     projectId: projectId,
