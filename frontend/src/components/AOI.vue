@@ -4,14 +4,13 @@
 
 <script lang="ts" setup>
 import DevUI from "@/components/DevUI.vue";
-import { addGeoOnPointsToThreejsScene, addLineFromCoordsAr, addLineFromCoordsAr1, addPolygonsFromCoordsAr } from '@/utils/ThreejsGeometryCreation';
+import { addGeoOnPointsToThreejsScene, addLineFromCoordsAr1, addPolygonsFromCoordsAr } from '@/utils/ThreejsGeometryCreation';
 import { ThreejsSceneOnly } from "@/utils/ThreejsSceneOnly";
 import { computed, onMounted } from "vue";
 import { useStore } from "vuex";
 import {
   getbuildingsFromDB, getDrivingLaneFromDB, getGreeneryFromDBTexture, getGreeneryJsonFromDB, getTrafficSignalFromDB, getTreeJsonFromDB, getTreesFromDB, getWaterFromDB, getTrafficSignalDataFromDB, getbuildingsDataFromDB, getTramLineDataFromDB
 } from "../service/backend.service";
-import { ThreejsScene } from "@/utils/ThreejsScene";
 import type { FeatureCollection } from "@turf/helpers";
 const store = useStore();
 const devMode = computed(() => store.getters["ui/devMode"]);
@@ -36,7 +35,7 @@ const populateMap = async () => {
   await sendTramLineRequestTHREE();
   emit("addLayer", threeJsScene3d.layer)
   emit("addLayer", threeJsSceneFlat.layer, "routes")
-  
+
   store.dispatch("aoi/setMapIsPopulated");
   store.commit("ui/aoiMapPopulated", true);
 }
@@ -129,34 +128,26 @@ const createAoiPlane = async () => {
   })
 }
 const sendTreeRequest = async () => {
-  if (true) {//import trees with THREE JS
-    const treeJson: FeatureCollection = await getTreeJsonFromDB(store.state.aoi.projectSpecification.project_id);
-    if (true) {
-      let trees: string[] = ["Tree_01.glb", "Tree_02.glb", "Tree_03.glb"]
-      let ArrayIndex: number[] = []
-      treeJson.features.forEach(() => {
-        let int = Math.round((Math.random() * ((trees.length - 1) - 0)) + 0)
-        ArrayIndex.push(int)
-      })
-      trees.forEach((tree, _index) => {
-        let partJson: { type: string, features: any[] } = { type: "FeatureCollection", features: [] }
-        treeJson.features.forEach((feature, index) => {
-          if (ArrayIndex[index] == _index) {
-            partJson.features.push(feature)
-          }
-        })
-        addGeoOnPointsToThreejsScene(threeJsScene3d.scene, partJson, "TreeVariants/" + tree, store.state.aoi.projectSpecification.bbox, [0.7, 0.8], true)
 
-      })
-    }
+  const treeJson: FeatureCollection = await getTreeJsonFromDB(store.state.aoi.projectSpecification.project_id);
 
-    else { //the old way with threejs, only one treemodel
-      emit("addLayer", ThreejsScene(store.state.aoi.projectSpecification.bbox, treeJson, "Tree2.glb", [0.7, 0.8], true));
-    }
-  } else { //the old way with deckgl
-    const treeLayer = await getTreesFromDB(store.state.aoi.projectSpecification.project_id);
-    emit("addLayer", treeLayer);
-  }
+  let trees: string[] = ["Tree_01.glb", "Tree_02.glb", "Tree_03.glb"]
+  let ArrayIndex: number[] = []
+  treeJson.features.forEach(() => {
+    let int = Math.round((Math.random() * ((trees.length - 1) - 0)) + 0)
+    ArrayIndex.push(int)
+  })
+  trees.forEach((tree, _index) => {
+    let partJson: { type: string, features: any[] } = { type: "FeatureCollection", features: [] }
+    treeJson.features.forEach((feature, index) => {
+      if (ArrayIndex[index] == _index) {
+        partJson.features.push(feature)
+      }
+    })
+    addGeoOnPointsToThreejsScene(threeJsScene3d.scene, partJson, "TreeVariants/" + tree, store.state.aoi.projectSpecification.bbox, [0.7, 0.8], true)
+
+  })
+
 }
 
 
@@ -192,7 +183,7 @@ const sendDrivingLaneRequestTHREE = async () => {
       'line-dasharray': [10, 20]
     }
   })
-  
+
 
 }
 const sendDrivingLaneRequest = async () => {
@@ -247,11 +238,11 @@ const sendTrafficSignalRequest = async () => {
 
 }
 
-const sendTramLineRequestTHREE = async () =>{
-  
- 
-    const tramLaneData = await getTramLineDataFromDB(store.state.aoi.projectSpecification.project_id);
-    addLineFromCoordsAr1({
+const sendTramLineRequestTHREE = async () => {
+
+
+  const tramLaneData = await getTramLineDataFromDB(store.state.aoi.projectSpecification.project_id);
+  addLineFromCoordsAr1({
     scene: threeJsSceneFlat.scene,
     bbox: store.state.aoi.projectSpecification.bbox,
     geoJson: tramLaneData.data,
@@ -259,35 +250,35 @@ const sendTramLineRequestTHREE = async () =>{
     height: 0.2,
     extrude: .12
   })
-  
-  }
-const sendTramLineRequest = async () =>{
-  
- 
-    const tramLaneData = await getTramLineDataFromDB(store.state.aoi.projectSpecification.project_id);
-    store.commit("map/addSource", {
-      id: "tram_line",
-      geojson: {
-        type: "geojson",
-        data: tramLaneData.data,
-      },
-    });
-    store.commit("map/addLayer", {
-      id: "tram_line",
-      type: "line",
-      source: "tram_line",
-      layout: {
-        "line-join": "round",
-        "line-cap": "round",
-      },
-      paint: {
-        "line-color": "#FFFF00",
-        "line-width": 2
-      
-      },
-    });
-    
-  }
+
+}
+const sendTramLineRequest = async () => {
+
+
+  const tramLaneData = await getTramLineDataFromDB(store.state.aoi.projectSpecification.project_id);
+  store.commit("map/addSource", {
+    id: "tram_line",
+    geojson: {
+      type: "geojson",
+      data: tramLaneData.data,
+    },
+  });
+  store.commit("map/addLayer", {
+    id: "tram_line",
+    type: "line",
+    source: "tram_line",
+    layout: {
+      "line-join": "round",
+      "line-cap": "round",
+    },
+    paint: {
+      "line-color": "#FFFF00",
+      "line-width": 2
+
+    },
+  });
+
+}
 
 const sendTrafficSignalRequestTHREE = async () => {
 
