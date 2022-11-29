@@ -1,6 +1,5 @@
 <template>
-    <transition  name="slide">
-        <div v-if="props.show" class="comment-container">
+        <div class="comment-container">
             <v-row no-gutters justify="center">
                 <v-btn v-show="commentStep == 0" class="mb-10;" size="large" rounded="pill" color="primary"
                     @touchstart="emit('getCenterOnMap')" @mousedown="emit('getCenterOnMap')" @click="createComment">
@@ -58,7 +57,6 @@
             </v-row>
 
         </div>
-    </transition>
 </template>
 <script lang="ts" setup>
 import { useStore } from 'vuex';
@@ -74,10 +72,6 @@ let allMarker = reactive<FeatureCollection>({ type: "FeatureCollection", feature
 
 const props = defineProps({
     clickedCoordinates: Array<Number>,
-    show: {
-        type: Boolean,
-        default: false
-    }
 })
 
 const emit = defineEmits(["addComment", "getCenterOnMap", "centerMapOnLocation", "deleteCommentLayer", "updateSourceData",])
@@ -189,22 +183,5 @@ const saveComment = () => {
     padding-bottom: v-bind('paddingBot');
     width: 100%;
     order: v-bind('flexOrder');
-}
-.slide-enter-active{
-    transform: translateX(-100%);
-    transition: transform .25s ease-in-out;
-}
-
-.slide-enter-to{
-  transform: translateX(0%);
-}
-
- .slide-leave-active {
-    transform: translateX(0%);
-    transition: transform .25s ease-in-out;
-}
-
-.slide-leave-to{
-    transform: translateX(-100%);
 }
 </style>

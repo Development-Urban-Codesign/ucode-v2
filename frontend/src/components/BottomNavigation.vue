@@ -33,4 +33,7 @@
     .v-bottom-navigation{
         position: relative !important;
     }
+    .v-btn{
+        color: #747474;
+    }
 </style>

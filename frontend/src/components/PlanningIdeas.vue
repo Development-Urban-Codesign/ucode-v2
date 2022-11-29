@@ -1,8 +1,6 @@
 <template>
-  <transition name="slide">
     <v-sheet
         class="mx-auto planning-ideas-options"
-        v-if="props.show"
     >
       <v-btn v-if = "store.state.ui.planningIdeasLoaded" :key="100"
         size="small" 
@@ -30,7 +28,6 @@
         </v-btn>
       </div>
     </v-sheet>
-  </transition>
 </template>
 
 
@@ -46,13 +43,6 @@ import {
 
 
 const store = useStore();
-
-const props = defineProps({
-    show: {
-        type: Boolean,
-        default: false
-    }
-})
 
 const emit = defineEmits(["activateSelectedPlanningIdea", "navigateToPlanningIdea"])
 
@@ -161,22 +151,5 @@ watch(store.state.ui, function (state) {
   width: fit-content;
   background: rgba(255,255,255,0.4);
   backdrop-filter: blur(5px);
-}
-.slide-enter-active{
-    transform: translateX(-100%);
-    transition: transform .25s ease-in-out;
-}
-
-.slide-enter-to{
-  transform: translateX(0%);
-}
-
- .slide-leave-active {
-    transform: translateX(0%);
-    transition: transform .25s ease-in-out;
-}
-
-.slide-leave-to{
-    transform: translateX(-100%);
 }
 </style>

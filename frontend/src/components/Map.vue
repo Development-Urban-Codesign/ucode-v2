@@ -16,9 +16,9 @@
         <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
         <!-- <Quests /> -->
         
-          <PlanningIdeas :show="mapStyleLoaded && tabIndex==='planning'" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
+          <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
             @navigateToPlanningIdea="navigateToPlanningIdea" />
-          <FreeComment :show="tabIndex==='planning'" @deleteCommentLayer="deleteCommentLayer" @centerMapOnLocation="centerMapOnLocation"
+          <FreeComment @deleteCommentLayer="deleteCommentLayer" @centerMapOnLocation="centerMapOnLocation"
             @addComment="addCommentToMap" @getCenterOnMap="getMapCenter"
             :clickedCoordinates="commentClicks.commentCoordinates" @updateSourceData="updateSourceData" />
 

@@ -1,6 +1,6 @@
 <template>
     <transition  name="slide">
-        <div v-if="props.show" className="bg">
+        <div v-if="props.show" className="comment-list">
             <v-card
                 title="Platzhalter"
                 subtitle="This is a subtitle"
@@ -11,8 +11,10 @@
                 subtitle="This is a subtitle"
                 text="This is content"
             ></v-card>
-        
         </div>
+    </transition>
+    <transition  name="fade">
+        <div v-if="props.show" className="backdrop"></div>
     </transition>
 </template>
 
@@ -26,27 +28,34 @@
 </script>
 
 <style scoped>
-.bg{
+.comment-list{
     position: fixed;
     top: 0px;
     width: 100vw;
     height: 93.5vh;
-    background: rgba(210,210,210,0.4);
-    backdrop-filter: blur(5px);
-    z-index: 100;
+    z-index: 1001;
     padding: 1em 0em;
     overflow-x: hidden !important;
     overflow-y: scroll !important;
-    scrollbar-width: none !important;
+    scrollbar-width: none !important; 
 }
 
-.bg::-webkit-scrollbar {
+.backdrop{
+    position: fixed;
+    top: 0px;
+    width: 100vw;
+    height: 100vh;
+    backdrop-filter: blur(24px);
+    z-index: 1000;
+}
+
+.comment-list::-webkit-scrollbar {
   display: none;
 }
 
 .slide-enter-active{
     transform: translateX(100%);
-    transition: transform .25s ease-in-out;
+    transition: transform .3s ease-in-out;
 }
 
 .slide-enter-to{
@@ -55,11 +64,29 @@
 
  .slide-leave-active {
     transform: translateX(0%);
-    transition: transform .25s ease-in-out;
+    transition: transform .3s ease-in-out;
 }
 
 .slide-leave-to{
     transform: translateX(100%);
+}
+
+.fade-enter-active{
+    opacity: 0;
+    transition: opacity 0.1s ease-in-out;
+}
+
+.fade-enter-to{
+    opacity: 1;
+}
+
+ .fade-leave-active {
+    opacity: 1;
+    transition: opacity 0.1s ease-in-out;
+}
+
+.fade-leave-to{
+    opacity: 0;
 }
 
 .v-card{
