@@ -335,6 +335,7 @@ const sendSideWalkRequest = async (mode) => {
     });
 
   }
+
 }
 
 const sendBikeRequest = async (mode) => {
