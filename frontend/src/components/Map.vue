@@ -1,32 +1,32 @@
 <template>
-  <div class="map-wrap" ref="mapContainer">
-    <div class="map" id="map">
-      <v-row v-if="devMode" style="position: absolute; right: 20px; top: 20px; z-index: 999">
-        <v-btn color="success" class="ml-2" @click="getCommentData">
-          Show comments
-        </v-btn>
-        <v-btn color="error" class="ml-2" @click="addThreejsShape">
-          Threejs
-        </v-btn>
-        <v-btn color="success" class="ml-2" @click="addDeckglShape">
-          Deckgl
-        </v-btn>
-      </v-row>
-      <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
-      <Quests />
-
-      <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
-        @navigateToPlanningIdea="navigateToPlanningIdea" />
-      <FreeComment @deleteCommentLayer="deleteCommentLayer" @centerMapOnLocation="centerMapOnLocation"
-        @addComment="addCommentToMap" @getCenterOnMap="getMapCenter"
-        :clickedCoordinates="commentClicks.commentCoordinates" @updateSourceData="updateSourceData" />
-      <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
-        @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
-        :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
-      <Comment @removePulseLayer="removePulseLayerFromMap" />
-
+    <div class="map-wrap" ref="mapContainer">
+      <div class="map" id="map">
+        <v-row v-if="devMode" style="position: absolute; right: 20px; top: 20px; z-index: 999">
+          <v-btn color="success" class="ml-2" @click="getCommentData">
+            Show comments
+          </v-btn>
+          <v-btn color="error" class="ml-2" @click="addThreejsShape">
+            Threejs
+          </v-btn>
+          <v-btn color="success" class="ml-2" @click="addDeckglShape">
+            Deckgl
+          </v-btn>
+        </v-row>
+        <AOI v-if="mapStyleLoaded" @addLayer="addLayerToMap" @addImage="addImageToMap" @triggerRepaint="triggerRepaint" />
+        <Quests v-if="devMode"/>
+        <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
+            @navigateToPlanningIdea="navigateToPlanningIdea" />
+        <FreeComment :showCommentDialog="showCommentDialog" @deleteCommentLayer="deleteCommentLayer" @centerMapOnLocation="centerMapOnLocation"
+          @addComment="addCommentToMap" @getCenterOnMap="getMapCenter"
+          :clickedCoordinates="commentClicks.commentCoordinates" @updateSourceData="updateSourceData" @closeCommentDialog="closeCommentDialog"/>
+        <CommentView :show="tabIndex=='discussion'"/>
+        <BottomNavigation @tabIndexChanged="switchView" :tabIndex="tabIndex"/>
+        <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
+          @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
+          :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
+        <Comment @removePulseLayer="removePulseLayerFromMap" />
+      </div>
     </div>
-  </div>
 </template>
 
 
@@ -37,12 +37,12 @@ import Contribution from "@/components/Contribution.vue";
 import PlanningIdeas from "@/components/PlanningIdeas.vue";
 import Quests from "@/components/Quests.vue";
 import FreeComment from "@/components/FreeComment.vue";
+import BottomNavigation from "@/components/BottomNavigation.vue";
+import CommentView from "@/components/CommentView.vue";
 import { getCommentsFromDB } from "@/service/backend.service";
 import type { ProjectSpecification } from "@/store/modules/aoi";
 import { HTTP } from "@/utils/http-common";
 import { pulseLayer } from "@/utils/pulseLayer";
-import { TreeModel } from "@/utils/TreeModel";
-import { ThreejsScene } from "@/utils/ThreejsScene";
 import { MapboxLayer } from "@deck.gl/mapbox/typed";
 import { ScenegraphLayer } from "@deck.gl/mesh-layers/typed";
 import * as turf from '@turf/turf';
@@ -59,10 +59,13 @@ const devMode = computed(() => store.getters["ui/devMode"]);
 const mapContainer = shallowRef(null);
 let map: Map = {} as Map;
 const mapClicks = reactive({ clickedCoordinates: [] })
-const commentClicks = reactive<{commentCoordinates: number[]}>({ commentCoordinates: [] })
+const commentClicks = reactive<{ commentCoordinates: number[] }>({ commentCoordinates: [] })
 let lineDrawCreated = ref(0)
 let mapStyleLoaded = ref(false)
+let tabIndex = ref("planning")
+let showCommentDialog = ref(false)
 //let activeMarker = reactive<any>({});
+
 
 
 let unsubscribeFromStore = () => { };
@@ -93,9 +96,8 @@ onMounted(() => {
     attributionControl: false
   });
 
-
+  
   map.on("load", function () {
-
     mapStyleLoaded.value = true
 
     unsubscribeFromStore = store.subscribe((mutation, state) => {
@@ -165,31 +167,36 @@ function onUp() {
   map.off('mousemove', onMoveComment);
   map.off('touchmove', onMoveComment);
 }
-function onMoveComment(e: { lngLat: { lng: number; lat: number; }; }) { commentClicks.commentCoordinates = [e.lngLat.lng, e.lngLat.lat];}
+function onMoveComment(e: { lngLat: { lng: number; lat: number; }; }) { commentClicks.commentCoordinates = [e.lngLat.lng, e.lngLat.lat]; }
 
-function centerMapOnLocation(location: LngLatLike) { map.panTo(location);}
+function centerMapOnLocation(location: LngLatLike) { map.panTo(location); }
 
-function getMapCenter() { commentClicks.commentCoordinates = ([map.getCenter().lng, map.getCenter().lat]);}
+function getMapCenter() { commentClicks.commentCoordinates = ([map.getCenter().lng, map.getCenter().lat]); }
 
 function deleteCommentLayer() {
   map.removeLayer('ownComments')
   map.removeSource('ownComments')
   map.removeImage('comment.png')
 }
-
+const triggerRepaint = () => {
+  map.triggerRepaint()
+}
 // threejs layer
 const addThreejsShape = () => {
   //TODO type treemodel 
   // @ts-ignore
   addLayerToMap(TreeModel(13.74647, 51.068646, 100));
+  map.triggerRepaint()
 }
-function deleteOwnComment(){
-    map.removeLayer('ownComments')
-    map.removeSource('ownComments')
-    map.removeImage('comment.png')
+function deleteOwnComment() {
+  map.removeLayer('ownComments')
+  map.removeSource('ownComments')
+  map.removeImage('comment.png')
 }
 
 const addCommentToMap = (source: any, layer: any) => {
+
+  showCommentDialog.value = true
 
   // if (map.getSource(source.id) !== undefined) {
   //   // console.log("already in use")
@@ -226,8 +233,8 @@ store.commit("map/addLayer", {
 })
 
 
-const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
-  //console.log(layer.id)
+const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface, beforeLayer?: string) => {
+  // console.log(layer.id)
   const addedlayer = map.getLayer(layer.id)
   if (typeof addedlayer !== 'undefined') {
     removeLayerFromMap(layer.id)
@@ -242,7 +249,7 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
       addImageToMap(layer.paint["fill-pattern"]);
     }
   }
-  map?.addLayer(layer);
+  map?.addLayer(layer,beforeLayer? beforeLayer: "");
   const layerHirarchy: any[] = []// = reactive<[{layer: any, orderId: Number}]>([{}])
 
   const buildinglayer = map.getLayer("overpass_buildings")
@@ -271,14 +278,16 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
     layerHirarchy.push({ layer: drivinglane, orderId: 70 })
   }
   const treeLayer = map.getLayer("trees")
-  if(typeof treeLayer !== 'undefined'){
-  layerHirarchy.push({layer: treeLayer, orderId: 80})}
-  const treeLayer3js = map.getLayer("Tree2.glb")
-  if(typeof treeLayer3js !== 'undefined'){
-  layerHirarchy.push({layer: treeLayer3js, orderId: 80})}
+  if (typeof treeLayer !== 'undefined') {
+    layerHirarchy.push({ layer: treeLayer, orderId: 80 })
+  }
+  const treeLayer3js = map.getLayer("TreeVariants/Tree_02.glb")
+  if (typeof treeLayer3js !== 'undefined') {
+    layerHirarchy.push({ layer: treeLayer3js, orderId: 80 })
+  }
   const routesLayer = map.getLayer("routes")
   if (typeof routesLayer !== 'undefined') {
-    layerHirarchy.push({ layer: routesLayer, orderId: 75 })
+    layerHirarchy.push({ layer: routesLayer, orderId: 1 })
   }
   const routesSymbolLayer = map.getLayer("routes-symbols")
   if (typeof routesSymbolLayer !== 'undefined') {
@@ -288,18 +297,34 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface) => {
   if (typeof ownCommentLayer !== 'undefined') {
     layerHirarchy.push({ layer: ownCommentLayer, orderId: 100 })
   }
-
-
-  for (let index = 0; index < layerHirarchy.length; index++) {
-    const x = layerHirarchy[index];
-      for (let index = 0; index < layerHirarchy.length; index++) {
-        const y = layerHirarchy[index];
-         if(x.layer !== y.layer && x.orderId>y.orderId){
-           map.moveLayer(y.layer.id,x.layer.id)
-           //console.log("move layer " + x.layer.id + " over " +y.layer.id)
-         }
-    }
+  const ThreeJsScene3d = map.getLayer("threeJsScene3d")
+  if (typeof ThreeJsScene3d !== 'undefined') {
+    layerHirarchy.push({ layer: ThreeJsScene3d, orderId:  2})
   }
+  const ThreeJsSceneFlat = map.getLayer("threeJsSceneFlat")
+  if (typeof ThreeJsSceneFlat !== 'undefined') {
+    layerHirarchy.push({ layer: ThreeJsSceneFlat, orderId: 0 })
+  }
+
+  const TramLayer = map.getLayer("tram_line")
+  if (typeof TramLayer !== 'undefined') {
+    layerHirarchy.push({ layer: TramLayer, orderId: 90 })
+  }
+
+
+
+
+  // for (let index = 0; index < layerHirarchy.length; index++) {
+  //   const x = layerHirarchy[index];
+  //     for (let index = 0; index < layerHirarchy.length; index++) {
+  //       const y = layerHirarchy[index];
+  //        if(x.layer !== y.layer && x.orderId>y.orderId){
+  //          map.moveLayer(y.layer.id,x.layer.id)
+  //          console.log("move layer " + x.layer.id + " over " +y.layer.id)
+  //         //  console.log("map.moveLayer("+y.layer.id+","+x.layer.id+")")
+  //        }
+  //   }
+  // }
 
   // if (typeof buildinglayer !== 'undefined' && typeof greenerylayer !== 'undefined') {
   //   map?.moveLayer("overpass_greenery", "overpass_buildings")
@@ -456,7 +481,14 @@ const navigateToPlanningIdea = (planningIdeaBBOX: LngLatBoundsLike) => {
       curve: 4,
     });
   }, 2000);
+}
 
+const switchView = (newTabIndex: string) => {
+  tabIndex.value = newTabIndex
+}
+
+const closeCommentDialog = () => {
+  showCommentDialog.value = false
 }
 
 
@@ -474,17 +506,15 @@ onUnmounted(() => {
 }
 
 .map {
-
   height: 100%;
   width: 100%;
   position: absolute;
   /* background-color: darkgray; */
-  background: linear-gradient(rgba(195,245,255,1), rgba(255,199,111,1));
+  background: linear-gradient(rgba(195, 245, 255, 1), rgba(255, 199, 111, 1));
   margin: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-
 }
 </style>

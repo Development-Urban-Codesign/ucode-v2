@@ -11,6 +11,7 @@ const map = {
         minZoom: 4,
         maxZoom: 23,
         maxPitch: 85,
+        // style: {version: 8,sources: {},layers: []}
         style: {
             'version': 8,
             'name': 'Blank',

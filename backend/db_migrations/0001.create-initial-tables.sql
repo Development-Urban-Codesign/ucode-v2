@@ -16,3 +16,5 @@ create table if not exists driving_lane_polygon (id SERIAL PRIMARY KEY, lanes te
 create table if not exists routes (id SERIAL PRIMARY KEY, title VARCHAR (300), color CHAR(7), width FLOAT(2),geom geometry(LINESTRING, 4326));
 
 create table if not exists traffic_signal (id SERIAL PRIMARY KEY, geom geometry(Point, 4326));
+
+create table if not exists tram_line (id SERIAL PRIMARY KEY, project_id TEXT, lane_name text, starts_from text, arrives_to text, geom geometry(Geometry, 4326));

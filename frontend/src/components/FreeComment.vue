@@ -1,61 +1,31 @@
 <template>
     <div class="comment-container">
-        <v-row no-gutters justify="center">
-            <v-btn v-show="commentStep == 0" class="mb-10;" size="large" rounded="pill" color="primary"
-                @touchstart="emit('getCenterOnMap')" @mousedown="emit('getCenterOnMap')" @click="createComment">
-                Kommentieren
-            </v-btn>
-            <v-col v-if="commentStep == 1" cols-sx="12" sm="10" md="6" lg="4">
-                <v-card style="text-align: center;"
-                    text="Wähle eine Route und positioniere den Kommentar per Drag'n'Drop">
-                    <v-btn @click="cancelComment" icon="mdi-chevron-left" variant="plain"
-                        style="position: absolute; left: -5px; top:-5px;">
-                    </v-btn>
-                    <v-row justify="center" style="min-height: 10px; margin:0px">
-                        <v-icon>
-                            mdi-circle-medium
-                        </v-icon>
-                        <v-icon color="grey">
-                            mdi-circle-medium
-                        </v-icon>
-                    </v-row>
-                    <v-card-actions style="justify-content: center;">
-                        <v-btn @click="positionOkay" style="left:0; top:0; transform: 0;" rounded="lg" location="center"
-                            color="secondary">Weiter</v-btn>
-                    </v-card-actions>
-                </v-card>
-            </v-col>
-            <v-col v-if="commentStep == 2" cols-sx="12" sm="10" md="6" lg="4">
-                <v-card style="text-align: center;" text="Schreibe deinen Kommentar">
-                    <v-btn @click="cancelComment" icon="mdi-close" variant="plain"
-                        style="position: absolute; right: -5px; top:-5px;">
-                    </v-btn>
-                    <v-row justify="center" style="min-height: 10px; margin:0px">
-                        <v-icon color="grey">
-                            mdi-circle-medium
-                        </v-icon>
-                        <v-icon>
-                            mdi-circle-medium
-                        </v-icon>
-                    </v-row>
-                    <v-row no-gutters justify="center" style="margin:0px; margin-left:10px; align-items: flex-end;">
-                        <v-col cols="10">
-                            <v-textarea autofocus ref="input" rows="2" no-resize label="Kommentar" variant="underlined"
-                                color="indigo" :modelValue="commentText"
-                                @update:modelValue="text => commentText = text">
-                            </v-textarea>
-                        </v-col>
-                        <v-col cols="2">
-                            <v-btn @click="saveComment" icon="mdi-send-outline" variant="plain"
-                                style=" justify-content: start; size: x-large; padding-bottom: 15px;">
-
-                            </v-btn>
-                        </v-col>
-                    </v-row>
-                </v-card>
-            </v-col>
-        </v-row>
-
+        <v-btn id="comment-btn" size="large" rounded="pill" color="primary"
+            @touchstart="emit('getCenterOnMap')" @mousedown="emit('getCenterOnMap')" @click="createComment">
+            Kommentieren
+        </v-btn>
+        <transition name="slide">
+            <v-card v-if="showCommentDialog" elevation="20">
+                <v-btn @click="cancelComment" icon="mdi-close" variant="plain" id="close-btn"/>
+                <p class="font-weight-bold text-body-1 call-to-action" >Platziere deinen Kommentar</p>
+                <div className="comment-text-area">
+                    <v-textarea 
+                        :class="commentText!==''?'show-send-btn':'hide-send-btn'"
+                        variant="solo" 
+                        label="Kommentar" 
+                        color="primary" 
+                        no-resize 
+                        rows="4" 
+                        clearable
+                        autofocus 
+                        ref="input"
+                        :modelValue="commentText"
+                        @update:modelValue="text => commentText = text"
+                    />
+                    <v-btn @click="saveComment" color="primary" icon="mdi-send-outline" size="x-small" id="send-btn"/>
+                </div>
+            </v-card>
+        </transition>
     </div>
 </template>
 <script lang="ts" setup>
@@ -64,25 +34,22 @@ import { HTTP } from '@/utils/http-common';
 import { reactive, ref, watch } from 'vue';
 import type { FeatureCollection } from 'geojson';
 const store = useStore()
-let flexOrder = ref<number>(-1)
-let paddingBot = ref<string>("20px")
-let commentStep = ref<number>(0)
 let commentText = ref<string>("")
 let allMarker = reactive<FeatureCollection>({ type: "FeatureCollection", features: [] })
 
 const props = defineProps({
     clickedCoordinates: Array<Number>,
-    
+    showCommentDialog: {
+        type: Boolean,
+        default: false
+    }
 })
 
-const emit = defineEmits(["addComment", "getCenterOnMap", "centerMapOnLocation", "deleteCommentLayer", "updateSourceData",])
+const emit = defineEmits(["addComment", "getCenterOnMap", "centerMapOnLocation", "deleteCommentLayer", "updateSourceData", "closeCommentDialog"])
 function cancelComment() {
     store.commit('freecomment/setMoveComment', false)
-    commentStep.value = 0
-    flexOrder.value = -1
     commentText.value = ""
-    paddingBot.value = "20px"
-    
+
     if (allMarker.features.length > 1) {
        
         allMarker.features.pop()
@@ -93,6 +60,7 @@ function cancelComment() {
         emit('deleteCommentLayer')
         allMarker.features.splice(allMarker.features.length - 1, 1)
     }
+    emit('closeCommentDialog')
 }
 
 watch(()=> props.clickedCoordinates? props.clickedCoordinates : null, changePositionOfLastMarker)
@@ -142,21 +110,9 @@ function createComment() {
         }
     }
     emit('addComment', mapsource, ownCommentLayer)
-    commentStep.value++
-    flexOrder.value = 1
-    paddingBot.value = "0px"
 }
-const positionOkay = () => {
-    commentStep.value++
-    emit('centerMapOnLocation', allMarker.features[allMarker.features.length-1].geometry.coordinates)
 
-
-}
 const saveComment = () => {
-    commentStep.value = 0
-    flexOrder.value = -1
-    paddingBot.value = "20px"
-
     const submitComment = () => {
         HTTP
             .post('add-comment', {
@@ -169,20 +125,95 @@ const saveComment = () => {
     submitComment()
     commentText.value = ""
     store.commit('freecomment/setMoveComment', false)
+
+    emit('closeCommentDialog')
 }
 </script>
 
 <style scoped>
 .comment-container {
-    position: relative;
-    z-index: 999;
     display: flex;
-    flex-direction: row;
-    align-items: center;
     justify-content: center;
-    /* margin-top: 2px; */
-    padding-bottom: v-bind('paddingBot');
     width: 100%;
-    order: v-bind('flexOrder');
 }
+
+#comment-btn{
+    order: -1 !important;
+    z-index: 998;
+    margin-bottom: 0.5em;
+    position: absolute;
+    bottom: calc(0.5em + 56px + 43px);
+}
+.v-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    z-index: 1005;
+    border-radius: 12px 12px 0px 0px;
+    margin-bottom: 0px;
+}
+
+#close-btn{
+    position: relative; 
+    margin: 0em 0em 0em auto;
+}
+.call-to-action{
+    text-align: center;
+    width: 100%;
+    margin-bottom: 0px !important;
+}
+.comment-text-area{
+    display: flex;
+    padding: 1em 0em 0em 1em;
+}
+
+.v-textarea{
+    margin-right: 1em;
+    border-radius: 1rem !important;
+    z-index: 1;
+}
+#send-btn{
+    position: absolute;
+    bottom: 3em;
+    right: 2em;
+}
+
+/* Animation */
+.slide-enter-active{
+    margin-bottom: -25em;
+    transition: margin-bottom 0.4s ease-out;
+}
+
+.slide-enter-to{
+    margin-bottom: 0px;
+}
+
+ .slide-leave-active {
+    margin-bottom: 0px;
+    transition: margin-bottom 0.3s ease-in;
+}
+
+.slide-leave-to{
+    margin-bottom: -25em;
+} 
+
+.show-send-btn{
+    animation: slide-left 0.2s ease-in-out 0s 1 forwards;
+}
+
+@keyframes slide-left {
+    0%   {margin-right: 1em;}
+    100% {margin-right: 4em;}
+}
+
+.hide-send-btn{
+    animation: slide-right 0.2s ease-in-out 0s 1 forwards;
+}
+
+@keyframes slide-right {
+    0%   {margin-right: 4em;}
+    100% {margin-right: 1em;}
+}
+
 </style>
