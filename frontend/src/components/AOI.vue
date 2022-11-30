@@ -1,5 +1,5 @@
 <template>
-  <!-- <DevUI @startPopulate="populateMap()" v-if="devMode"/> -->
+  <DevUI @startPopulate="populateMap()" v-if="devMode"/>
 </template>
 
 <script lang="ts" setup>

@@ -139,7 +139,8 @@ watch(store.state.ui, function (state) {
 
 <style scoped>
 .planning-ideas-options {
-  position:relative;
+  position:sticky;
+  bottom: 56px;
   margin-top: 5px;
   padding: 5px;
   z-index: 999;
@@ -148,7 +149,7 @@ watch(store.state.ui, function (state) {
   align-items: center;
   justify-content: center;
   background: red;
-  width: fit-content;
+  width: 100%;
   background: rgba(255,255,255,0.4);
   backdrop-filter: blur(5px);
 }

@@ -1,21 +1,23 @@
 <template>
-    <transition  name="slide">
-        <div v-if="props.show" className="comment-list">
-            <v-card
-                title="Platzhalter"
-                subtitle="This is a subtitle"
-                text="This is content"
-            ></v-card>
-            <v-card
-                title="Platzhalter"
-                subtitle="This is a subtitle"
-                text="This is content"
-            ></v-card>
-        </div>
-    </transition>
-    <transition  name="fade">
-        <div v-if="props.show" className="backdrop"></div>
-    </transition>
+    <div class="comment-galary-wrapper">
+        <transition name="slide">
+            <div v-if="props.show" className="comment-list">
+                <v-card
+                    title="Platzhalter"
+                    subtitle="This is a subtitle"
+                    text="This is content"
+                ></v-card>
+                <v-card
+                    title="Platzhalter"
+                    subtitle="This is a subtitle"
+                    text="This is content"
+                ></v-card>
+            </div>
+        </transition>
+        <transition  name="fade">
+            <div v-if="props.show" className="backdrop"></div>
+        </transition>
+    </div>
 </template>
 
 <script setup>
@@ -28,6 +30,9 @@
 </script>
 
 <style scoped>
+.comment-galary-wrapper{
+    width: 100%;
+}
 .comment-list{
     position: fixed;
     top: 0px;

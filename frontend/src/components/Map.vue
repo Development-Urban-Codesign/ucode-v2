@@ -1,7 +1,7 @@
 <template>
     <div class="map-wrap" ref="mapContainer">
       <div class="map" id="map">
-        <!-- <v-row v-if="devMode" style="position: absolute; right: 20px; top: 20px; z-index: 999">
+        <v-row v-if="devMode" style="position: absolute; right: 20px; top: 20px; z-index: 999">
           <v-btn color="success" class="ml-2" @click="getCommentData">
             Show comments
           </v-btn>
@@ -11,25 +11,20 @@
           <v-btn color="success" class="ml-2" @click="addDeckglShape">
             Deckgl
           </v-btn>
-        </v-row> -->
-        
+        </v-row>
         <AOI @addLayer="addLayerToMap" @addImage="addImageToMap" />
-        <!-- <Quests /> -->
-        
-          <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
+        <Quests v-if="devMode"/>
+        <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
             @navigateToPlanningIdea="navigateToPlanningIdea" />
-          <FreeComment @deleteCommentLayer="deleteCommentLayer" @centerMapOnLocation="centerMapOnLocation"
-            @addComment="addCommentToMap" @getCenterOnMap="getMapCenter"
-            :clickedCoordinates="commentClicks.commentCoordinates" @updateSourceData="updateSourceData" />
-
-          <CommentView :show="tabIndex=='discussion'"/>
-          
-          <BottomNavigation @tabIndexChanged="switchView" :tabIndex="tabIndex"/>
-        <!-- <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
+        <FreeComment :showCommentDialog="showCommentDialog" @deleteCommentLayer="deleteCommentLayer" @centerMapOnLocation="centerMapOnLocation"
+          @addComment="addCommentToMap" @getCenterOnMap="getMapCenter"
+          :clickedCoordinates="commentClicks.commentCoordinates" @updateSourceData="updateSourceData" @closeCommentDialog="closeCommentDialog"/>
+        <CommentView :show="tabIndex=='discussion'"/>
+        <BottomNavigation @tabIndexChanged="switchView" :tabIndex="tabIndex"/>
+        <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
           @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
           :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
-        <Comment @removePulseLayer="removePulseLayerFromMap" /> -->
-
+        <Comment @removePulseLayer="removePulseLayerFromMap" />
       </div>
     </div>
 </template>
@@ -70,6 +65,7 @@ const commentClicks = reactive<{commentCoordinates: number[]}>({ commentCoordina
 let lineDrawCreated = ref(0)
 let mapStyleLoaded = ref(false)
 let tabIndex = ref("planning")
+let showCommentDialog = ref(false)
 //let activeMarker = reactive<any>({});
 
 
@@ -198,6 +194,8 @@ function deleteOwnComment(){
 }
 
 const addCommentToMap = (source: any, layer: any) => {
+
+  showCommentDialog.value = true
 
   // if (map.getSource(source.id) !== undefined) {
   //   // console.log("already in use")
@@ -470,6 +468,10 @@ const switchView = (newTabIndex: string) => {
   tabIndex.value = newTabIndex
 }
 
+const closeCommentDialog = () => {
+  showCommentDialog.value = false
+}
+
 
 onUnmounted(() => {
   map?.remove();
@@ -485,7 +487,6 @@ onUnmounted(() => {
 }
 
 .map {
-
   height: 100%;
   width: 100%;
   position: absolute;

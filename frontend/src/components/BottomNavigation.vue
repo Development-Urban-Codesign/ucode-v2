@@ -31,7 +31,7 @@
 
 <style scoped>
     .v-bottom-navigation{
-        position: relative !important;
+        position: absolute !important;
     }
     .v-btn{
         color: #747474;
