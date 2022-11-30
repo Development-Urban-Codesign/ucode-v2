@@ -198,11 +198,8 @@ def get_filtered_comments(projectId,userId):
         if str(userId) != str(currentUser):
           f["properties"]["user_id"] = "anonymous"
 
-  print(comments)
-  
   cursor.close()
   connection.close()
-
   return comments
 
 
