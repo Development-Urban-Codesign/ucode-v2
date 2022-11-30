@@ -1,4 +1,3 @@
-import { BuildingFilter } from "@/deckgl/building-filter";
 import { PolygonLayer} from "@deck.gl/layers/typed";
 import { MapboxLayer } from "@deck.gl/mapbox/typed";
 import { ScenegraphLayer } from "@deck.gl/mesh-layers/typed";
@@ -6,10 +5,13 @@ import type { Feature } from "maplibre-gl";
 import store from "@/store/store";
 import { HTTP } from "@/utils/http-common.js";
 import type {BoundingBox } from "@/store/modules/aoi"
-import { PROJECTION_MODE } from "@deck.gl/core/typed/lib/constants";
 
 export async function getQuestsFromDB(projectId: string) {
   const response = await HTTP.post("get-quests-from-db", projectId);
+  return response.data;
+}
+export async function getbuildingsDataFromDB(projectId: string) {
+  const response = await HTTP.post("get-buildings-from-db", projectId);
   return response.data;
 }
 export async function getbuildingsFromDB(projectId: string) {
@@ -18,7 +20,8 @@ export async function getbuildingsFromDB(projectId: string) {
 
   const emptygeom = (d:Feature) => d?.geometry?.coordinates?.length == 1;
   const nonEmptyFeatures = response.data.features.filter(emptygeom);
-  const colorPalette = ['#7bdef2', '#b2f7ef','#eff7f6', '#f7d6e0', '#f2b5d3'];
+  // const colorPalette = ['#7bdef2', '#b2f7ef','#eff7f6', '#f7d6e0', '#f2b5d3'];
+  const colorPalette = ['#f7f3ee', '#f8f2e9','#f7f3ee', '#EEE9E2', '#f7f3ee'];
   
   
   // Color palette values from Apple Maps
@@ -236,7 +239,7 @@ export async function getbuildingsFromDB(projectId: string) {
     feature.properties.color = randomColoreFromColorPalette();
     
   })
-
+  
   return {
     id: "overpass_buildings",
     type: 'fill-extrusion',
@@ -298,8 +301,9 @@ export async function getGreeneryFromDB() {
     pickable: true,
   });
 }
-export async function getGreeneryFromDBTexture(projectID: string) {
-  const response = await HTTP.post("get-greenery-from-db", projectID);
+
+export async function getGreeneryFromDBTexture(projectId: string) {
+  const response = await HTTP.post("get-greenery-from-db", projectId);
   // console.log(response);
   return {
     id: "overpass_greenery",
@@ -385,6 +389,10 @@ export async function getTreeJsonFromDB(projectId: string) {
   const trees = response.data
   return trees
 }
+export async function getGreeneryJsonFromDB(projectId: string) {
+  const response = await HTTP.post("get-greenery-from-db", projectId);
+  return response.data
+}
 export async function getTreesFromDB(projectId: string) {
   const response = await HTTP.post("get-trees-from-db", projectId);
   const treeLayer = new MapboxLayer({
@@ -414,7 +422,11 @@ export async function getDrivingLaneFromOSM(bbox: BoundingBox, projectId: string
 
 export async function getDrivingLaneFromDB(projectId: string) {
   const response = await HTTP.post("get-driving-lane-from-db", projectId);
-  return response;
+  return response.data;
+}
+export async function getWaterFromDB(projectId: string) {
+  const response = await HTTP.post("get-water-from-db", projectId);
+  return response.data;
 }
 
 export async function getTrafficLightsFromOSM(bbox: BoundingBox,projectId: string) {
@@ -424,6 +436,10 @@ export async function getTrafficLightsFromOSM(bbox: BoundingBox,projectId: strin
   }).then(() => store.dispatch("aoi/setDataIsLoaded"));
 }
 
+export async function getTrafficSignalDataFromDB(projectId: string) {
+  const response = await HTTP.post("get-traffic-signal-from-db", projectId);
+  return response.data}
+  
 export async function getTrafficSignalFromDB(projectId: string) {
   const response = await HTTP.post("get-traffic-signal-from-db", projectId);
   const trafficSignalLayer = new MapboxLayer({
@@ -446,4 +462,23 @@ export async function getTrafficSignalFromDB(projectId: string) {
 export async function getRoutesFromDB(projectId: string) {
   const response = await HTTP.post("get-routes-from-db", projectId);
   return response;
+}
+
+export async function getTramLineFromOSM(bbox: BoundingBox,projectId: string) {
+  HTTP.post("get-tram-lines-from-osm", {
+    bbox: bbox,
+    projectId: projectId,
+  }).then(() => store.dispatch("aoi/setDataIsLoaded"));
+}
+
+export async function getTramLineDataFromDB(projectId: string) {
+  const response = await HTTP.post("get-tram-line-from-db", projectId);
+  return response;
+}
+
+export async function getWaterFromOSM(bbox: BoundingBox,projectId: string) {
+  HTTP.post("get-water-from-osm", {
+    bbox: bbox,
+    projectId: projectId,
+  }).then(() => store.dispatch("aoi/setDataIsLoaded"));
 }

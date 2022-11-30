@@ -40,6 +40,9 @@ import bbox from "@turf/bbox";
 import {
   getRoutesFromDB
 } from "../service/backend.service";
+import { ThreejsSceneOnly } from "@/utils/ThreejsSceneOnly";
+import { addLineFromCoordsAr1 } from "@/utils/ThreejsGeometryCreation";
+import type { Feature } from "@turf/helpers";
 
 
 const store = useStore();
@@ -49,7 +52,7 @@ const emit = defineEmits(["activateSelectedPlanningIdea", "navigateToPlanningIde
 let planningData = reactive ({ routes: [] })
 
 let activeBtn = ref(100)
-
+let threeJsScene: any
 const setActiveBtn = (selectedId:any) =>{
   activeBtn.value = selectedId
 }
@@ -57,11 +60,37 @@ const setActiveBtn = (selectedId:any) =>{
 const addRouteToMap = async () => {
 
   await sendRouteRequest()
+  // await sendRouteRequestTHREE()
 }
 onMounted(() => {
   addRouteToMap()
 })
+const createEmptyThreeJsScene = async () => {
+  const threeJsSceneLayer = await ThreejsSceneOnly(store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin,"threeJsScenePlanning")
+  threeJsScene = threeJsSceneLayer.scene
+  store.commit("map/addLayer",threeJsSceneLayer.layer)
+}
+const sendRouteRequestTHREE = async () => {
+    if(threeJsScene == undefined){
+      createEmptyThreeJsScene()
+    }
+    const routeData = await getRoutesFromDB(store.state.aoi.projectSpecification.project_id)
+    planningData.routes = routeData.data
+   if (routeData.data.features == null) {
+    return
+   }
+  //  console.log(routeData)
+   addLineFromCoordsAr1({
+    scene: threeJsScene,
+    bbox: store.state.aoi.projectSpecification.bbox,
+    geoJson: routeData.data,
+    color: "custom",
+    height: 0.5,
+    extrude: 2
+  })
 
+  store.commit("ui/planningIdeasLoaded",true)
+  }
 const sendRouteRequest = async () => {
 
     const routeData = await getRoutesFromDB(store.state.aoi.projectSpecification.project_id)
@@ -86,15 +115,16 @@ const sendRouteRequest = async () => {
             'line-cap': 'round',
         },
         'paint': {
-            'line-color': ['get', 'color']/*[
-                "match",
-                    ["get", "id"],
-                    1,
-                    "rgba(255,0,0,1)",
-                    2,
-                    "rgba(0,255,0,1)",
-                    "rgba(0,0,255,1)",
-            ]*/,
+            // 'line-color': [
+            //     "match",
+            //         ["get", "id"],
+            //         1,
+            //         "#d3504e",
+            //         2,
+            //         "#81d144",
+            //         "#4e76d3",
+            // ],//
+            'line-color':['get', 'color'],
             'line-width': 5,
             'line-offset': {
               property: "id",
@@ -104,23 +134,25 @@ const sendRouteRequest = async () => {
             //'line-dasharray': [1,5]
         }
     })
-    store.commit("map/addLayer", {
-      "id": "routes-symbols",
-      "type": "symbol",
-      "source": "routes",
-      "layout": {
-        "symbol-placement": "line",
-        "text-font": ["Open Sans Regular Bold"],
-        "text-field": '{route_name}',
-        "text-size": 10
-      }
-    })
+    // store.commit("map/addLayer", {
+    //   "id": "routes-symbols",
+    //   "type": "symbol",
+    //   "source": "routes",
+    //   "layout": {
+    //     "symbol-placement": "line",
+    //     "text-font": ["Open Sans Regular Bold"],
+    //     "text-field": '{route_name}',
+    //     "text-size": 10
+    //   }
+    // })
     store.commit("ui/planningIdeasLoaded",true)
 
 };
 
-const activateSelectedPlanningIdea = (route)=>{
-  
+const activateSelectedPlanningIdea = (route: Feature)=>{
+  // let activeRoute: THREE.Object3D=threeJsScene.getObjectByName(route.properties?.route_name)
+  // console.log(activeRoute)
+  // activeRoute.material.color.setHex("#ffffff");
   emit("activateSelectedPlanningIdea", route)
 }
 
@@ -153,4 +185,12 @@ watch(store.state.ui, function (state) {
   background: rgba(255,255,255,0.4);
   backdrop-filter: blur(5px);
 }
+
+.col
+{
+  color: #df4947;
+  color: #82e139;
+  color: #225de6;
+}
+
 </style>
