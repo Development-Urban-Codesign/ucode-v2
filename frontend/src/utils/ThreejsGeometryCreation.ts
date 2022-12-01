@@ -1,6 +1,6 @@
 import type { BoundingBox } from "@/store/modules/aoi";
 import type { Feature, FeatureCollection, Geometry, Position, Properties } from "@turf/turf";
-import maplibregl, { MercatorCoordinate, type LngLatLike } from "maplibre-gl";
+import maplibregl, { MercatorCoordinate, type Coordinates, type LngLatLike } from "maplibre-gl";
 import { BufferGeometry, DoubleSide, Vector2, type Group } from "three";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -229,6 +229,7 @@ function generateLocalCoordinates(
   //   console.log(getRndNumber(0, 90))
 
   // }
+  console.log(_geoJson)
   if (_geoJson != null) {
     for (let index = 0; index < _geoJson.features.length; index++) {
       const element = _geoJson.features[index].geometry.coordinates;
@@ -240,20 +241,20 @@ function generateLocalCoordinates(
       );
       let cords = localCordsFromWorldCords(
         maplibregl.LngLat.convert([bbox.xmin, bbox.ymin]),
-        0
+        _geoJson.features[index].properties.estimatedheight || 0
       );
       let localPos = {
         position: [
-          ((localCordsFromWorldCords(element, 0).x - cords.x) * 1) /
+          ((localCordsFromWorldCords(element, _geoJson.features[index].properties.estimatedheight || 0).x - cords.x) * 1) /
           cords.meterInMercatorCoordinateUnits(),
-          0,
-          ((cords.y - localCordsFromWorldCords(element, 0).y) * 1) /
+          _geoJson.features[index].properties.estimatedheight+2 || 0,
+          ((cords.y - localCordsFromWorldCords(element, _geoJson.features[index].properties.estimatedheight || 0).y) * 1) /
           cords.meterInMercatorCoordinateUnits(),
         ],
         rotation: rot,
         scale: scl,
       };
-
+       console.log(localPos)
       localSceneCoordinates.push(localPos);
     }
   } else {
@@ -280,11 +281,11 @@ function getRndNumber(min: number, max: number): number {
 
 export function localCordsFromWorldCords(
   worldCords: LngLatLike,
-  height = 0
+  height : number
 ): MercatorCoordinate {
   return maplibregl.MercatorCoordinate.fromLngLat(worldCords, height);
 }
-function createSinglePolygon(feature: Feature, bbox: BoundingBox) {
+function createSinglePolygon(feature: Feature<any>, bbox: BoundingBox) {
   const vertAr: THREE.Vector2[] = []
   feature.geometry.coordinates[0].forEach((coord: Position) => {
     let pos: THREE.Vector3 = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), bbox)

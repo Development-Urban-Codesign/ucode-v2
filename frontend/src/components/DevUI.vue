@@ -28,8 +28,11 @@
 
     <v-select :items="['get', 'retrieve']" label="sidewalk" variant="outlined"
     @update:modelValue="sendSideWalkRequest"></v-select>
+<<<<<<< HEAD
     <v-select :items="['get', 'retrieve']" label="bike" variant="outlined"
       @update:modelValue="sendBikeRequest"></v-select>
+=======
+>>>>>>> master
     <v-alert type="success" v-if="store.state.aoi.dataIsLoaded">
       stored
     </v-alert>
@@ -55,8 +58,12 @@ import {
   getTramLineFromOSM,
   getTramLineDataFromDB,
   getWaterFromOSM,
+<<<<<<< HEAD
   getSideWalkFromOSM,
   getBikeFromOSM
+=======
+  getSideWalkFromOSM
+>>>>>>> master
 } from "../service/backend.service";
 
 const store = useStore();
