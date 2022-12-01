@@ -522,8 +522,8 @@ onUnmounted(() => {
 .map-wrap {
   position: relative;
   width: 100%;
-  height: 100vh;
-  height: calc(var(--vh, 1vh) * 100);
+  height: 100%; 
+  /* height: calc(var(--vh, 1vh) * 100); */
 }
 
 .map {

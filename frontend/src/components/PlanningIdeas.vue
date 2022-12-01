@@ -30,9 +30,6 @@
     </v-sheet>
 </template>
 
-
-
-
 <script lang="ts" setup>
 import { onMounted, reactive, watch, ref } from "vue";
 import { useStore } from "vuex";
@@ -164,9 +161,6 @@ watch(store.state.ui, function (state) {
   }
 });
 
-
-
-
 </script>
 
 <style scoped>
@@ -180,7 +174,6 @@ watch(store.state.ui, function (state) {
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  background: red;
   width: 100%;
   background: rgba(255,255,255,0.4);
   backdrop-filter: blur(5px);
