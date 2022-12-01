@@ -9,7 +9,18 @@ import { ThreejsSceneOnly } from "@/utils/ThreejsSceneOnly";
 import { computed, onMounted } from "vue";
 import { useStore } from "vuex";
 import {
-  getbuildingsFromDB, getDrivingLaneFromDB, getGreeneryFromDBTexture, getGreeneryJsonFromDB, getTrafficSignalFromDB, getTreeJsonFromDB, getTreesFromDB, getWaterFromDB, getTrafficSignalDataFromDB, getbuildingsDataFromDB, getTramLineDataFromDB
+  getbuildingsFromDB,
+  getDrivingLaneFromDB,
+  getGreeneryFromDBTexture,
+  getGreeneryJsonFromDB,
+  getTrafficSignalFromDB,
+  getTreeJsonFromDB,
+  getTreesFromDB,
+  getWaterFromDB,
+  getTrafficSignalDataFromDB,
+  getbuildingsDataFromDB,
+  getTramLineDataFromDB,
+  getSidewalkFromDB
 } from "../service/backend.service";
 import type { FeatureCollection } from "@turf/helpers";
 const store = useStore();
@@ -35,6 +46,7 @@ const populateMap = async () => {
   await sendTramLineRequestTHREE();
   emit("addLayer", threeJsScene3d.layer)
   emit("addLayer", threeJsSceneFlat.layer, "routes")
+  await sendSidewalkRequest()
 
   store.dispatch("aoi/setMapIsPopulated");
   store.commit("ui/aoiMapPopulated", true);
@@ -284,6 +296,20 @@ const sendTrafficSignalRequestTHREE = async () => {
 
   const trafficSignalData = await getTrafficSignalDataFromDB(store.state.aoi.projectSpecification.project_id);
   addGeoOnPointsToThreejsScene(threeJsScene3d.scene, trafficSignalData, "TrafficLight.glb", store.state.aoi.projectSpecification.bbox)
+}
+
+const sendSidewalkRequest = async () =>{
+  
+  const sidewalkData: { data: FeatureCollection, polygon: FeatureCollection } = await getSidewalkFromDB(store.state.aoi.projectSpecification.project_id)
+  // console.log(drivingLanedata.lane)
+  addPolygonsFromCoordsAr({
+    scene: threeJsSceneFlat.scene,
+    bbox: store.state.aoi.projectSpecification.bbox,
+    geoJson: sidewalkData.data,
+    color: "#bdb8aa",
+    height: 0,
+    extrude: 0.2
+  })
 }
 </script>
 
