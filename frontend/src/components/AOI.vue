@@ -301,14 +301,13 @@ const sendTrafficSignalRequestTHREE = async () => {
 const sendSidewalkRequest = async () =>{
   
   const sidewalkData: { data: FeatureCollection, polygon: FeatureCollection } = await getSidewalkFromDB(store.state.aoi.projectSpecification.project_id)
-  // console.log(drivingLanedata.lane)
   addPolygonsFromCoordsAr({
     scene: threeJsSceneFlat.scene,
     bbox: store.state.aoi.projectSpecification.bbox,
     geoJson: sidewalkData.data,
     color: "#bdb8aa",
     height: 0,
-    extrude: 0.2
+    extrude: 0.14
   })
 }
 </script>
