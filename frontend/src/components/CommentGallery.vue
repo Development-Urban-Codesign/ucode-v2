@@ -84,7 +84,7 @@
         let otherComments = []
 
         const commentData = await getFilteredCommentsFromDB(projectId, userId)
-        console.log(commentData.props.data)
+        // console.log(commentData.props.data)
         response = commentData.props.data
         response.forEach(item => {
             item.properties.user_id !== userId?otherComments.push(item):myComments.push(item);
