@@ -859,7 +859,7 @@ async def get_side_walk_from_osm_api(request: Request):
     G = ox.graph_from_bbox(ymin, ymax, xmin, xmax, network_type='walk')
     gdf = ox.graph_to_gdfs(G, nodes=False, edges=True)
     walk = json.loads(gdf.to_json())
-    
+
 
     connection = connect()
     cursor = connection.cursor()
@@ -883,14 +883,15 @@ async def get_side_walk_from_osm_api(request: Request):
     cursor = connection.cursor()
     
     delete_query_sidewalk_if_are_inside_main_road= '''
-        delete FROM sidewalk where highway in ('tertiary', 'secondary', 'primary', 'residential');
+
+        delete FROM sidewalk where highway SIMILAR TO %s;
 
         delete FROM sidewalk AS a
         USING driving_lane_polygon AS b
         WHERE a.project_id=%s AND st_contains(b.geom, a.geom);
     '''
     
-    cursor.execute(delete_query_sidewalk_if_are_inside_main_road, (projectId, ))
+    cursor.execute(delete_query_sidewalk_if_are_inside_main_road, ('%%secondary%%|%%tertiary%%|%%unclassified%%|%%corridor%%|%%trunk_link%%|%%elevato%r%|%%pedestrian%%|%%residential%%|%%primary%%|%%living_street%%', projectId, ))
     
     connection.commit()
     cursor.close()
