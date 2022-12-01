@@ -122,14 +122,16 @@ export async function getAmenities() {
     pickable: true,
     iconAtlas: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/icon-atlas.png',
     iconMapping: ICON_MAPPING,
-    getIcon: (d: Feature) => 'marker',
-    sizeScale: 2,
-    sizeUnits: "meters",
-    // @ts-ignore
-    getPosition: (d: Feature) => [...d.geometry.coordinates, d.properties.estimatedheight + 6],
+    getIcon: (d:Feature) => 'marker',
+    sizeScale: 5,
+    //sizeUnits: "meters",
+     // @ts-ignore
+    getPosition: (d:Feature) => [...d.geometry.coordinates, d.properties.estimatedheight+20],
     getSize: 5,
-    getColor: [255, 0, 0, 255],
-  })
+    getColor: [255,0,0,255],
+   
+  },
+  ) 
   const amenityTextlayer = new MapboxLayer({
     id: 'amenity-text-layer',
     // @ts-ignore
@@ -137,15 +139,17 @@ export async function getAmenities() {
     data: amenityGeojson,
     pickable: true,
     // @ts-ignore
-    getPosition: (d: Feature) => [...d.geometry.coordinates, d.properties.estimatedheight + 6],
-    getText: (d: Feature) => d.properties.amenity,
-    getSize: 5,
-    sizeUnits: "meters",
+    getPosition: (d:Feature) => [...d.geometry.coordinates, d.properties.estimatedheight+20],
+    getText:(d:Feature) => d.properties.amenity,
+    getSize: 10,
+    //sizeUnits: "meters",
     getAngle: 0,
     getTextAnchor: 'start',
-    getAlignmentBaseline: 'bottom'
+    getAlignmentBaseline: 'bottom',
+    
   })
-  return { amenityIconlayer, amenityTextlayer }
+  
+  return {amenityIconlayer, amenityTextlayer}
 }
 
 export async function getbuildingsFromOSM(bbox: BoundingBox, projectId: string) {
