@@ -121,6 +121,9 @@
     width: 100vw;
     height: 100vh;
     backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    -moz-backdrop-filter: blur(24px);
+    -ms-backdrop-filter: blur(24px);
     z-index: 1000;
 }
 

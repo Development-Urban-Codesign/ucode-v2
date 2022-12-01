@@ -184,6 +184,9 @@ watch(store.state.ui, function (state) {
   width: 100%;
   background: rgba(255,255,255,0.4);
   backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  -moz-backdrop-filter: blur(5px);
+  -ms-backdrop-filter: blur(5px);
 }
 
 .col
