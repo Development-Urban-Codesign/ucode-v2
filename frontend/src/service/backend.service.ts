@@ -1,13 +1,13 @@
 import { PolygonLayer } from "@deck.gl/layers/typed";
 import { MapboxLayer } from "@deck.gl/mapbox/typed";
 import { ScenegraphLayer } from "@deck.gl/mesh-layers/typed";
-import type { Feature } from "maplibre-gl";
 import store from "@/store/store";
 import { HTTP } from "@/utils/http-common.js";
 import type { BoundingBox } from "@/store/modules/aoi"
 import { PROJECTION_MODE } from "@deck.gl/core/typed/lib/constants";
 import * as turf from '@turf/turf';
 import { IconLayer, TextLayer } from '@deck.gl/layers/typed';
+import type { Feature, FeatureCollection, Geometries } from "@turf/turf";
 
 
 export async function getQuestsFromDB(projectId: string) {
@@ -22,17 +22,21 @@ export async function getAmenityDataFromDB(projectId: string) {
   const response = await HTTP.post("get-buildings-from-db", projectId);
   const detectAmenities = (d: Feature) => d?.properties?.amenity != null;
   const amenities = response.data.features.filter(detectAmenities);
-  console.log(amenities)
-  let amenityGeojson: any = []
-  for (let feat of amenities) {
-    if (feat.geometry.coordinates.length == 1) {
+  // console.log(amenities)
+
+  const amenity_tags = ["Theatre", "arts_center", "clinic", "townhall", "library",  "place_of_worship", "cinema"]
+  let amenityGeojson: FeatureCollection = {type: "FeatureCollection", features: []}
+  amenities.forEach((feat: Feature<Geometries>) => {
+    if (feat.geometry?.coordinates.length == 1 && amenity_tags.includes(feat.properties?.amenity)) {
       let centroid = turf.centroid((feat.geometry))
       centroid.properties = feat.properties
-      amenityGeojson.push(centroid)
+      amenityGeojson.features.push(centroid)
+      // console.log(turf.centroid((feat.geometry)))
     }
-    console.log(amenityGeojson)
-    return amenityGeojson;
-  }
+  });
+  console.log(amenityGeojson)
+  return amenityGeojson;
+
 }
 
 export async function getbuildingsFromDB(projectId: string) {
@@ -42,6 +46,7 @@ export async function getbuildingsFromDB(projectId: string) {
   const emptygeom = (d: Feature) => d?.geometry?.coordinates?.length == 1;
   const nonEmptyFeatures = response.data.features.filter(emptygeom);
   // const colorPalette = ['#7bdef2', '#b2f7ef','#eff7f6', '#f7d6e0', '#f2b5d3'];
+  
   const detectAmenities = (d: Feature) => d?.properties?.amenity != null;
   const amenities = response.data.features.filter(detectAmenities);
   console.log(amenities)
@@ -53,7 +58,6 @@ export async function getbuildingsFromDB(projectId: string) {
       amenityGeojson.push(centroid)
       //console.log(turf.centroid((feat.geometry)))
     }
-
   }
   //console.log(amenityGeojson)
   //emit("addLayer", newLayer);
