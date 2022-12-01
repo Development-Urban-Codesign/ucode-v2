@@ -492,3 +492,11 @@ export async function getSideWalkFromOSM(bbox: BoundingBox,projectId: string) {
   }).then(() => store.dispatch("aoi/setDataIsLoaded"));
 }
 
+export async function getBikeFromOSM(bbox: BoundingBox,projectId: string) {
+  console.log("bike")
+  HTTP.post("get-bike-from-osm", {
+    bbox: bbox,
+    projectId: projectId,
+  }).then(() => store.dispatch("aoi/setDataIsLoaded"));
+}
+

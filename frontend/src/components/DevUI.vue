@@ -28,6 +28,8 @@
 
     <v-select :items="['get', 'retrieve']" label="sidewalk" variant="outlined"
     @update:modelValue="sendSideWalkRequest"></v-select>
+    <v-select :items="['get', 'retrieve']" label="bike" variant="outlined"
+      @update:modelValue="sendBikeRequest"></v-select>
     <v-alert type="success" v-if="store.state.aoi.dataIsLoaded">
       stored
     </v-alert>
@@ -53,7 +55,8 @@ import {
   getTramLineFromOSM,
   getTramLineDataFromDB,
   getWaterFromOSM,
-  getSideWalkFromOSM
+  getSideWalkFromOSM,
+  getBikeFromOSM
 } from "../service/backend.service";
 
 const store = useStore();
@@ -249,6 +252,16 @@ const sendSideWalkRequest = async (mode)=>{
   if (mode == "get") {
     store.dispatch("aoi/setDataIsLoading");
     await getSideWalkFromOSM(
+      store.state.aoi.projectSpecification.bbox,
+      store.state.aoi.projectSpecification.project_id
+    );
+  } 
+}
+
+const sendBikeRequest = async (mode)=>{
+  if (mode == "get") {
+    store.dispatch("aoi/setDataIsLoading");
+    await getBikeFromOSM(
       store.state.aoi.projectSpecification.bbox,
       store.state.aoi.projectSpecification.project_id
     );
