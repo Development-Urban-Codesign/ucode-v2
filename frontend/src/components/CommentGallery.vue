@@ -107,7 +107,7 @@
     position: fixed;
     top: 0px;
     width: 100vw;
-    height: calc(var(--vh, 1vh) * 100 - 56px);
+    height: calc(100% - 56px);
     z-index: 1001;
     padding: 1em 0em;
     overflow-x: hidden !important;
@@ -119,7 +119,7 @@
     position: fixed;
     top: 0px;
     width: 100vw;
-    height: 100vh;
+    height: 100%;
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     -moz-backdrop-filter: blur(24px);
