@@ -22,7 +22,7 @@
         <FreeComment :showCommentDialog="showCommentDialog" @deleteCommentLayer="deleteCommentLayer" @centerMapOnLocation="centerMapOnLocation"
           @addComment="addCommentToMap" @getCenterOnMap="getMapCenter"
           :clickedCoordinates="commentClicks.commentCoordinates" @updateSourceData="updateSourceData" @closeCommentDialog="closeCommentDialog"/>
-        <CommentView :show="tabIndex=='discussion'"/>
+        <CommentGallery :show="tabIndex=='discussion'"/>
         <BottomNavigation @tabIndexChanged="switchView" :tabIndex="tabIndex"/>
         <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
           @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
@@ -41,7 +41,7 @@ import PlanningIdeas from "@/components/PlanningIdeas.vue";
 import Quests from "@/components/Quests.vue";
 import FreeComment from "@/components/FreeComment.vue";
 import BottomNavigation from "@/components/BottomNavigation.vue";
-import CommentView from "@/components/CommentView.vue";
+import CommentGallery from "@/components/CommentGallery.vue";
 import { getCommentsFromDB } from "@/service/backend.service";
 import { getFilteredCommentsFromDB } from "@/service/backend.service";
 import type { ProjectSpecification } from "@/store/modules/aoi";
