@@ -485,10 +485,15 @@ export async function getWaterFromOSM(bbox: BoundingBox,projectId: string) {
 }
 
 export async function getSideWalkFromOSM(bbox: BoundingBox,projectId: string) {
-  console.log(bbox, projectId)
+
   HTTP.post("get-side-walk-from-osm", {
     bbox: bbox,
     projectId: projectId,
   }).then(() => store.dispatch("aoi/setDataIsLoaded"));
+}
+
+export async function getSidewalkFromDB(projectId: string) {
+  const response = await HTTP.post("get-sidewalk-from-db", projectId);
+  return response;
 }
 
