@@ -15,6 +15,7 @@ from db import (
     get_buildings_from_db,
     connect,
     get_comments,
+    get_filtered_comments,
     get_greenery_from_db,
     get_table_names,
     get_trees_from_db,
@@ -66,7 +67,6 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],
 )
-
 
 @app.get("/")
 async def root():
@@ -248,7 +248,7 @@ async def get_buildings_from_osm_api(request: Request):
     connectionn = connect()
     cursorr = connectionn.cursor()
     insert_query_buildingg = """
-        INSERT INTO building (project_id,wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
+        INSERT INTO building (project_id,wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, amenity, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, %s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
     """
     for f in bhole["features"]:
         
@@ -290,7 +290,9 @@ async def get_buildings_from_osm_api(request: Request):
                 estimatedheight = sure_float(floors) * 3.5
             else:
                 estimatedheight = 15
-                
+            amenity = None
+            if "amenity" in f["properties"]:
+                amenity = f["properties"]["amenity"]  
             cursorr.execute(
                     insert_query_buildingg,
                     (
@@ -304,6 +306,7 @@ async def get_buildings_from_osm_api(request: Request):
                         height,
                         floors,
                         estimatedheight,
+                        amenity,
                         json.dumps(f["geometry"]),
                     ),
             )
@@ -319,7 +322,7 @@ async def get_buildings_from_osm_api(request: Request):
     cursor = connection.cursor()
        # INSERT INTO building (wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
     insert_query_building = """
-        INSERT INTO building (project_id,wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, (st_buffer(st_buffer(ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326)::geography, 1,'side=right'),1)::geography)::geometry);
+        INSERT INTO building (project_id,wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, amenity, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, %s, (st_buffer(st_buffer(ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326)::geography, 1,'side=right'),1)::geography)::geometry);
     """
     for f in data_building["elements"]:
         #print(f)
@@ -365,6 +368,9 @@ async def get_buildings_from_osm_api(request: Request):
         else:
             estimatedheight = 15
 
+        amenity = None
+        if "amenity" in f["tags"]:
+            amenity = f["tags"]["amenity"]
         geom = json.dumps(f["geometry"])
         #print(geom)
         # get_buildings_from_osm(wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom)
@@ -381,6 +387,7 @@ async def get_buildings_from_osm_api(request: Request):
                 height,
                 floors,
                 estimatedheight,
+                amenity,
                 geom,
             ),
         )
@@ -475,6 +482,12 @@ async def get_comments_api(request: Request):
     data = await request.json()
     return get_comments(data)
 
+@app.post("/get-filtered-comments")
+async def get_filtered_comments_api(request: Request):
+    data = await request.json()
+    projectId = data["projectId"]
+    userId = data["userId"]
+    return get_filtered_comments(projectId,userId)
 
 @app.post("/like-comment")
 async def like_comment_api(request: Request):
