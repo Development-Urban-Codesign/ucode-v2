@@ -24,7 +24,7 @@ export async function getAmenityDataFromDB(projectId: string) {
   const amenities = response.data.features.filter(detectAmenities);
   // console.log(amenities)
 
-  const amenity_tags = ["Theatre", "arts_center", "clinic", "townhall", "library",  "place_of_worship", "cinema"]
+  const amenity_tags = ["theatre", "arts_center", "clinic", "townhall", "library",  "place_of_worship", "cinema"]
   let amenityGeojson: FeatureCollection = {type: "FeatureCollection", features: []}
   amenities.forEach((feat: Feature<Geometries>) => {
     if (feat.geometry?.coordinates.length == 1 && amenity_tags.includes(feat.properties?.amenity)) {

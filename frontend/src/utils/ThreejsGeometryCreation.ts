@@ -247,14 +247,14 @@ function generateLocalCoordinates(
         position: [
           ((localCordsFromWorldCords(element, _geoJson.features[index].properties.estimatedheight || 0).x - cords.x) * 1) /
           cords.meterInMercatorCoordinateUnits(),
-          _geoJson.features[index].properties.estimatedheight+2 || 0,
+          _geoJson.features[index].properties.estimatedheight+0.5 || 0,
           ((cords.y - localCordsFromWorldCords(element, _geoJson.features[index].properties.estimatedheight || 0).y) * 1) /
           cords.meterInMercatorCoordinateUnits(),
         ],
         rotation: rot,
         scale: scl,
       };
-       console.log(localPos)
+      //  console.log(localPos)
       localSceneCoordinates.push(localPos);
     }
   } else {

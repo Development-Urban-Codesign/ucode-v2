@@ -11,8 +11,8 @@ import { useStore } from "vuex";
 import {
   getbuildingsFromDB, getDrivingLaneFromDB, getGreeneryFromDBTexture, getGreeneryJsonFromDB, getTrafficSignalFromDB, getTreeJsonFromDB, getTreesFromDB, getWaterFromDB, getTrafficSignalDataFromDB, getbuildingsDataFromDB, getTramLineDataFromDB, getAmenities, getAmenityDataFromDB
 } from "../service/backend.service";
-import type { FeatureCollection } from "@turf/helpers";
-import bbox from "@turf/bbox";
+import type { Feature, FeatureCollection } from "@turf/helpers";
+import type { Geometry } from "@luma.gl/engine";
 const store = useStore();
 const devMode = computed(() => store.getters["ui/devMode"]);
 let threeJsScene3d: any;
@@ -70,7 +70,26 @@ const sendBuildingRequest = async () => {
 };
 const addAmenities =  async () => {
   const amenityData =  await getAmenityDataFromDB(store.state.aoi.projectSpecification.project_id);
-  addGeoOnPointsToThreejsScene(threeJsScene3d.scene,amenityData,"poiIcons/poiCinema.glb",store.state.aoi.projectSpecification.bbox,[30,30])
+  const amenitiesAr: string[] = []
+  const groupedAmenities: [{"type": string , "featureCollection":FeatureCollection}]= []
+  // debugger
+  amenityData.features.forEach((feat)=>{
+    console.log(amenitiesAr.includes(feat.properties?.amenity))
+    if(!amenitiesAr.includes(feat.properties?.amenity)){
+      amenitiesAr.push(feat.properties?.amenity)
+      groupedAmenities.push({type : feat.properties?.amenity, featureCollection: {type: "FeatureCollection", features:[]}})
+    }
+    groupedAmenities.forEach((anem)=>{
+      if(anem.type == feat.properties?.amenity){
+        anem.featureCollection.features.push(feat)
+      }
+    })
+  })
+  console.log(groupedAmenities)
+  groupedAmenities.forEach((anemity) =>{
+    addGeoOnPointsToThreejsScene(threeJsScene3d.scene,anemity.featureCollection,"poiIcons/"+anemity.type+".glb",store.state.aoi.projectSpecification.bbox,[40,40],true)
+  
+  })
   // emit("addLayer", amenityData.amenityIconlayer);
   // emit("addLayer", amenityData.amenityTextlayer);
 
