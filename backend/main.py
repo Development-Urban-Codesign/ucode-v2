@@ -471,7 +471,10 @@ async def add_comment_api(request: Request):
     project_id = data["projectId"]
     comment = data["comment"]
     add_comment(data["userId"], project_id, comment, sure_float(data["position"][0]), sure_float(data["position"][1]))
-    await websocketManager.broadcast(project_id, comment)
+    try:
+        await websocketManager.broadcast(project_id, comment)
+    except Exception as err:
+        print(f"Something went wrong while notifying through websockets: {err}")
     return "added"
 
 
