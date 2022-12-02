@@ -254,7 +254,7 @@ function generateLocalCoordinates(
         rotation: rot,
         scale: scl,
       };
-       console.log(localPos)
+      
       localSceneCoordinates.push(localPos);
     }
   } else {
