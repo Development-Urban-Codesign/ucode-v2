@@ -3,8 +3,7 @@ from smtpd import DebuggingServer
 
 import requests
 import osmnx as ox
-import geopandas
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from osmtogeojson import osmtogeojson
 
@@ -67,6 +66,13 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],
 )
+
+@app.websocket("/ws")
+async def websocket_echo_endpoint(websocket:WebSocket):
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Hi, you sent {data}")
 
 @app.get("/")
 async def root():
