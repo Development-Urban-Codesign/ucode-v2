@@ -62,12 +62,27 @@ watch(
 html,
 body {
   margin: 0;
-  height: 100%;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  max-height: -webkit-fill-available;
 }
 
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
-  width: 100%;
+  height: 100%;
+}
+
+#app > div{
+  height: 100%;
+}
+
+#app > div > div{
+  min-height: auto !important;
+  height: 100%;
+}
+
+#app > div > div > div{
   height: 100%;
 }
 </style>

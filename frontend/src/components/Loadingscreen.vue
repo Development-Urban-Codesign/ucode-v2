@@ -11,9 +11,6 @@
         </div>
       </transition-group>
     </div>
-
-    <div class="Loadingscreen">
-    </div>
   </div>
 </template>
 
@@ -54,14 +51,6 @@ animate();
   height: 100%;
   position: absolute;
   z-index: 9999;
-}
-
-.Loadingscreen {
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
 }
 
 .UcodeLogo {

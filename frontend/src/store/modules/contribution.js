@@ -11,7 +11,7 @@ import { createVuetify } from 'vuetify';
 import store from '../store';
 
 
-const conntribution = {
+const contribution = {
     namespaced: true,
     state: {
         commentToggle: false,
@@ -175,4 +175,4 @@ const conntribution = {
 
 }
 
-export default conntribution
+export default contribution
