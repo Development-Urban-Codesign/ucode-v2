@@ -64,7 +64,7 @@ class WebSocketConnectionManager:
     async def broadcast(self, channel: str, message:str):
         connections = self.connections[channel];  
         for connection in connections:
-            await  connection.send_text(f"Hi, you sent {message} for channel {channel}")
+            await  connection.send_text(f"A new message {message} for channel {channel}")
 
 websocketManager = WebSocketConnectionManager()
 
@@ -468,7 +468,10 @@ async def get_trees_from_db_api(request: Request):
 @app.post("/add-comment")
 async def add_comment_api(request: Request):
     data = await request.json()
-    add_comment(data["userId"],data["projectId"],data["comment"], sure_float(data["position"][0]), sure_float(data["position"][1]))
+    project_id = data["projectId"]
+    comment = data["comment"]
+    add_comment(data["userId"], project_id, comment, sure_float(data["position"][0]), sure_float(data["position"][1]))
+    await websocketManager.broadcast(project_id, comment)
     return "added"
 
 
