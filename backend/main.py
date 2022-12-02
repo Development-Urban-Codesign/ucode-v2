@@ -1,50 +1,26 @@
 import json
 from smtpd import DebuggingServer
 
-import requests
 import osmnx as ox
+import requests
 from fastapi import FastAPI, HTTPException, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from osmtogeojson import osmtogeojson
 
-from db import (
-    add_comment,
-    add_drawn_line,
-    dislike_comment,
-    get_buildings_from_db,
-    connect,
-    get_comments,
-    get_filtered_comments,
-    get_greenery_from_db,
-    get_table_names,
-    get_trees_from_db,
-    like_comment,
-    dislike_comment,
-    undislike_comment,
-    unlike_comment,
-    get_driving_lane_from_db,
-    get_driving_lane_polygon_from_db,
-    add_fulfillment,
-    get_quests_from_db,
-    get_driving_lane_polygon_from_db,
-    drop_greenery_table,
-    drop_building_table,
-    drop_tree_table,
-    drop_driving_lane_table,
-    drop_traffic_signal_table,
-    get_traffic_signal_from_db,
-    get_project_specification_from_db,
-    get_routes_from_db,
-    drop_tram_line_table,
-    get_tram_line_from_db,
-    drop_water_table,
-    get_water_from_db,
-    drop_sidewalk_table,
-    drop_sidewalk_polygon,
-    get_sidewalk_from_db
-
-)
+from db import (add_comment, add_drawn_line, add_fulfillment, connect,
+                dislike_comment, drop_building_table, drop_driving_lane_table,
+                drop_greenery_table, drop_sidewalk_polygon,
+                drop_sidewalk_table, drop_traffic_signal_table,
+                drop_tram_line_table, drop_tree_table, drop_water_table,
+                get_buildings_from_db, get_comments, get_driving_lane_from_db,
+                get_driving_lane_polygon_from_db, get_filtered_comments,
+                get_greenery_from_db, get_project_specification_from_db,
+                get_quests_from_db, get_routes_from_db, get_sidewalk_from_db,
+                get_table_names, get_traffic_signal_from_db,
+                get_tram_line_from_db, get_trees_from_db, get_water_from_db,
+                like_comment, undislike_comment, unlike_comment)
 from db_migrations import run_database_migrations
+
 try:
     run_database_migrations()
 except Exception as err:
@@ -73,6 +49,32 @@ async def websocket_echo_endpoint(websocket:WebSocket):
     while True:
         data = await websocket.receive_text()
         await websocket.send_text(f"Hi, you sent {data}")
+
+
+class WebSocketConnectionManager:
+    connections:dict[str, list[WebSocket]] = {}
+
+    async def connect(self, channel: str, websocket:WebSocket):
+         print("connect")
+         await websocket.accept()
+         if(channel not in self.connections):
+            self.connections[channel] = []
+         self.connections[channel].append(websocket)
+
+    async def broadcast(self, channel: str, message:str):
+        connections = self.connections[channel];  
+        for connection in connections:
+            await  connection.send_text(f"Hi, you sent {message} for channel {channel}")
+
+websocketManager = WebSocketConnectionManager()
+
+@app.websocket("/ws/comments/{project_id}")
+async def websocket_comments(websocket:WebSocket, project_id: str):
+    print(f"A new WS connection comments for ->{project_id}")
+    await websocketManager.connect(project_id, websocket)
+    while True:
+        data = await websocket.receive_text()
+        await websocketManager.broadcast(project_id, data)
 
 @app.get("/")
 async def root():
