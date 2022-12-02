@@ -1,9 +1,8 @@
 import json
-from smtpd import DebuggingServer
 
 import osmnx as ox
 import requests
-from fastapi import FastAPI, HTTPException, Request, WebSocket
+from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from osmtogeojson import osmtogeojson
 
@@ -61,6 +60,11 @@ class WebSocketConnectionManager:
             self.connections[channel] = []
          self.connections[channel].append(websocket)
 
+    def disconnect(self, channel:str, websocket: WebSocket):
+        print("disconnect")
+        connections_list = self.connections[channel]
+        connections_list.remove(websocket)
+
     async def broadcast(self, channel: str, message:str):
         connections = self.connections[channel];  
         for connection in connections:
@@ -72,9 +76,12 @@ websocketManager = WebSocketConnectionManager()
 async def websocket_comments(websocket:WebSocket, project_id: str):
     print(f"A new WS connection comments for ->{project_id}")
     await websocketManager.connect(project_id, websocket)
-    while True:
-        data = await websocket.receive_text()
-        await websocketManager.broadcast(project_id, data)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            await websocketManager.broadcast(project_id, data)
+    except WebSocketDisconnect:
+        websocketManager.disconnect(project_id, websocket)
 
 @app.get("/")
 async def root():
