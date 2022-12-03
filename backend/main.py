@@ -696,29 +696,37 @@ async def get_water_from_osm_api(request: Request):
     data = await request.json()
     projectId = data["projectId"] 
     drop_water_table(projectId)
-    xmin = data["bbox"]["xmin"]
-    ymin = data["bbox"]["ymin"]
-    xmax = data["bbox"]["xmax"]
-    ymax = data["bbox"]["ymax"]
+    bbox = f"""{data["bbox"]["ymin"]},{data["bbox"]["xmin"]},{data["bbox"]["ymax"]},{data["bbox"]["xmax"]}"""
     
-
     overpass_url = "http://overpass-api.de/api/interpreter"
     
     overpass_query_water = f"""
         [out:json];
-        way["natural"="water"]({ymin},{xmin},{ymax},{xmax});
-        relation["natural"="water"]({ymin},{xmin},{ymax},{xmax});
+        way["amenity"="fountain"]({bbox});
+        relation["natural"="water"]({bbox});
+        
+        (._;>;);
+        out geom;
+    """
+    overpass_query_fountain = f"""
+        [out:json];
+        way["natural"="water"]({bbox});
         (._;>;);
         out geom;
     """
     
-    
+    response_fountain = requests.get(
+        overpass_url, params={"data": overpass_query_fountain}
+    )
     response_water = requests.get(
         overpass_url, params={"data": overpass_query_water}
     )
+    # print(response_water)
     
+    data_fountain = osmtogeojson.process_osm_json(response_fountain.json())
     data_water = osmtogeojson.process_osm_json(response_water.json())
-    
+    # print(data_fountain)
+    # print(data_water)
     connection = connect()
     cursor = connection.cursor()
     insert_query_water = """
@@ -726,6 +734,13 @@ async def get_water_from_osm_api(request: Request):
 
     """
     
+    for f in data_fountain["features"]:
+        geom = json.dumps(f["geometry"])
+        cursor.execute(
+        insert_query_water,
+        (projectId,
+        geom
+        ))
     for f in data_water["features"]:
         if(f["geometry"]["type"]=="GeometryCollection"):
             polygon = {"type": "Polygon", "coordinates": []}
