@@ -34,7 +34,7 @@ export async function getAmenityDataFromDB(projectId: string) {
       // console.log(turf.centroid((feat.geometry)))
     }
   });
-  console.log(amenityGeojson)
+  // console.log(amenityGeojson)
   return amenityGeojson;
 
 }

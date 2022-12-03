@@ -74,7 +74,7 @@ const addAmenities =  async () => {
   const groupedAmenities: [{"type": string , "featureCollection":FeatureCollection}]= []
   // debugger
   amenityData.features.forEach((feat)=>{
-    console.log(amenitiesAr.includes(feat.properties?.amenity))
+    // console.log(amenitiesAr.includes(feat.properties?.amenity))
     if(!amenitiesAr.includes(feat.properties?.amenity)){
       amenitiesAr.push(feat.properties?.amenity)
       groupedAmenities.push({type : feat.properties?.amenity, featureCollection: {type: "FeatureCollection", features:[]}})
@@ -85,7 +85,7 @@ const addAmenities =  async () => {
       }
     })
   })
-  console.log(groupedAmenities)
+  // console.log(groupedAmenities)
   groupedAmenities.forEach((anemity) =>{
     addGeoOnPointsToThreejsScene(threeJsScene3d.scene,anemity.featureCollection,"poiIcons/"+anemity.type+".glb",store.state.aoi.projectSpecification.bbox,[40,40],true)
   
