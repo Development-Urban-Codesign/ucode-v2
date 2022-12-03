@@ -17,7 +17,6 @@
                         no-resize 
                         rows="4" 
                         clearable
-                        autofocus 
                         ref="input"
                         :modelValue="commentText"
                         @update:modelValue="text => commentText = text"

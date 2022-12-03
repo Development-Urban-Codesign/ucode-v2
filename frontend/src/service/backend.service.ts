@@ -46,22 +46,7 @@ export async function getbuildingsFromDB(projectId: string) {
   const emptygeom = (d: Feature) => d?.geometry?.coordinates?.length == 1;
   const nonEmptyFeatures = response.data.features.filter(emptygeom);
   // const colorPalette = ['#7bdef2', '#b2f7ef','#eff7f6', '#f7d6e0', '#f2b5d3'];
-  
-  const detectAmenities = (d: Feature) => d?.properties?.amenity != null;
-  const amenities = response.data.features.filter(detectAmenities);
-  console.log(amenities)
-
-  for (let feat of amenities) {
-    if (feat.geometry.coordinates.length == 1) {
-      let centroid = turf.centroid((feat.geometry))
-      centroid.properties = feat.properties
-      amenityGeojson.push(centroid)
-      //console.log(turf.centroid((feat.geometry)))
-    }
-  }
-  //console.log(amenityGeojson)
-  //emit("addLayer", newLayer);
-  const colorPalette = ['#f7f3ee', '#f8f2e9', '#f7f3ee', '#EEE9E2', '#f7f3ee'];
+  const colorPalette = ['#f7f3ee', '#f8f2e9','#f7f3ee', '#EEE9E2', '#f7f3ee'];
 
   const randomColoreFromColorPalette = () => {
     const lengthColors = colorPalette.length - 1;
@@ -204,6 +189,58 @@ export async function storeGreeneryFromOSM(
     projectId: projectId,
   }).then(() => store.dispatch("aoi/setDataIsLoaded"));
 }
+
+//TH
+export async function getFilteredCommentsFromDB(projectId: string, userId: string) {
+  const response = await HTTP.post("get-filtered-comments", {
+    projectId: projectId,
+    userId: userId});
+    const iconlayer = new MapboxLayer({
+      id: "comments",
+      // @ts-ignore
+      type: ScenegraphLayer,
+      data: response.data.features,
+      pickable: true,
+      pickingRadius: 100,
+      scenegraph: "./Icon3d.glb",
+      // @ts-ignore
+      getPosition: (d) => d.geometry.coordinates,
+      getOrientation: () => [0, 0, 90],
+      sizeScale: 15,
+      _lighting: "pbr",
+      onClick: ({ x, y, object }) => {
+        // TODO: change the color of clicked icon
+        /*store.commit("map/addLayer", new MapboxLayer({
+          id: 'pulse-layerr',
+          type: ScatterplotLayer,
+          data : object.geometry.coordinates,
+          pickable: true,
+          stroked: false,
+          filled: true,
+          radiusUnits : 'meters',
+          antialiasing: true,
+          getPosition: object.geometry.coordinates,
+          getRadius: 0,
+          radiusScale: 1,
+          getFillColor: d => [0, 255, 0, 255],
+          getLineColor: d => [0, 0, 0],
+        }))*/
+        store.commit("pulse/pulsedata", object);
+        store.commit("comment/setCommentToggle");
+        store.commit("comment/getClickedCommentObject", object);
+  
+        //getClickedCommentObject(object)
+      },
+  
+      onHover: (e) => {
+        if (e.object) {
+          // Show content of comment in Tooltip?
+        }
+      },
+    });
+    return iconlayer;
+  }
+
 
 export async function getCommentsFromDB(projectId: string) {
   const response = await HTTP.post("get-comments", projectId);
@@ -359,3 +396,17 @@ export async function getWaterFromOSM(bbox: BoundingBox, projectId: string) {
     projectId: projectId,
   }).then(() => store.dispatch("aoi/setDataIsLoaded"));
 }
+
+export async function getSideWalkFromOSM(bbox: BoundingBox,projectId: string) {
+
+  HTTP.post("get-side-walk-from-osm", {
+    bbox: bbox,
+    projectId: projectId,
+  }).then(() => store.dispatch("aoi/setDataIsLoaded"));
+}
+
+export async function getSidewalkFromDB(projectId: string) {
+  const response = await HTTP.post("get-sidewalk-from-db", projectId);
+  return response;
+}
+

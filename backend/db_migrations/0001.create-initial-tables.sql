@@ -18,3 +18,7 @@ create table if not exists routes (id SERIAL PRIMARY KEY, title VARCHAR (300), c
 create table if not exists traffic_signal (id SERIAL PRIMARY KEY, geom geometry(Point, 4326));
 
 create table if not exists tram_line (id SERIAL PRIMARY KEY, project_id TEXT, lane_name text, starts_from text, arrives_to text, geom geometry(Geometry, 4326));
+
+create table if not exists sidewalk (id SERIAL PRIMARY KEY, project_id TEXT, highway TEXT, geom geometry(LINESTRING, 4326));
+
+create table if not exists sidewalk_polygon (id SERIAL PRIMARY KEY, project_id TEXT, geom geometry(Geometry, 4326));

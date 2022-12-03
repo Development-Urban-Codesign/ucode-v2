@@ -9,10 +9,24 @@ import { ThreejsSceneOnly } from "@/utils/ThreejsSceneOnly";
 import { computed, onMounted } from "vue";
 import { useStore } from "vuex";
 import {
-  getbuildingsFromDB, getDrivingLaneFromDB, getGreeneryFromDBTexture, getGreeneryJsonFromDB, getTrafficSignalFromDB, getTreeJsonFromDB, getTreesFromDB, getWaterFromDB, getTrafficSignalDataFromDB, getbuildingsDataFromDB, getTramLineDataFromDB, getAmenities, getAmenityDataFromDB
+
+  getbuildingsFromDB,
+  getDrivingLaneFromDB,
+  getGreeneryFromDBTexture,
+  getGreeneryJsonFromDB,
+  getTrafficSignalFromDB,
+  getTreeJsonFromDB,
+  getTreesFromDB,
+  getWaterFromDB,
+  getTrafficSignalDataFromDB,
+  getbuildingsDataFromDB,
+  getTramLineDataFromDB,
+  getAmenities,
+  getAmenityDataFromDB,
+  getSidewalkFromDB
+
 } from "../service/backend.service";
-import type { Feature, FeatureCollection } from "@turf/helpers";
-import type { Geometry } from "@luma.gl/engine";
+import type { FeatureCollection } from "@turf/helpers";
 const store = useStore();
 const devMode = computed(() => store.getters["ui/devMode"]);
 let threeJsScene3d: any;
@@ -22,11 +36,10 @@ const emit = defineEmits(["addLayer", "addImage", "triggerRepaint"]);
 const populateMap = async () => {
   // await sendBuildingRequest();
   await createEmptyThreeJsScene();
-  
+
   await sendBuildingRequestTHREE()
   // await sendGreeneryRequest();
   await addAmenities();
-  
   await sendGreeneryRequestTHREE();
   // await sendTrafficSignalRequest();
   await sendTrafficSignalRequestTHREE();
@@ -39,6 +52,7 @@ const populateMap = async () => {
   await sendTramLineRequestTHREE();
   emit("addLayer", threeJsScene3d.layer)
   emit("addLayer", threeJsSceneFlat.layer, "routes")
+  await sendSidewalkRequest()
 
   store.dispatch("aoi/setMapIsPopulated");
   store.commit("ui/aoiMapPopulated", true);
@@ -314,6 +328,19 @@ const sendTrafficSignalRequestTHREE = async () => {
 
   const trafficSignalData = await getTrafficSignalDataFromDB(store.state.aoi.projectSpecification.project_id);
   addGeoOnPointsToThreejsScene(threeJsScene3d.scene, trafficSignalData, "TrafficLight.glb", store.state.aoi.projectSpecification.bbox)
+}
+
+const sendSidewalkRequest = async () =>{
+  
+  const sidewalkData = await getSidewalkFromDB(store.state.aoi.projectSpecification.project_id)
+  addPolygonsFromCoordsAr({
+    scene: threeJsSceneFlat.scene,
+    bbox: store.state.aoi.projectSpecification.bbox,
+    geoJson: sidewalkData.data,
+    color: "#bdb8aa",
+    height: 0,
+    extrude: 0.14
+  })
 }
 </script>
 
