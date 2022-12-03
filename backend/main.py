@@ -178,19 +178,17 @@ async def get_buildings_from_osm_api(request: Request):
     ymin = data["bbox"]["ymin"]
     xmax = data["bbox"]["xmax"]
     ymax = data["bbox"]["ymax"]
+    bbox = f"""{data["bbox"]["ymin"]},{data["bbox"]["xmin"]},{data["bbox"]["ymax"]},{data["bbox"]["xmax"]}"""
+    
     overpass_url = "http://overpass-api.de/api/interpreter"
-    # overpass_query_building = """
-    #     [out:json];
-    #     way["building"](%s,%s,%s,%s);
-    #     convert item ::=::,::geom=geom(),_osm_type=type();
-    #     out geom;
-    # """ % ( ymin, xmin, ymax ,xmax )
-    overpass_query_building_parts = """
+    
+
+    overpass_query_building_parts = f"""
         [out:json];
         (
             (
-                way[building](%s,%s,%s,%s);
-                way["building:part"](%s,%s,%s,%s);
+                way[building]({bbox});
+                way["building:part"]({bbox});
             );
             -
             (
@@ -200,16 +198,7 @@ async def get_buildings_from_osm_api(request: Request):
         );
         convert item ::=::,::geom=geom(),_osm_type=type();
         out geom;
-    """ % (
-        ymin,
-        xmin,
-        ymax,
-        xmax,
-        ymin,
-        xmin,
-        ymax,
-        xmax,
-    )
+    """
     response_building = requests.get(
         overpass_url, params={"data": overpass_query_building_parts}
     )
@@ -217,34 +206,25 @@ async def get_buildings_from_osm_api(request: Request):
     data_building = response_building.json()
 
     ###############
-    overpass_query_building_with_hole = """
+    overpass_query_building_with_hole = f"""
         [out:json];
            
                 (
-                    way["building"](%s,%s,%s,%s);
-                    relation["building"](%s,%s,%s,%s);
+                    way["building"]({bbox});
+                    relation["building"]({bbox});
                    
                 );
                 
             (._;>;);
             out geom;
 
-        """ % (
-            ymin,
-            xmin,
-            ymax,
-            xmax,
-            ymin,
-            xmin,
-            ymax,
-            xmax,
-           
-        )
+        """
     response_building_with_hole = requests.get(
         overpass_url, params={"data": overpass_query_building_with_hole}
     )
+    #print(response_building_with_hole.json())
     bhole = osmtogeojson.process_osm_json(response_building_with_hole.json())
-    
+    # print(bhole)
     connectionn = connect()
     cursorr = connectionn.cursor()
     insert_query_buildingg = """
@@ -253,7 +233,7 @@ async def get_buildings_from_osm_api(request: Request):
     for f in bhole["features"]:
         
         if "type" in f["properties"] and f["properties"]["type"] == "multipolygon":
-              
+            
             wallcolor = None
             if "building:colour" in f["properties"]:
                 wallcolor = f["properties"]["building:colour"]
