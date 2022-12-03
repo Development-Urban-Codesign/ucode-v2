@@ -833,7 +833,7 @@ async def get_tram_lines_from_osm_api(request: Request):
 @app.post("/get-tram-line-from-db")
 async def get_tram_line_from_db_api(request: Request):
     projectId = await request.json()
-    print(projectId)
+    # print(projectId)
     return get_tram_line_from_db(projectId)
 
 @app.post("/get-side-walk-from-osm")
