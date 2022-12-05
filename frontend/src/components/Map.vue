@@ -22,7 +22,7 @@
         <FreeComment :showCommentDialog="showCommentDialog" @deleteCommentLayer="deleteCommentLayer" @centerMapOnLocation="centerMapOnLocation"
           @addComment="addCommentToMap" @getCenterOnMap="getMapCenter"
           :clickedCoordinates="commentClicks.commentCoordinates" @updateSourceData="updateSourceData" @closeCommentDialog="closeCommentDialog"/>
-        <CommentGallery v-if="tabIndex=='discussion'" :show="tabIndex=='discussion'"/>
+        <CommentGallery :show="tabIndex=='discussion'"/>
         <BottomNavigation @tabIndexChanged="switchView" :tabIndex="tabIndex"/>
         <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
           @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
