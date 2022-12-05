@@ -27,7 +27,6 @@ import {
 
 } from "../service/backend.service";
 import type { FeatureCollection } from "@turf/helpers";
-import bbox from "@turf/bbox";
 const store = useStore();
 const devMode = computed(() => store.getters["ui/devMode"]);
 let threeJsScene3d: any;
@@ -37,11 +36,10 @@ const emit = defineEmits(["addLayer", "addImage", "triggerRepaint"]);
 const populateMap = async () => {
   // await sendBuildingRequest();
   await createEmptyThreeJsScene();
-  
+
   await sendBuildingRequestTHREE()
   // await sendGreeneryRequest();
   await addAmenities();
-  
   await sendGreeneryRequestTHREE();
   // await sendTrafficSignalRequest();
   await sendTrafficSignalRequestTHREE();
@@ -86,7 +84,26 @@ const sendBuildingRequest = async () => {
 };
 const addAmenities =  async () => {
   const amenityData =  await getAmenityDataFromDB(store.state.aoi.projectSpecification.project_id);
-  addGeoOnPointsToThreejsScene(threeJsScene3d.scene,amenityData,"poiIcons/poiCinema.glb",store.state.aoi.projectSpecification.bbox,[30,30])
+  const amenitiesAr: string[] = []
+  const groupedAmenities: [{"type": string , "featureCollection":FeatureCollection}]= []
+  // debugger
+  amenityData.features.forEach((feat)=>{
+    // console.log(amenitiesAr.includes(feat.properties?.amenity))
+    if(!amenitiesAr.includes(feat.properties?.amenity)){
+      amenitiesAr.push(feat.properties?.amenity)
+      groupedAmenities.push({type : feat.properties?.amenity, featureCollection: {type: "FeatureCollection", features:[]}})
+    }
+    groupedAmenities.forEach((anem)=>{
+      if(anem.type == feat.properties?.amenity){
+        anem.featureCollection.features.push(feat)
+      }
+    })
+  })
+  // console.log(groupedAmenities)
+  groupedAmenities.forEach((anemity) =>{
+    addGeoOnPointsToThreejsScene(threeJsScene3d.scene,anemity.featureCollection,"poiIcons/"+anemity.type+".glb",store.state.aoi.projectSpecification.bbox,[40,40],true)
+  
+  })
   // emit("addLayer", amenityData.amenityIconlayer);
   // emit("addLayer", amenityData.amenityTextlayer);
 
@@ -315,7 +332,7 @@ const sendTrafficSignalRequestTHREE = async () => {
 
 const sendSidewalkRequest = async () =>{
   
-  const sidewalkData: { data: FeatureCollection, polygon: FeatureCollection } = await getSidewalkFromDB(store.state.aoi.projectSpecification.project_id)
+  const sidewalkData = await getSidewalkFromDB(store.state.aoi.projectSpecification.project_id)
   addPolygonsFromCoordsAr({
     scene: threeJsSceneFlat.scene,
     bbox: store.state.aoi.projectSpecification.bbox,

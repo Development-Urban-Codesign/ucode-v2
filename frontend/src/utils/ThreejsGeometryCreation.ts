@@ -146,6 +146,8 @@ function getAllMeshes(scene: Group): Mesh[] {
     scene.children.forEach((sceneChild: any) => {
       if (sceneChild.geometry != undefined) {
         //console.log("geo is: " + element.geometry)
+        // console.log(sceneChild.material.side)
+        sceneChild.material.side = 0
         meshes.push({
           geometry: sceneChild.geometry,
           material: sceneChild.material,
@@ -188,7 +190,7 @@ function createMeshInstance(
     material,
     localSceneCoordinates.length
   );
-
+  
   localSceneCoordinates.forEach((localSceneCoordinate, index) => {
     let scale = new THREE.Vector3(1, 1, 1);
     let rotation = new THREE.Quaternion();
@@ -229,7 +231,7 @@ function generateLocalCoordinates(
   //   console.log(getRndNumber(0, 90))
 
   // }
-  console.log(_geoJson)
+  // console.log(_geoJson)
   if (_geoJson != null) {
     for (let index = 0; index < _geoJson.features.length; index++) {
       const element = _geoJson.features[index].geometry.coordinates;
@@ -247,14 +249,13 @@ function generateLocalCoordinates(
         position: [
           ((localCordsFromWorldCords(element, _geoJson.features[index].properties.estimatedheight || 0).x - cords.x) * 1) /
           cords.meterInMercatorCoordinateUnits(),
-          _geoJson.features[index].properties.estimatedheight+2 || 0,
+          _geoJson.features[index].properties.estimatedheight+0.5 || 0,
           ((cords.y - localCordsFromWorldCords(element, _geoJson.features[index].properties.estimatedheight || 0).y) * 1) /
           cords.meterInMercatorCoordinateUnits(),
         ],
         rotation: rot,
         scale: scl,
       };
-      
       localSceneCoordinates.push(localPos);
     }
   } else {

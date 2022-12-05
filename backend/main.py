@@ -866,7 +866,6 @@ async def get_side_walk_from_osm_api(request: Request):
 
     drop_sidewalk_polygon(projectId)
 
-
     xmin = sure_float(data['bbox']["xmin"])
     ymin = sure_float(data['bbox']["ymin"])
     xmax = sure_float(data['bbox']["xmax"])
@@ -884,7 +883,6 @@ async def get_side_walk_from_osm_api(request: Request):
         INSERT INTO sidewalk (project_id, highway, geom) VALUES (%s, %s, ST_SetSRID(st_astext(st_geomfromgeojson(%s)), 4326));
     '''
     for f in walk['features']:
-
         geom = json.dumps(f['geometry'])
         highway=None
         if 'highway' in f['properties']: highway =f['properties']['highway']

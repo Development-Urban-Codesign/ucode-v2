@@ -24,7 +24,7 @@ export async function getAmenityDataFromDB(projectId: string) {
   const amenities = response.data.features.filter(detectAmenities);
   // console.log(amenities)
 
-  const amenity_tags = ["Theatre", "arts_center", "clinic", "townhall", "library",  "place_of_worship", "cinema"]
+  const amenity_tags = ["theatre", "arts_center", "clinic", "townhall", "library",  "place_of_worship", "cinema"]
   let amenityGeojson: FeatureCollection = {type: "FeatureCollection", features: []}
   amenities.forEach((feat: Feature<Geometries>) => {
     if (feat.geometry?.coordinates.length == 1 && amenity_tags.includes(feat.properties?.amenity)) {
@@ -34,7 +34,7 @@ export async function getAmenityDataFromDB(projectId: string) {
       // console.log(turf.centroid((feat.geometry)))
     }
   });
-  console.log(amenityGeojson)
+  // console.log(amenityGeojson)
   return amenityGeojson;
 
 }
@@ -46,22 +46,7 @@ export async function getbuildingsFromDB(projectId: string) {
   const emptygeom = (d: Feature) => d?.geometry?.coordinates?.length == 1;
   const nonEmptyFeatures = response.data.features.filter(emptygeom);
   // const colorPalette = ['#7bdef2', '#b2f7ef','#eff7f6', '#f7d6e0', '#f2b5d3'];
-  
-  const detectAmenities = (d: Feature) => d?.properties?.amenity != null;
-  const amenities = response.data.features.filter(detectAmenities);
-  console.log(amenities)
-
-  for (let feat of amenities) {
-    if (feat.geometry.coordinates.length == 1) {
-      let centroid = turf.centroid((feat.geometry))
-      centroid.properties = feat.properties
-      amenityGeojson.push(centroid)
-      //console.log(turf.centroid((feat.geometry)))
-    }
-  }
-  //console.log(amenityGeojson)
-  //emit("addLayer", newLayer);
-  const colorPalette = ['#f7f3ee', '#f8f2e9', '#f7f3ee', '#EEE9E2', '#f7f3ee'];
+  const colorPalette = ['#f7f3ee', '#f8f2e9','#f7f3ee', '#EEE9E2', '#f7f3ee'];
 
   const randomColoreFromColorPalette = () => {
     const lengthColors = colorPalette.length - 1;

@@ -258,6 +258,7 @@ const sendSideWalkRequest = async (mode)=>{
       store.state.aoi.projectSpecification.bbox,
       store.state.aoi.projectSpecification.project_id
     );
+
   } 
 }
 
@@ -268,7 +269,7 @@ const sendBikeRequest = async (mode)=>{
       store.state.aoi.projectSpecification.bbox,
       store.state.aoi.projectSpecification.project_id
     );
-  } 
+  }
 
   else {
     const sidewalkData = await getSidewalkFromDB(store.state.aoi.projectSpecification.project_id);
@@ -290,5 +291,6 @@ const sendBikeRequest = async (mode)=>{
     });
     
   }
+
 }
 </script>
