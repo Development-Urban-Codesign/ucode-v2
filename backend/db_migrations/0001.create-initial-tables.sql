@@ -22,3 +22,5 @@ create table if not exists tram_line (id SERIAL PRIMARY KEY, project_id TEXT, la
 create table if not exists sidewalk (id SERIAL PRIMARY KEY, project_id TEXT, highway TEXT, geom geometry(LINESTRING, 4326));
 
 create table if not exists sidewalk_polygon (id SERIAL PRIMARY KEY, project_id TEXT, geom geometry(Geometry, 4326));
+
+create table if not exists bike (id SERIAL PRIMARY KEY, project_id TEXT, oneway TEXT null, highway TEXT null, service_type TEXT null, lanes TEXt null, geom geometry(LINESTRING, 4326));
