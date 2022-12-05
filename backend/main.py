@@ -892,25 +892,8 @@ async def get_side_walk_from_osm_api(request: Request):
     connection.commit()
     cursor.close()
     connection.close()
+
     
-    return "okk"
-
-@app.post("/get-bike-from-osm")
-async def get_bike_from_osm_api(request: Request):
-    data = await request.json()
-    projectId = data["projectId"]
-    xmin = sure_float(data['bbox']["xmin"])
-    ymin = sure_float(data['bbox']["ymin"])
-    xmax = sure_float(data['bbox']["xmax"])
-    ymax = sure_float(data['bbox']["ymax"]) 
-
-    G = ox.graph_from_bbox(ymin, ymax, xmin, xmax, network_type='bike')
-    gdf = ox.graph_to_gdfs(G, nodes=False, edges=True)
-    bike = json.loads(gdf.to_json())
-    print(bike)
-    
-    return "okk"
-
     connection = connect()
     cursor = connection.cursor()
     
@@ -946,6 +929,22 @@ async def get_bike_from_osm_api(request: Request):
     connection.commit()
     cursor.close()
     connection.close()
+    
+    return "okk"
+
+@app.post("/get-bike-from-osm")
+async def get_bike_from_osm_api(request: Request):
+    data = await request.json()
+    projectId = data["projectId"]
+    xmin = sure_float(data['bbox']["xmin"])
+    ymin = sure_float(data['bbox']["ymin"])
+    xmax = sure_float(data['bbox']["xmax"])
+    ymax = sure_float(data['bbox']["ymax"]) 
+
+    G = ox.graph_from_bbox(ymin, ymax, xmin, xmax, network_type='bike')
+    gdf = ox.graph_to_gdfs(G, nodes=False, edges=True)
+    bike = json.loads(gdf.to_json())
+    print(bike)
     
     return "okk"
 
