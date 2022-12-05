@@ -42,7 +42,8 @@ from db import (
     get_water_from_db,
     drop_sidewalk_table,
     drop_sidewalk_polygon,
-    get_sidewalk_from_db
+    get_sidewalk_from_db,
+    drop_bike_table
 
 )
 from db_migrations import run_database_migrations
@@ -936,6 +937,7 @@ async def get_side_walk_from_osm_api(request: Request):
 async def get_bike_from_osm_api(request: Request):
     data = await request.json()
     projectId = data["projectId"]
+    drop_bike_table(projectId)
     xmin = sure_float(data['bbox']["xmin"])
     ymin = sure_float(data['bbox']["ymin"])
     xmax = sure_float(data['bbox']["xmax"])
@@ -944,7 +946,30 @@ async def get_bike_from_osm_api(request: Request):
     G = ox.graph_from_bbox(ymin, ymax, xmin, xmax, network_type='bike')
     gdf = ox.graph_to_gdfs(G, nodes=False, edges=True)
     bike = json.loads(gdf.to_json())
-    print(bike)
+
+    connection = connect()
+    cursor = connection.cursor()
+
+    insert_query_bike= '''
+        INSERT INTO bike (project_id, oneway, highway, service_type, lanes, geom) VALUES (%s, %s, %s, %s, %s, ST_SetSRID(st_astext(st_geomfromgeojson(%s)), 4326));
+    '''
+    for f in bike['features']:
+
+        geom = json.dumps(f['geometry'])
+        oneway=None
+        if 'oneway' in f['properties']: oneway =f['properties']['oneway']
+        highway=None
+        if 'highway' in f['properties']: highway =f['properties']['highway']
+        service_type=None
+        if 'service' in f['properties']: service_type =f['properties']['service']
+        lanes=None
+        if 'lanes' in f['properties']: lanes =f['properties']['lanes']
+        cursor.execute(insert_query_bike, (projectId, oneway, highway, service_type,lanes, geom, ))
+    
+    connection.commit()
+    cursor.close()
+    connection.close()
+    
     
     return "okk"
 
