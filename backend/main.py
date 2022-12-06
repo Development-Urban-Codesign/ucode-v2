@@ -312,13 +312,12 @@ async def get_buildings_from_osm_api(request: Request):
     cursor = connection.cursor()
        # INSERT INTO building (wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
     insert_query_building = """
-        INSERT INTO building (project_id,wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, amenity, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, %s, (st_buffer(st_buffer(ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326)::geography, 1,'side=right'),1)::geography)::geometry);
+        INSERT INTO building (project_id,wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, amenity, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, %s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
     """
     for f in data_building["elements"]:
         #print(f)
         f["geometry"]["type"] = "Polygon"
         f["geometry"]["coordinates"] = [f["geometry"]["coordinates"]]
-
     for f in data_building["elements"]:
        # print(f)
         wallcolor = None
@@ -625,7 +624,8 @@ def sure_float(may_be_number):
 #TH:add projectId to insert command
 @app.post("/get-traffic-lights-from-osm")
 async def get_traffic_lights_from_osm_api(request: Request):
-    # projectId ="0"
+    projectId ="0"
+    drop_traffic_signal_table(projectId)
     data = await request.json()
     projectId = data["projectId"]
     drop_traffic_signal_table(projectId)
@@ -689,6 +689,7 @@ async def get_traffic_lights_from_db_api(request: Request):
 async def get_routes_from_db_api(request: Request):
     projectId = await request.json()
     return get_routes_from_db(projectId)
+
 
 @app.post("/get-water-from-db")
 async def get_water_from_db_api(request: Request):
@@ -1033,3 +1034,42 @@ async def get_bike_from_db_api(request: Request):
     bike_poly = get_bike_from_db(projectId)
     return bike_poly
 
+@app.get("/admin/clear-cache")
+async def clear_cache():
+    get_buildings_from_db_cache_stats = get_buildings_from_db.cache_info()
+    get_greenery_from_db_cache_stats = get_greenery_from_db.cache_info()
+    get_trees_from_db_cache_stats = get_trees_from_db.cache_info()
+    get_driving_lane_from_db_cache_stats = get_driving_lane_from_db.cache_info()
+    get_driving_lane_polygon_from_db_cache_stats = get_driving_lane_polygon_from_db.cache_info()
+    get_traffic_signal_from_db_cache_stats =get_traffic_signal_from_db.cache_info()
+    get_tram_line_from_db_cache_stats = get_tram_line_from_db.cache_info()
+    get_water_from_db_cache_stats = get_water_from_db.cache_info()
+    get_sidewalk_from_db_cache_stats = get_sidewalk_from_db.cache_info()
+    get_bike_from_db_cache_stats = get_bike_from_db.cache_info()
+    get_bike_lane_from_db_cache_stats = get_bike_lane_from_db.cache_info()
+    get_buildings_from_db.cache_clear()
+    get_greenery_from_db.cache_clear()
+    get_trees_from_db.cache_clear()
+    get_driving_lane_from_db.cache_clear()
+    get_driving_lane_polygon_from_db.cache_clear()
+    get_traffic_signal_from_db.cache_clear()
+    get_tram_line_from_db.cache_clear()
+    get_water_from_db.cache_clear()
+    get_sidewalk_from_db.cache_clear()
+    get_bike_from_db.cache_clear()
+    get_bike_lane_from_db.cache_clear()
+    result = {
+        "get_buildings_from_db_cache_stats": get_buildings_from_db_cache_stats,
+        "get_greenery_from_db_cache_stats": get_greenery_from_db_cache_stats,
+        "get_trees_from_db_cache_stats": get_trees_from_db_cache_stats,
+        "get_driving_lane_from_db_cache_stats": get_driving_lane_from_db_cache_stats,
+        "get_driving_lane_polygon_from_db_cache_stats": get_driving_lane_polygon_from_db_cache_stats,
+        "get_traffic_signal_from_db_cache_stats": get_traffic_signal_from_db_cache_stats,
+        "get_tram_line_from_db_cache_stats": get_tram_line_from_db_cache_stats,
+        "get_water_from_db_cache_stats": get_water_from_db_cache_stats,
+        "get_sidewalk_from_db_cache_stats": get_sidewalk_from_db_cache_stats,
+        "get_bike_from_db_cache_stats": get_bike_from_db_cache_stats,
+        "get_bike_lane_from_db_cache_stats": get_bike_lane_from_db_cache_stats,
+        "result": "Cache cleared"
+    }
+    return result

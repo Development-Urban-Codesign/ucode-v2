@@ -20,7 +20,6 @@
     <v-btn color="#41b883" @click="emit('startPopulate')" class="mt-2">
       Load DB
     </v-btn>
-
     <v-select :items="['get', 'retrieve']" label="building" variant="outlined" @update:modelValue="sendBuildingRequest">
     </v-select>
     <v-select :items="['get', 'retrieve']" :label="$t('AOI.greenery')" variant="outlined"

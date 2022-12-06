@@ -291,11 +291,13 @@ function createSinglePolygon(feature: Feature<any>, bbox: BoundingBox) {
   feature.geometry.coordinates[0].forEach((coord: Position) => {
     let pos: THREE.Vector3 = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), bbox)
     vertAr.push(new THREE.Vector2(pos.x, pos.z))
+    // console.count("loop")
   })
   const shape = new THREE.Shape(vertAr);
   //Create holes in geometry
   if (feature.geometry.coordinates.length > 1) {
     for (let index = 1; index < feature.geometry.coordinates.length; index++) {
+      
       let pathPoints: THREE.Vector2[] = []
       feature.geometry.coordinates[index].forEach((coord: Position) => {
         let pos: THREE.Vector3 = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), bbox)// console.log(pos)
