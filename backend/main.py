@@ -43,7 +43,10 @@ from db import (
     drop_sidewalk_table,
     drop_sidewalk_polygon,
     get_sidewalk_from_db,
-    drop_bike_table
+    drop_bike_table,
+    drop_bike_polygon_table,
+    get_bike_from_db,
+    get_bike_lane_from_db
 
 )
 from db_migrations import run_database_migrations
@@ -936,6 +939,7 @@ async def get_bike_from_osm_api(request: Request):
     data = await request.json()
     projectId = data["projectId"]
     drop_bike_table(projectId)
+    drop_bike_polygon_table(projectId)
     xmin = sure_float(data['bbox']["xmin"])
     ymin = sure_float(data['bbox']["ymin"])
     xmax = sure_float(data['bbox']["xmax"])
@@ -967,12 +971,75 @@ async def get_bike_from_osm_api(request: Request):
     connection.commit()
     cursor.close()
     connection.close()
+
+    connection = connect()
+    cursor = connection.cursor()
+
+    update_query_bike= '''
+        update bike set geom = (CASE
+        when highway='primary' THEN
+        st_astext(st_transform(st_setsrid(ST_Collect(
+            ST_OffsetCurve(st_transform(ST_SetSRID(geom, 4326), 26986), 5.5, 'quad_segs=4 join=mitre mitre_limit=2.2'),
+            ST_OffsetCurve(st_transform(ST_SetSRID(geom, 4326), 26986), -5.5, 'quad_segs=4 join=mitre mitre_limit=2.2')
+        ),26986),4326))
+
+        when highway='secondary' THEN
+        st_astext(st_transform(st_setsrid(ST_Collect(
+            ST_OffsetCurve(st_transform(ST_SetSRID(geom, 4326), 26986), 4.5, 'quad_segs=4 join=mitre mitre_limit=2.2'),
+            ST_OffsetCurve(st_transform(ST_SetSRID(geom, 4326), 26986), -4.5, 'quad_segs=4 join=mitre mitre_limit=2.2')
+        ),26986),4326))
+
+        when highway='tertiary' THEN
+        st_astext(st_transform(st_setsrid(ST_Collect(
+            ST_OffsetCurve(st_transform(ST_SetSRID(geom, 4326), 26986), 3.5, 'quad_segs=4 join=mitre mitre_limit=2.2'),
+            ST_OffsetCurve(st_transform(ST_SetSRID(geom, 4326), 26986), -3.5, 'quad_segs=4 join=mitre mitre_limit=2.2')
+        ),26986),4326))
+
+        when highway='residential' THEN
+        st_astext(st_transform(st_setsrid(ST_Collect(
+            ST_OffsetCurve(st_transform(ST_SetSRID(geom, 4326), 26986), 2.5, 'quad_segs=4 join=mitre mitre_limit=2.2'),
+            ST_OffsetCurve(st_transform(ST_SetSRID(geom, 4326), 26986), -2.5, 'quad_segs=4 join=mitre mitre_limit=2.2')
+        ),26986),4326))
+
+        else  st_astext(geom)
+        END ) where project_id=%s;
+
+        delete from bike where geom is null;
+        ;
+    '''
+    cursor.execute(update_query_bike, (projectId, ))
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+    connection = connect()
+    cursor = connection.cursor()
+
+    insert_query_bike_polygon= '''
+        
+        INSERT INTO bike_polygon(project_id, geom)
+        SELECT project_id, st_buffer(
+            ST_SetSRID(geom, 4326)::geography,
+            0.5 ,
+            'endcap=round join=round')::geometry FROM bike where project_id=%s;
+    '''
     
+    cursor.execute(insert_query_bike_polygon, (projectId, ))
     
+    connection.commit()
+    cursor.close()
+    connection.close()
+
     return "okk"
 
 @app.post("/get-sidewalk-from-db")
 async def get_sidewalk_from_db_api(request: Request):
     projectId = await request.json()
     return get_sidewalk_from_db(projectId)
+
+@app.post("/get-bike-from-db")
+async def get_bike_from_db_api(request: Request):
+    projectId = await request.json()
+    bike_poly = get_bike_from_db(projectId)
+    return bike_poly
 
