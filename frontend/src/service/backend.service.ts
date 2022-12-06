@@ -8,6 +8,7 @@ import { PROJECTION_MODE } from "@deck.gl/core/typed/lib/constants";
 import * as turf from '@turf/turf';
 import { IconLayer, TextLayer } from '@deck.gl/layers/typed';
 import type { Feature, FeatureCollection, Geometries } from "@turf/turf";
+let buildingresponse: any
 
 
 export async function getQuestsFromDB(projectId: string) {
@@ -15,13 +16,15 @@ export async function getQuestsFromDB(projectId: string) {
   return response.data;
 }
 export async function getbuildingsDataFromDB(projectId: string) {
-  const response = await HTTP.post("get-buildings-from-db", projectId);
-  return response.data;
+  buildingresponse = await HTTP.post("get-buildings-from-db", projectId);
+  return buildingresponse.data;
 }
 export async function getAmenityDataFromDB(projectId: string) {
-  const response = await HTTP.post("get-buildings-from-db", projectId);
+  if(buildingresponse == undefined){
+    buildingresponse = await HTTP.post("get-buildings-from-db", projectId);
+  }
   const detectAmenities = (d: Feature) => d?.properties?.amenity != null;
-  const amenities = response.data.features.filter(detectAmenities);
+  const amenities = buildingresponse.data.features.filter(detectAmenities);
   // console.log(amenities)
 
   const amenity_tags = ["theatre", "arts_center", "clinic", "townhall", "library",  "place_of_worship", "cinema"]

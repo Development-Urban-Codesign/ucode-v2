@@ -311,7 +311,7 @@ async def get_buildings_from_osm_api(request: Request):
     cursor = connection.cursor()
        # INSERT INTO building (wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
     insert_query_building = """
-        INSERT INTO building (project_id,wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, amenity, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, %s, (st_buffer(st_buffer(ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326)::geography, 1,'side=right'),1)::geography)::geometry);
+        INSERT INTO building (project_id,wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, amenity, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, %s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
     """
     for f in data_building["elements"]:
         #print(f)
@@ -675,15 +675,7 @@ async def get_routes_from_db_api(request: Request):
     projectId = await request.json()
     return get_routes_from_db(projectId)
 
-@app.get("/admin/clear-cache")
-async def clear_cache():
-    get_buildings_from_db_cache_stats = get_buildings_from_db.cache_info()
-    get_buildings_from_db.cache_clear()
-    result = {
-        "get_buildings_from_db_cache_stats": get_buildings_from_db_cache_stats,
-        "result": "Cache cleared"
-    }
-    return result
+
 @app.post("/get-water-from-db")
 async def get_water_from_db_api(request: Request):
     projectId = await request.json()
@@ -1028,3 +1020,12 @@ async def get_bike_from_db_api(request: Request):
     bike_poly = get_bike_from_db(projectId)
     return bike_poly
 
+@app.get("/admin/clear-cache")
+async def clear_cache():
+    get_buildings_from_db_cache_stats = get_buildings_from_db.cache_info()
+    get_buildings_from_db.cache_clear()
+    result = {
+        "get_buildings_from_db_cache_stats": get_buildings_from_db_cache_stats,
+        "result": "Cache cleared"
+    }
+    return result
