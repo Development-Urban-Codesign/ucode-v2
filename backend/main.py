@@ -174,10 +174,6 @@ async def get_buildings_from_osm_api(request: Request):
     data = await request.json()
     projectId = data["projectId"]
     drop_building_table(projectId)
-    xmin = data["bbox"]["xmin"]
-    ymin = data["bbox"]["ymin"]
-    xmax = data["bbox"]["xmax"]
-    ymax = data["bbox"]["ymax"]
     bbox = f"""{data["bbox"]["ymin"]},{data["bbox"]["xmin"]},{data["bbox"]["ymax"]},{data["bbox"]["xmax"]}"""
     
     overpass_url = "http://overpass-api.de/api/interpreter"
@@ -210,8 +206,7 @@ async def get_buildings_from_osm_api(request: Request):
         [out:json];
            
                 (
-                    way["building"]({bbox});
-                    relation["building"]({bbox});
+                    rel["building"]({bbox});
                    
                 );
                 
@@ -222,8 +217,18 @@ async def get_buildings_from_osm_api(request: Request):
     response_building_with_hole = requests.get(
         overpass_url, params={"data": overpass_query_building_with_hole}
     )
-    #print(response_building_with_hole.json())
-    bhole = osmtogeojson.process_osm_json(response_building_with_hole.json())
+    results = response_building_with_hole.json()
+    for f in results["elements"]:
+        if "type" in f and f["type"] == "relation":
+            if(f["members"][0]["role"] != "outer"):
+                i = 0
+                for x in f["members"]:
+                    if x["role"] == "outer":
+                        f["members"][0], f["members"][i] = f["members"][i],f["members"][0]
+                        break
+                    i += 1
+                
+    bhole = osmtogeojson.process_osm_json(results)
     # print(bhole)
     connectionn = connect()
     cursorr = connectionn.cursor()
