@@ -365,7 +365,7 @@ const sendBikeRequest = async () =>{
     geoJson: bikeData.data,
     color: "#f75d52",
     height: 0,
-    extrude: 0.141
+    extrude: 0.155
   })  
    
 }
