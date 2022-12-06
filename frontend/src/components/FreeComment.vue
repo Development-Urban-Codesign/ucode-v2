@@ -5,18 +5,18 @@
             Kommentieren
         </v-btn>
         <transition name="slide">
-            <v-card v-if="showCommentDialog" elevation="20">
+            <v-card v-show="props.showCommentDialog" elevation="20">
                 <v-btn @click="cancelComment" icon="mdi-close" variant="plain" id="close-btn"/>
                 <p class="font-weight-bold text-body-1 call-to-action" >Platziere deinen Kommentar</p>
-                <div className="comment-text-area">
+                <div class="comment-text-area">
                     <v-textarea 
+                        id="ta-input"
                         :class="commentText!==''?'show-send-btn':'hide-send-btn'"
                         variant="solo" 
                         label="Kommentar" 
                         color="primary" 
                         no-resize 
                         rows="4" 
-                        clearable
                         ref="input"
                         :modelValue="commentText"
                         @update:modelValue="text => commentText = text"
@@ -30,10 +30,11 @@
 <script lang="ts" setup>
 import { useStore } from 'vuex';
 import { HTTP } from '@/utils/http-common';
-import { reactive, ref, watch } from 'vue';
+import { onMounted, reactive, ref, watch } from 'vue';
 import type { FeatureCollection } from 'geojson';
 const store = useStore()
 let commentText = ref<string>("")
+let isFocused = ref<boolean>(false)
 let allMarker = reactive<FeatureCollection>({ type: "FeatureCollection", features: [] })
 
 const props = defineProps({
@@ -127,7 +128,52 @@ const saveComment = () => {
 
     emit('closeCommentDialog')
 }
+
+// TODOs
+// add a class depanding on the focus
+// https://javascript.info/focus-blur
+// add Animation when is focused or not 
+
+onMounted(() => {
+    let input = document.getElementById('ta-input')
+    let body = document.body;
+
+    if(input && body){
+        input.onblur = function() {
+            console.log("blur")
+            body?.classList.remove('expand');
+            body?.classList.add('reduce');
+            // body.classList.remove("body-height")
+        };
+
+        input.onfocus = function() {
+            console.log("focus")
+            body?.classList.remove('reduce');
+            body?.classList.add('expand');
+            // body.classList.add("body-height")
+        };
+    } 
+})
 </script>
+
+<style>
+.expand{
+    animation: expand-animation 0.2s ease-in-out 0s 1 forwards !important;
+}
+
+.reduce{
+    animation: reduce-animation 0.2s ease-in-out 0s 1 forwards !important;
+}
+
+@keyframes expand-animation {
+    0%   {height: 100vh;}
+    100% {height: 52vh;}
+}
+@keyframes reduce-animation {
+    0%   {height: 52vh;}
+    100% {height: 100vh;}
+}
+</style>
 
 <style scoped>
 .comment-container {

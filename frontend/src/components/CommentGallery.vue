@@ -1,7 +1,7 @@
 <template>
     <div class="comment-gallery-wrapper">
         <transition name="slide">
-            <div v-if="props.show" className="comment-list">
+            <div v-if="(commentsAreLoaded && props.show)" className="comment-list">
                 
                 <v-card
                     v-for="comment in commentList"
@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-    import { onMounted, ref } from 'vue';
+    import { onMounted, ref, watch } from 'vue';
     import { useStore } from "vuex";
     import { getFilteredCommentsFromDB } from "../service/backend.service";
 
@@ -34,7 +34,12 @@
         }
     })
 
+    if(props.show){
+        sendCommentRequest()
+    }
+
     let commentList = ref([])
+    let commentsAreLoaded = ref(false)
 
     const getRelativeTime = (timestamp) => {
         let today = new Date();
@@ -79,6 +84,7 @@
     }
 
     const sendCommentRequest = async () => {
+        commentsAreLoaded.value = false;
         let response = []
         let myComments = []
         let otherComments = []
@@ -92,10 +98,17 @@
         myComments = myComments.sort((a, b) => { return new Date(a) - new Date(b); }).reverse()
         otherComments = otherComments.sort((a, b) => { return new Date(a) - new Date(b); }).reverse()
         commentList.value = myComments.concat(otherComments);
+        commentsAreLoaded.value = true;
     }
 
     onMounted(() => {
         sendCommentRequest();
+    })
+
+    watch(props, function () {
+        if (props.show){
+            sendCommentRequest();
+        }
     })
 </script>
 
