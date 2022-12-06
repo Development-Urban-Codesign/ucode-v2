@@ -23,7 +23,8 @@ import {
   getTramLineDataFromDB,
   getAmenities,
   getAmenityDataFromDB,
-  getSidewalkFromDB
+  getSidewalkFromDB,
+  getBikeFromDB
 
 } from "../service/backend.service";
 import type { FeatureCollection } from "@turf/helpers";
@@ -52,7 +53,8 @@ const populateMap = async () => {
   await sendTramLineRequestTHREE();
   emit("addLayer", threeJsScene3d.layer)
   emit("addLayer", threeJsSceneFlat.layer, "routes")
-  await sendSidewalkRequest()
+  await sendSidewalkRequest();
+  await sendBikeRequest()
 
   store.dispatch("aoi/setMapIsPopulated");
   store.commit("ui/aoiMapPopulated", true);
@@ -213,6 +215,8 @@ const sendDrivingLaneRequestTHREE = async () => {
       "data": drivingLanedata.lane
     }
   })
+  let baseWidth = 0.2;
+  let baseZoom = 15;
   store.commit("map/addLayer", {
     'id': "driving_lane",
     'type': 'line',
@@ -223,8 +227,17 @@ const sendDrivingLaneRequestTHREE = async () => {
     },
     'paint': {
       'line-color': '#FFFFFF',
-      'line-width': 1,
-      'line-dasharray': [10, 20]
+      //'line-width': 1,
+      "line-width": 
+            {
+                'type': 'exponential',
+                'base': 2,
+                'stops': [
+                    [0, baseWidth * Math.pow(2, (0 - baseZoom))],
+                    [22, baseWidth * Math.pow(2, (22 - baseZoom))]
+                ]
+            },
+      'line-dasharray': [4,20]
     }
   })
 
@@ -339,8 +352,22 @@ const sendSidewalkRequest = async () =>{
     geoJson: sidewalkData.data,
     color: "#bdb8aa",
     height: 0,
-    extrude: 0.14
+    extrude: 0.131
   })
+}
+
+const sendBikeRequest = async () =>{
+  
+  const bikeData = await getBikeFromDB(store.state.aoi.projectSpecification.project_id)
+  addPolygonsFromCoordsAr({
+    scene: threeJsSceneFlat.scene,
+    bbox: store.state.aoi.projectSpecification.bbox,
+    geoJson: bikeData.data,
+    color: "#f75d52",
+    height: 0,
+    extrude: 0.155
+  })  
+   
 }
 </script>
 
