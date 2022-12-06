@@ -389,6 +389,24 @@ def drop_sidewalk_polygon(projectId):
   cursor.close()
   connection.close()
 
+def drop_bike_table(projectId):
+  connection = connect()
+  cursor = connection.cursor()
+  drop_bike_query =f''' delete from bike where project_id='{projectId}';'''
+  cursor.execute(drop_bike_query)
+  connection.commit()
+  cursor.close()
+  connection.close()
+
+def drop_bike_polygon_table(projectId):
+  connection = connect()
+  cursor = connection.cursor()
+  drop_bike_polygon_query =f''' delete from bike_polygon where project_id='{projectId}';'''
+  cursor.execute(drop_bike_polygon_query)
+  connection.commit()
+  cursor.close()
+  connection.close()
+
 def get_traffic_signal_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
@@ -484,3 +502,39 @@ def get_sidewalk_from_db(projectId):
   cursor.close()
   connection.close()
   return sidewalk
+
+def get_bike_from_db(projectId):
+  connection = connect()
+  cursor = connection.cursor()
+  get_bike_query = f''' select json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(ST_AsGeoJSON(bike_polygon.*)::json)
+        )
+        from (
+          select id, (ST_Dump(bike_polygon.geom)).geom::geometry(Polygon,4326) from bike_polygon where project_id = '{projectId}'
+        ) as bike_polygon
+        
+      ;
+  '''
+  cursor.execute(get_bike_query)
+  bike_lanes = cursor.fetchall()[0][0]
+  cursor.close()
+  connection.close()
+  return bike_lanes
+
+def get_bike_lane_from_db(projectId):
+  connection = connect()
+  cursor = connection.cursor()
+  get_bike_lane_query = f''' select json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(ST_AsGeoJSON(bike.*)::json)
+        )
+        from bike
+        where project_id = '{projectId}'
+      ;
+  '''
+  cursor.execute(get_bike_lane_query)
+  lane = cursor.fetchall()[0][0]
+  cursor.close()
+  connection.close()
+  return lane
