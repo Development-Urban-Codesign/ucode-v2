@@ -191,10 +191,20 @@ export async function storeGreeneryFromOSM(
 }
 
 //TH
+
+export async function deleteComments(projectId: string){
+  const response = await  HTTP.get("delete-comments", {
+    params: {projectId: projectId}
+    }
+  )
+}
+
 export async function getFilteredCommentsFromDB(projectId: string, userId: string) {
-  const response = await HTTP.post("get-filtered-comments", {
-    projectId: projectId,
-    userId: userId});
+  const response = await  HTTP.get("get-filtered-comments", {
+    params: {
+      projectId: projectId,
+      userId: userId}
+    },)  
     const iconlayer = new MapboxLayer({
       id: "comments",
       // @ts-ignore
@@ -243,8 +253,11 @@ export async function getFilteredCommentsFromDB(projectId: string, userId: strin
 
 
 export async function getCommentsFromDB(projectId: string) {
-  const response = await HTTP.post("get-comments", projectId);
-
+  const response = await HTTP.get("get-comments", {
+    params: {
+      projectId:   projectId
+    },})
+  
   const iconlayer = new MapboxLayer({
     id: "comments",
     // @ts-ignore

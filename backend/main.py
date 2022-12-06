@@ -14,6 +14,7 @@ from db import (
     dislike_comment,
     get_buildings_from_db,
     connect,
+    delete_comments,
     get_comments,
     get_filtered_comments,
     get_greenery_from_db,
@@ -476,15 +477,29 @@ async def add_drawn_line_api(request: Request):
     )
     return "added"
 
+#delete-comments
+@app.get("/delete-comments")
+async def delete_comments_api(projectId: str):
+    print(projectId)
+    return delete_comments(projectId)
 
 @app.post("/get-comments")
 async def get_comments_api(request: Request):
     data = await request.json()
     return get_comments(data)
 
+@app.get("/get-comments")
+async def get_comments_api(projectId: str):
+    return get_comments(projectId)
+
+@app.get("/get-filtered-comments")
+async def get_filtered_comments_api(projectId: str, userId: str):
+        return get_filtered_comments(projectId,userId)
+
 @app.post("/get-filtered-comments")
 async def get_filtered_comments_api(request: Request):
     data = await request.json()
+    print(data)
     projectId = data["projectId"]
     userId = data["userId"]
     return get_filtered_comments(projectId,userId)
@@ -853,7 +868,6 @@ async def get_tram_lines_from_osm_api(request: Request):
 @app.post("/get-tram-line-from-db")
 async def get_tram_line_from_db_api(request: Request):
     projectId = await request.json()
-    print(projectId)
     return get_tram_line_from_db(projectId)
 
 @app.post("/get-side-walk-from-osm")

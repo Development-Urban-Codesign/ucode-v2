@@ -8,6 +8,10 @@
           <v-btn color="success" class="ml-2" @click="getFilteredCommentData">
             Show filtered comments
           </v-btn>
+          <v-btn color="success" class="ml-2" @click="dropCommentData">
+            Drop comments
+          </v-btn>
+          
           <v-btn color="error" class="ml-2" @click="addThreejsShape">
             Threejs
           </v-btn>
@@ -42,6 +46,7 @@ import Quests from "@/components/Quests.vue";
 import FreeComment from "@/components/FreeComment.vue";
 import BottomNavigation from "@/components/BottomNavigation.vue";
 import CommentGallery from "@/components/CommentGallery.vue";
+import { deleteComments } from "@/service/backend.service";
 import { getCommentsFromDB } from "@/service/backend.service";
 import { getFilteredCommentsFromDB } from "@/service/backend.service";
 import type { ProjectSpecification } from "@/store/modules/aoi";
@@ -420,6 +425,16 @@ const getFilteredCommentData = async () => {
   
 };
 
+// drops the comments of the current project
+const dropCommentData = async () => {
+  // projectId
+  let thisProjectId = store.state.aoi.projectId;
+  let question = "Do you want to delete the comments of project: " + thisProjectId + "?";
+  let deleteCommentsAnswer = confirm(question);
+  if (deleteCommentsAnswer === true) {
+        deleteComments(thisProjectId)
+  }
+};
 
 //Show comment symbols on the map
 const getCommentData = async () => {

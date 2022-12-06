@@ -156,6 +156,15 @@ def add_drawn_line(projectId,comment, width, color, geom):
   cursor.close()
   connection.close()
 
+def delete_comments(projectId):
+  print(projectId)
+  connection = connect()
+  cursor = connection.cursor()
+  delete_comments_query =f''' delete from comment where project_id='{projectId}';'''
+  cursor.execute(delete_comments_query)
+  connection.commit()
+  cursor.close()
+  connection.close()
 
 def get_comments(projectId):
   connection = connect()
@@ -169,7 +178,6 @@ def get_comments(projectId):
   '''
   cursor.execute(get_comment_query)
   comments = cursor.fetchall()[0][0]
-  print(comments)
   cursor.close()
   connection.close()
   return comments
