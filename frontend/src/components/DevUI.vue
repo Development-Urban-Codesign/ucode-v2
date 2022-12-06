@@ -1,6 +1,18 @@
 <template>
 
-  <v-col cols="6" md="2" sm="3" style="position: absolute; right: 0; top: 50px; z-index: 999">
+  <v-col  cols="1" md="2" sm="3" style="position:absolute; left: 0; top:0; z-index:999; width:800px">
+    <v-btn color="#41b883" class="mt-2" @click="getCommentData">
+      Show comments
+    </v-btn>
+    <!-- <v-btn color="success" class="ml-1" @click="getFilteredCommentData">
+      Show filtered comments
+    </v-btn> -->
+    <v-btn color="#41b883" class="mt-2" @click="dropCommentData">
+      Drop comments
+    </v-btn>
+  </v-col>
+
+  <v-col cols="1" md="2" sm="3" style="position: absolute; right: 0; top: 0; z-index: 999">
 
     <v-btn color="#41b883" @click="loadAllProjectObjectsFromOSM()" class="mt-2">
       Import OSM
@@ -8,7 +20,6 @@
     <v-btn color="#41b883" @click="emit('startPopulate')" class="mt-2">
       Load DB
     </v-btn>
-
 
     <v-select :items="['get', 'retrieve']" label="building" variant="outlined" @update:modelValue="sendBuildingRequest">
     </v-select>
@@ -27,7 +38,7 @@
       @update:modelValue="sendwaterRequest"></v-select>
 
     <v-select :items="['get', 'retrieve']" label="sidewalk" variant="outlined"
-    @update:modelValue="sendSideWalkRequest"></v-select>
+      @update:modelValue="sendSideWalkRequest"></v-select>
 
     <v-select :items="['get', 'retrieve']" label="bike" variant="outlined"
       @update:modelValue="sendBikeRequest"></v-select>
@@ -95,9 +106,9 @@ const sendBuildingRequest = async (mode) => {
   if (mode == "get") {
     store.dispatch("aoi/setDataIsLoading");
     getbuildingsFromOSM(
-    store.state.aoi.projectSpecification.bbox,
-    store.state.aoi.projectSpecification.project_id
-  );
+      store.state.aoi.projectSpecification.bbox,
+      store.state.aoi.projectSpecification.project_id
+    );
   } else {
     const newLayer = await getbuildingsFromDB(
       store.state.aoi.projectSpecification.project_id
@@ -217,8 +228,8 @@ const sendwaterRequest = async (mode) => {
   }
 };
 
-const sendTramLineRequest = async (mode) =>{
-  
+const sendTramLineRequest = async (mode) => {
+
   if (mode == "get") {
     store.dispatch("aoi/setDataIsLoading");
     await getTramLineFromOSM(
@@ -245,14 +256,14 @@ const sendTramLineRequest = async (mode) =>{
       paint: {
         "line-color": "#FFFF00",
         "line-width": 2,
-      
+
       },
     });
-    
+
   }
 };
 
-const sendSideWalkRequest = async (mode)=>{
+const sendSideWalkRequest = async (mode) => {
   if (mode == "get") {
     store.dispatch("aoi/setDataIsLoading");
     await getSideWalkFromOSM(
@@ -260,8 +271,8 @@ const sendSideWalkRequest = async (mode)=>{
       store.state.aoi.projectSpecification.project_id
     );
 
-  } 
-   else {
+  }
+  else {
     const sidewalkData = await getSidewalkFromDB(store.state.aoi.projectSpecification.project_id);
     store.commit("map/addSource", {
       id: "sidewalk_polygon",
@@ -279,11 +290,11 @@ const sendSideWalkRequest = async (mode)=>{
         "fill-opacity": 1,
       },
     });
-    
+
   }
 }
 
-const sendBikeRequest = async (mode)=>{
+const sendBikeRequest = async (mode) => {
   if (mode == "get") {
     store.dispatch("aoi/setDataIsLoading");
     await getBikeFromOSM(

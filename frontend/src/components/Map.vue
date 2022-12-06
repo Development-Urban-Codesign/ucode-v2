@@ -1,24 +1,6 @@
 <template>
     <div class="map-wrap" ref="mapContainer">
       <div class="map" id="map">
-        <v-row v-if="devMode" style="position: absolute; right: 20px; top: 20px; z-index: 999">
-          <v-btn color="success" class="ml-2" @click="getCommentData">
-            Show comments
-          </v-btn>
-          <v-btn color="success" class="ml-2" @click="getFilteredCommentData">
-            Show filtered comments
-          </v-btn>
-          <v-btn color="success" class="ml-2" @click="dropCommentData">
-            Drop comments
-          </v-btn>
-          
-          <v-btn color="error" class="ml-2" @click="addThreejsShape">
-            Threejs
-          </v-btn>
-          <v-btn color="success" class="ml-2" @click="addDeckglShape">
-            Deckgl
-          </v-btn>
-        </v-row>
         <AOI v-if="mapStyleLoaded" @addLayer="addLayerToMap" @addImage="addImageToMap" @triggerRepaint="triggerRepaint" />
         <Quests v-if="devMode"/>
         <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
