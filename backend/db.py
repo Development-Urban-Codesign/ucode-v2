@@ -95,22 +95,7 @@ def add_fulfillment(quest_id, projectId):
   connection.close()
 
 
-
-
-# def store_greenery_from_osm(greentag, geom): #TODO  delete or refactor? is not beeing used atm because of loop from osm data.
-#   connection = connect()
-#   cursor = connection.cursor()
-#   insert_query_greenery= '''
-#         INSERT INTO greenery (greentag, geom) VALUES (%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
-
-#   '''
-#   cursor.execute(insert_query_greenery, (greentag, geom,))
-
-#   connection.commit()
-#   cursor.close()
-#   connection.close()
-#   return "ok"
-
+@lru_cache
 def get_greenery_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
@@ -127,7 +112,7 @@ def get_greenery_from_db(projectId):
   connection.close()
   return greenery
 
-
+@lru_cache
 def get_trees_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
@@ -266,7 +251,7 @@ def undislike_comment(commentid, projectId):
 #   cursor.close()
 #   connection.close()
 #   return "ok"
-
+@lru_cache
 def get_driving_lane_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
@@ -283,6 +268,7 @@ def get_driving_lane_from_db(projectId):
   connection.close()
   return driving_lane
 
+@lru_cache
 def get_driving_lane_polygon_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
@@ -409,6 +395,7 @@ def drop_bike_polygon_table(projectId):
   cursor.close()
   connection.close()
 
+@lru_cache
 def get_traffic_signal_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
@@ -454,6 +441,7 @@ def get_routes_from_db(projectId):
   connection.close()
   return routes
 
+@lru_cache
 def get_tram_line_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
@@ -471,6 +459,7 @@ def get_tram_line_from_db(projectId):
   connection.close()
   return routes
 
+@lru_cache
 def get_water_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
@@ -488,6 +477,7 @@ def get_water_from_db(projectId):
   connection.close()
   return routes
 
+@lru_cache
 def get_sidewalk_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
@@ -505,6 +495,7 @@ def get_sidewalk_from_db(projectId):
   connection.close()
   return sidewalk
 
+@lru_cache
 def get_bike_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
@@ -524,6 +515,7 @@ def get_bike_from_db(projectId):
   connection.close()
   return bike_lanes
 
+@lru_cache
 def get_bike_lane_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()

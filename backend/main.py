@@ -1023,9 +1023,39 @@ async def get_bike_from_db_api(request: Request):
 @app.get("/admin/clear-cache")
 async def clear_cache():
     get_buildings_from_db_cache_stats = get_buildings_from_db.cache_info()
+    get_greenery_from_db_cache_stats = get_greenery_from_db.cache_info()
+    get_trees_from_db_cache_stats = get_trees_from_db.cache_info()
+    get_driving_lane_from_db_cache_stats = get_driving_lane_from_db.cache_info()
+    get_driving_lane_polygon_from_db_cache_stats = get_driving_lane_polygon_from_db.cache_info()
+    get_traffic_signal_from_db_cache_stats =get_traffic_signal_from_db.cache_info()
+    get_tram_line_from_db_cache_stats = get_tram_line_from_db.cache_info()
+    get_water_from_db_cache_stats = get_water_from_db.cache_info()
+    get_sidewalk_from_db_cache_stats = get_sidewalk_from_db.cache_info()
+    get_bike_from_db_cache_stats = get_bike_from_db.cache_info()
+    get_bike_lane_from_db_cache_stats = get_bike_lane_from_db.cache_info()
     get_buildings_from_db.cache_clear()
+    get_greenery_from_db.cache_clear()
+    get_trees_from_db.cache_clear()
+    get_driving_lane_from_db.cache_clear()
+    get_driving_lane_polygon_from_db.cache_clear()
+    get_traffic_signal_from_db.cache_clear()
+    get_tram_line_from_db.cache_clear()
+    get_water_from_db.cache_clear()
+    get_sidewalk_from_db.cache_clear()
+    get_bike_from_db.cache_clear()
+    get_bike_lane_from_db.cache_clear()
     result = {
         "get_buildings_from_db_cache_stats": get_buildings_from_db_cache_stats,
+        "get_greenery_from_db_cache_stats": get_greenery_from_db_cache_stats,
+        "get_trees_from_db_cache_stats": get_trees_from_db_cache_stats,
+        "get_driving_lane_from_db_cache_stats": get_driving_lane_from_db_cache_stats,
+        "get_driving_lane_polygon_from_db_cache_stats": get_driving_lane_polygon_from_db_cache_stats,
+        "get_traffic_signal_from_db_cache_stats": get_traffic_signal_from_db_cache_stats,
+        "get_tram_line_from_db_cache_stats": get_tram_line_from_db_cache_stats,
+        "get_water_from_db_cache_stats": get_water_from_db_cache_stats,
+        "get_sidewalk_from_db_cache_stats": get_sidewalk_from_db_cache_stats,
+        "get_bike_from_db_cache_stats": get_bike_from_db_cache_stats,
+        "get_bike_lane_from_db_cache_stats": get_bike_lane_from_db_cache_stats,
         "result": "Cache cleared"
     }
     return result
