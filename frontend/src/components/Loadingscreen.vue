@@ -1,11 +1,12 @@
 <template>
-  <div class="Loadingscreen">
+  <div class="loading-screen-wrapper">
     <v-img max-height="60" class="UcodeLogo" src="UCODE_Logo.png"></v-img>
+
     <div class="LoadingText">
       <transition-group name="fade">
-        <div class="LoadingText" v-if="showLoading">
+        <div class="LoadingText" v-if="showLoadingText">
           <div>
-            {{curLoadingText}}
+            {{ curLoadingText }}
           </div>
         </div>
       </transition-group>
@@ -13,45 +14,43 @@
   </div>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { ref } from 'vue';
 
-const Loadingtexts = ["Bäume pflanzen...", "Grünflächen anlegen...", "Gebäude hochziehen...", "Straßen einziehen..."]
-let curLoadingText = ref("Karte wird befüllt...")
+const loadingTexts = ["Bäume pflanzen...", "Grünflächen pflegen...", "Gebäude planen...", "Straßen markieren..."]
+const curLoadingText = ref("Karte wird befüllt...")
 let i = 0
-const showLoading = ref(true)
+const showLoadingText = ref(true)
 async function animate() {
-  setInterval(function () {
-    curLoadingText.value = Loadingtexts[i]
-    
-    if (showLoading.value == false) {
+  const interval = setInterval(function () {
+    curLoadingText.value = loadingTexts[i]
+
+    if (showLoadingText.value == false) {
       i++
       // console.log(i)
-      showLoading.value = true
+      showLoadingText.value = true
     }
     else {
-      showLoading.value = false
+      showLoadingText.value = false
     }
-    if (i >= Loadingtexts.length) {
+    if (i >= loadingTexts.length) {
+      clearInterval(interval)
       i = 0
     }
-    
+
   }, 750);
-  
+
 }
 animate();
 </script>
 
 <style scoped>
-.Loadingscreen {
-  z-index: 1000;
+.loading-screen-wrapper {
   background-color: #81ABBC;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   position: absolute;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  z-index: 9999;
 }
 
 .UcodeLogo {
@@ -59,11 +58,14 @@ animate();
 }
 
 .LoadingText {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
   text-align: center;
   font-size: large;
   min-height: 50px;
-  margin-bottom: 50px;
 }
+
 .fade-enter-active {
   transition: all .3s ease-in;
 }

@@ -11,7 +11,37 @@ const map = {
         minZoom: 4,
         maxZoom: 23,
         maxPitch: 85,
-        style: `https://api.maptiler.com/maps/pastel/style.json?key=${apiKey}`
+        // style: {version: 8,sources: {},layers: []}
+        style: {
+            'version': 8,
+            'name': 'Blank',
+            'center': [0, 0],
+            'zoom': 0,
+            'sources': {
+            'raster-tiles': {
+            'type': 'raster',
+            'tiles': ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            'tileSize': 256,
+            'minzoom': 0,
+            'maxzoom': 19
+            }
+            },
+            'layers': [
+            {
+            'id': 'background',
+            'type': 'background',
+            'paint': {
+            'background-color': '#e0dfdf'
+            }
+            },
+            {
+            'id': 'simple-tiles',
+            'type': 'raster',
+            'source': 'raster-tiles'
+            }
+            ],
+            'id': 'blank'
+        }
     },
     mutations: {
         addLayer(state, newLayer) {

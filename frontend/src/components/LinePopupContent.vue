@@ -48,9 +48,9 @@
   </div>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import {useStore} from "vuex";
-import { ref, defineProps } from 'vue';
+import { ref } from 'vue';
 import { HTTP } from '../utils/http-common';
 const store = useStore();
 
@@ -70,20 +70,20 @@ let drawnLineWidth= ref(1)
 let drawnLineColor= ref("#969696")
 
 const updateDrawnLineWidth = ()=>{
-  props.changeWidth(drawnLineWidth.value)
+  props.changeWidth!(drawnLineWidth.value)
 }
 
 const updateDrawnLineColor = ()=>{
   const r = parseInt(drawnLineColor.value.substr(1,2), 16)
   const g = parseInt(drawnLineColor.value.substr(3,2), 16)
   const b = parseInt(drawnLineColor.value.substr(5,2), 16)
-  props.changeColor(r,g,b)
+  props.changeColor!(r,g,b)
 }
 
 const discardDrawnLine = ()=>{
-  props.closeLinePopup();
-  props.removeDrawnLineAction()
-  props.removeDrawControlAction()
+  props.closeLinePopup!();
+  props.removeDrawnLineAction!()
+  props.removeDrawControlAction!()
 }
 
 const submitDrawnLine = ()=>{
@@ -96,8 +96,8 @@ const submitDrawnLine = ()=>{
         color: drawnLineColor.value,
         geometry: props.drawnLineGeometry
     })
-    props.closeLinePopup();
-    props.removeDrawControlAction()
+    props.closeLinePopup!();
+    props.removeDrawControlAction!()
     
 }
 </script>

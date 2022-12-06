@@ -61,20 +61,18 @@ def get_buildings_from_db(projectId):
   connection.close()
   return building
 
-def add_comment(projectId, comment, lng, lat):
+def add_comment(userId, projectId, comment, lng, lat):
   connection = connect()
   cursor = connection.cursor()
   
   insert_query_comment= '''
-    INSERT INTO comment (project_id,comment, geom) VALUES (%s,%s, ST_SetSRID(ST_MakePoint(%s, %s), 4326));
+    INSERT INTO comment (user_id,project_id,comment, geom) VALUES (%s,%s,%s, ST_SetSRID(ST_MakePoint(%s, %s), 4326));
 
   '''
-  cursor.execute(insert_query_comment, (projectId, comment, lng, lat,))
+  cursor.execute(insert_query_comment, (userId, projectId, comment, lng, lat,))
   connection.commit()
   cursor.close()
   connection.close()
-
-# TH Hier wird die Zahl der Fulfillments aus der db gelesen und hochgesetzt und dieser Wert zurückgesendet
 
 def add_fulfillment(quest_id, projectId):
   connection = connect()
@@ -173,9 +171,41 @@ def get_comments(projectId):
   '''
   cursor.execute(get_comment_query)
   comments = cursor.fetchall()[0][0]
+  print(comments)
   cursor.close()
   connection.close()
   return comments
+
+def get_filtered_comments(projectId,userId):
+  connection = connect()
+  cursor = connection.cursor()
+  get_comment_query =f''' select json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(ST_AsGeoJSON(comment.*)::json)
+        )
+        from comment where project_id='{projectId}'
+      ;
+  '''
+  cursor.execute(get_comment_query)
+  comments = cursor.fetchall()[0][0]
+
+  ##TH
+  ## hier für jeden Beitrag den Usernamen löschen/ersetzen NN, der nicht der User selbst ist
+  ## comments ist eine JSON
+
+  for f in comments["features"]:
+        #print(f)
+        currentUser = f["properties"]["user_id"]
+#        print ( "UserId: " + str(userId) + " currentUser: " + str(currentUser))
+        if str(userId) != str(currentUser):
+          f["properties"]["user_id"] = "anonymous"
+
+  cursor.close()
+  connection.close()
+  return comments
+
+
+
 
 def like_comment(commentid, projectId):
   connection = connect()
@@ -327,6 +357,58 @@ def drop_traffic_signal_table(projectId):
   cursor.close()
   connection.close()
 
+def drop_tram_line_table(projectId):
+  connection = connect()
+  cursor = connection.cursor()
+  drop_tram_line_table_query =f''' delete from tram_line where project_id='{projectId}';'''
+  cursor.execute(drop_tram_line_table_query)
+  connection.commit()
+  cursor.close()
+  connection.close()
+
+def drop_water_table(projectId):
+  connection = connect()
+  cursor = connection.cursor()
+  drop_water_table_query =f''' delete from water where project_id='{projectId}';'''
+  cursor.execute(drop_water_table_query)
+
+def drop_sidewalk_table(projectId):
+  connection = connect()
+  cursor = connection.cursor()
+  drop_sidewalk_table_query =f''' delete from sidewalk where project_id='{projectId}';'''
+  cursor.execute(drop_sidewalk_table_query)
+
+  connection.commit()
+  cursor.close()
+  connection.close()
+
+def drop_sidewalk_polygon(projectId):
+  connection = connect()
+  cursor = connection.cursor()
+  drop_sidewalk_polygon_query =f''' delete from sidewalk_polygon where project_id='{projectId}';'''
+  cursor.execute(drop_sidewalk_polygon_query)
+  connection.commit()
+  cursor.close()
+  connection.close()
+
+def drop_bike_table(projectId):
+  connection = connect()
+  cursor = connection.cursor()
+  drop_bike_query =f''' delete from bike where project_id='{projectId}';'''
+  cursor.execute(drop_bike_query)
+  connection.commit()
+  cursor.close()
+  connection.close()
+
+def drop_bike_polygon_table(projectId):
+  connection = connect()
+  cursor = connection.cursor()
+  drop_bike_polygon_query =f''' delete from bike_polygon where project_id='{projectId}';'''
+  cursor.execute(drop_bike_polygon_query)
+  connection.commit()
+  cursor.close()
+  connection.close()
+
 def get_traffic_signal_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
@@ -371,3 +453,90 @@ def get_routes_from_db(projectId):
   cursor.close()
   connection.close()
   return routes
+
+def get_tram_line_from_db(projectId):
+  connection = connect()
+  cursor = connection.cursor()
+  get_tram_line_query = f''' select json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(ST_AsGeoJSON(tram_line.*)::json)
+        )
+        from tram_line
+        where project_id = '{projectId}'
+      ;
+  '''
+  cursor.execute(get_tram_line_query)
+  routes = cursor.fetchall()[0][0]
+  cursor.close()
+  connection.close()
+  return routes
+
+def get_water_from_db(projectId):
+  connection = connect()
+  cursor = connection.cursor()
+  get_routes_query = f''' select json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(ST_AsGeoJSON(water.*)::json)
+        )
+        from water
+        where project_id = '{projectId}'
+      ;
+  '''
+  cursor.execute(get_routes_query)
+  routes = cursor.fetchall()[0][0]
+  cursor.close()
+  connection.close()
+  return routes
+
+def get_sidewalk_from_db(projectId):
+  connection = connect()
+  cursor = connection.cursor()
+  get_sidewalk_query = f''' select json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(ST_AsGeoJSON(sidewalk_polygon.*)::json)
+        )
+        from sidewalk_polygon
+        where project_id = '{projectId}'
+      ;
+  '''
+  cursor.execute(get_sidewalk_query)
+  sidewalk = cursor.fetchall()[0][0]
+  cursor.close()
+  connection.close()
+  return sidewalk
+
+def get_bike_from_db(projectId):
+  connection = connect()
+  cursor = connection.cursor()
+  get_bike_query = f''' select json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(ST_AsGeoJSON(bike_polygon.*)::json)
+        )
+        from (
+          select id, (ST_Dump(bike_polygon.geom)).geom::geometry(Polygon,4326) from bike_polygon where project_id = '{projectId}'
+        ) as bike_polygon
+        
+      ;
+  '''
+  cursor.execute(get_bike_query)
+  bike_lanes = cursor.fetchall()[0][0]
+  cursor.close()
+  connection.close()
+  return bike_lanes
+
+def get_bike_lane_from_db(projectId):
+  connection = connect()
+  cursor = connection.cursor()
+  get_bike_lane_query = f''' select json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(ST_AsGeoJSON(bike.*)::json)
+        )
+        from bike
+        where project_id = '{projectId}'
+      ;
+  '''
+  cursor.execute(get_bike_lane_query)
+  lane = cursor.fetchall()[0][0]
+  cursor.close()
+  connection.close()
+  return lane

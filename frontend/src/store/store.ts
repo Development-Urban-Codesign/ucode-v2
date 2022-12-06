@@ -6,14 +6,18 @@ import contribution from './modules/contribution';
 import comment from './modules/comment';
 import pulse from './modules/pulse';
 import quests from './modules/quests';
+import ui from './modules/ui';
+import freecomment from './modules/freecomment';
 
 export default createStore({
-    modules: {
-      map,
-      aoi,
-      contribution,
-      comment,
-      pulse,
-      quests
-    }
-})
+  modules: {
+    map,
+    aoi,
+    contribution,
+    comment,
+    pulse,
+    quests,
+    ui,
+    freecomment,
+  },
+});
