@@ -28,6 +28,9 @@
 
     <v-select :items="['get', 'retrieve']" label="sidewalk" variant="outlined"
     @update:modelValue="sendSideWalkRequest"></v-select>
+
+    <v-select :items="['get', 'retrieve']" label="bike" variant="outlined"
+      @update:modelValue="sendBikeRequest"></v-select>
     <v-alert type="success" v-if="store.state.aoi.dataIsLoaded">
       stored
     </v-alert>
@@ -54,7 +57,10 @@ import {
   getTramLineDataFromDB,
   getWaterFromOSM,
   getSideWalkFromOSM,
-  getSidewalkFromDB
+  getBikeFromOSM,
+  getSidewalkFromDB,
+  getBikeFromDB
+
 } from "../service/backend.service";
 
 const store = useStore();
@@ -253,8 +259,9 @@ const sendSideWalkRequest = async (mode)=>{
       store.state.aoi.projectSpecification.bbox,
       store.state.aoi.projectSpecification.project_id
     );
-  }
-  else {
+
+  } 
+   else {
     const sidewalkData = await getSidewalkFromDB(store.state.aoi.projectSpecification.project_id);
     store.commit("map/addSource", {
       id: "sidewalk_polygon",
@@ -273,6 +280,35 @@ const sendSideWalkRequest = async (mode)=>{
       },
     });
     
+  }
+}
+
+const sendBikeRequest = async (mode)=>{
+  if (mode == "get") {
+    store.dispatch("aoi/setDataIsLoading");
+    await getBikeFromOSM(
+      store.state.aoi.projectSpecification.bbox,
+      store.state.aoi.projectSpecification.project_id
+    );
+  }
+  else {
+    const bikeData = await getBikeFromDB(store.state.aoi.projectSpecification.project_id);
+    store.commit("map/addSource", {
+      id: "bike_polygon",
+      geojson: {
+        type: "geojson",
+        data: bikeData.data,
+      },
+    });
+    store.commit("map/addLayer", {
+      id: "bike_polygon",
+      type: "fill",
+      source: "bike_polygon",
+      paint: {
+        "fill-color": "#FF0000",
+        "fill-opacity": 1,
+      },
+    });
   }
 }
 </script>

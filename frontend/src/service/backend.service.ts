@@ -403,7 +403,8 @@ export async function getTramLineDataFromDB(projectId: string) {
   return response;
 }
 
-export async function getWaterFromOSM(bbox: BoundingBox, projectId: string) {
+
+export async function getWaterFromOSM(bbox: BoundingBox,projectId: string) {
   HTTP.post("get-water-from-osm", {
     bbox: bbox,
     projectId: projectId,
@@ -418,8 +419,20 @@ export async function getSideWalkFromOSM(bbox: BoundingBox,projectId: string) {
   }).then(() => store.dispatch("aoi/setDataIsLoaded"));
 }
 
+export async function getBikeFromOSM(bbox: BoundingBox,projectId: string) {
+  console.log("bike")
+  HTTP.post("get-bike-from-osm", {
+    bbox: bbox,
+    projectId: projectId,
+  }).then(() => store.dispatch("aoi/setDataIsLoaded"));
+}
+
 export async function getSidewalkFromDB(projectId: string) {
   const response = await HTTP.post("get-sidewalk-from-db", projectId);
   return response;
 }
 
+export async function getBikeFromDB(projectId: string) {
+  const response = await HTTP.post("get-bike-from-db", projectId);
+  return response;
+}

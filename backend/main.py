@@ -43,7 +43,11 @@ from db import (
     get_water_from_db,
     drop_sidewalk_table,
     drop_sidewalk_polygon,
-    get_sidewalk_from_db
+    get_sidewalk_from_db,
+    drop_bike_table,
+    drop_bike_polygon_table,
+    get_bike_from_db,
+    get_bike_lane_from_db
 
 )
 from db_migrations import run_database_migrations
@@ -175,23 +179,17 @@ async def get_buildings_from_osm_api(request: Request):
     data = await request.json()
     projectId = data["projectId"]
     drop_building_table(projectId)
-    xmin = data["bbox"]["xmin"]
-    ymin = data["bbox"]["ymin"]
-    xmax = data["bbox"]["xmax"]
-    ymax = data["bbox"]["ymax"]
+    bbox = f"""{data["bbox"]["ymin"]},{data["bbox"]["xmin"]},{data["bbox"]["ymax"]},{data["bbox"]["xmax"]}"""
+    
     overpass_url = "http://overpass-api.de/api/interpreter"
-    # overpass_query_building = """
-    #     [out:json];
-    #     way["building"](%s,%s,%s,%s);
-    #     convert item ::=::,::geom=geom(),_osm_type=type();
-    #     out geom;
-    # """ % ( ymin, xmin, ymax ,xmax )
-    overpass_query_building_parts = """
+    
+
+    overpass_query_building_parts = f"""
         [out:json];
         (
             (
-                way[building](%s,%s,%s,%s);
-                way["building:part"](%s,%s,%s,%s);
+                way[building]({bbox});
+                way["building:part"]({bbox});
             );
             -
             (
@@ -201,16 +199,7 @@ async def get_buildings_from_osm_api(request: Request):
         );
         convert item ::=::,::geom=geom(),_osm_type=type();
         out geom;
-    """ % (
-        ymin,
-        xmin,
-        ymax,
-        xmax,
-        ymin,
-        xmin,
-        ymax,
-        xmax,
-    )
+    """
     response_building = requests.get(
         overpass_url, params={"data": overpass_query_building_parts}
     )
@@ -218,34 +207,34 @@ async def get_buildings_from_osm_api(request: Request):
     data_building = response_building.json()
 
     ###############
-    overpass_query_building_with_hole = """
+    overpass_query_building_with_hole = f"""
         [out:json];
            
                 (
-                    way["building"](%s,%s,%s,%s);
-                    relation["building"](%s,%s,%s,%s);
+                    rel["building"]({bbox});
                    
                 );
                 
             (._;>;);
             out geom;
 
-        """ % (
-            ymin,
-            xmin,
-            ymax,
-            xmax,
-            ymin,
-            xmin,
-            ymax,
-            xmax,
-           
-        )
+        """
     response_building_with_hole = requests.get(
         overpass_url, params={"data": overpass_query_building_with_hole}
     )
-    bhole = osmtogeojson.process_osm_json(response_building_with_hole.json())
-    
+    results = response_building_with_hole.json()
+    for f in results["elements"]:
+        if "type" in f and f["type"] == "relation":
+            if(f["members"][0]["role"] != "outer"):
+                i = 0
+                for x in f["members"]:
+                    if x["role"] == "outer":
+                        f["members"][0], f["members"][i] = f["members"][i],f["members"][0]
+                        break
+                    i += 1
+                
+    bhole = osmtogeojson.process_osm_json(results)
+    # print(bhole)
     connectionn = connect()
     cursorr = connectionn.cursor()
     insert_query_buildingg = """
@@ -254,7 +243,7 @@ async def get_buildings_from_osm_api(request: Request):
     for f in bhole["features"]:
         
         if "type" in f["properties"] and f["properties"]["type"] == "multipolygon":
-              
+            
             wallcolor = None
             if "building:colour" in f["properties"]:
                 wallcolor = f["properties"]["building:colour"]
@@ -711,29 +700,37 @@ async def get_water_from_osm_api(request: Request):
     data = await request.json()
     projectId = data["projectId"] 
     drop_water_table(projectId)
-    xmin = data["bbox"]["xmin"]
-    ymin = data["bbox"]["ymin"]
-    xmax = data["bbox"]["xmax"]
-    ymax = data["bbox"]["ymax"]
+    bbox = f"""{data["bbox"]["ymin"]},{data["bbox"]["xmin"]},{data["bbox"]["ymax"]},{data["bbox"]["xmax"]}"""
     
-
     overpass_url = "http://overpass-api.de/api/interpreter"
     
     overpass_query_water = f"""
         [out:json];
-        way["natural"="water"]({ymin},{xmin},{ymax},{xmax});
-        relation["natural"="water"]({ymin},{xmin},{ymax},{xmax});
+        way["amenity"="fountain"]({bbox});
+        relation["natural"="water"]({bbox});
+        
+        (._;>;);
+        out geom;
+    """
+    overpass_query_fountain = f"""
+        [out:json];
+        way["natural"="water"]({bbox});
         (._;>;);
         out geom;
     """
     
-    
+    response_fountain = requests.get(
+        overpass_url, params={"data": overpass_query_fountain}
+    )
     response_water = requests.get(
         overpass_url, params={"data": overpass_query_water}
     )
+    # print(response_water)
     
+    data_fountain = osmtogeojson.process_osm_json(response_fountain.json())
     data_water = osmtogeojson.process_osm_json(response_water.json())
-    
+    # print(data_fountain)
+    # print(data_water)
     connection = connect()
     cursor = connection.cursor()
     insert_query_water = """
@@ -741,6 +738,13 @@ async def get_water_from_osm_api(request: Request):
 
     """
     
+    for f in data_fountain["features"]:
+        geom = json.dumps(f["geometry"])
+        cursor.execute(
+        insert_query_water,
+        (projectId,
+        geom
+        ))
     for f in data_water["features"]:
         if(f["geometry"]["type"]=="GeometryCollection"):
             polygon = {"type": "Polygon", "coordinates": []}
@@ -876,7 +880,9 @@ async def get_side_walk_from_osm_api(request: Request):
     
     projectId = data["projectId"]
     drop_sidewalk_table(projectId)
+
     drop_sidewalk_polygon(projectId)
+
     xmin = sure_float(data['bbox']["xmin"])
     ymin = sure_float(data['bbox']["ymin"])
     xmax = sure_float(data['bbox']["xmax"])
@@ -887,7 +893,6 @@ async def get_side_walk_from_osm_api(request: Request):
     gdf = ox.graph_to_gdfs(G, nodes=False, edges=True)
     walk = json.loads(gdf.to_json())
 
-
     connection = connect()
     cursor = connection.cursor()
 
@@ -895,17 +900,16 @@ async def get_side_walk_from_osm_api(request: Request):
         INSERT INTO sidewalk (project_id, highway, geom) VALUES (%s, %s, ST_SetSRID(st_astext(st_geomfromgeojson(%s)), 4326));
     '''
     for f in walk['features']:
-
         geom = json.dumps(f['geometry'])
         highway=None
         if 'highway' in f['properties']: highway =f['properties']['highway']
         cursor.execute(insert_query_sidewalk, (projectId,highway, geom,))
     
-    
     connection.commit()
     cursor.close()
     connection.close()
 
+    
     connection = connect()
     cursor = connection.cursor()
     
@@ -944,7 +948,88 @@ async def get_side_walk_from_osm_api(request: Request):
     
     return "okk"
 
+@app.post("/get-bike-from-osm")
+async def get_bike_from_osm_api(request: Request):
+    data = await request.json()
+    projectId = data["projectId"]
+    drop_bike_table(projectId)
+    drop_bike_polygon_table(projectId)
+    xmin = sure_float(data['bbox']["xmin"])
+    ymin = sure_float(data['bbox']["ymin"])
+    xmax = sure_float(data['bbox']["xmax"])
+    ymax = sure_float(data['bbox']["ymax"]) 
+
+    overpass_url = "http://overpass-api.de/api/interpreter"
+    overpass_query_bike = """
+         [out:json];
+            way["bicycle"="designated"](%s,%s,%s,%s);
+            convert item ::=::,::geom=geom(),_osm_type=type();
+            out geom;
+     """ % (
+        ymin,
+        xmin,
+        ymax,
+        xmax,
+    )
+
+    response_bike = requests.get(overpass_url, params={"data": overpass_query_bike})
+
+    data_bike = response_bike.json()
+    
+    connection = connect()
+    cursor = connection.cursor()
+
+    insert_query_bike= '''
+        INSERT INTO bike (project_id,oneway,highway,service_type,lanes, geom) VALUES (%s,%s,%s,%s,%s, ST_SetSRID(st_astext(st_geomfromgeojson(%s)), 4326));
+
+    '''
+
+    for elem in data_bike["elements"]:
+       
+        oneway=None
+        if 'oneway' in elem["tags"]: oneway = elem["tags"]['oneway']
+        highway=None
+        if 'highway' in elem["tags"]: highway = elem["tags"]['highway']
+        service_type=None
+        if 'service_type' in elem["tags"]: service_type = elem["tags"]['service_type']
+        lanes=None
+        if 'lanes' in elem["tags"]: lanes = elem["tags"]['lanes']
+        geom= json.dumps(elem['geometry'])
+       
+        cursor.execute(insert_query_bike, (projectId,oneway,highway,service_type,lanes, geom,))
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+    connection = connect()
+    cursor = connection.cursor()
+
+    insert_query_bike_polygon= '''
+    
+        INSERT INTO bike_polygon(project_id, geom)
+        SELECT project_id, st_buffer(
+            ST_SetSRID(geom, 4326)::geography,
+            0.5 ,
+            'endcap=round join=round')::geometry FROM bike where project_id=%s;
+
+    '''
+        
+    cursor.execute(insert_query_bike_polygon, (projectId, ))
+
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+    return "okk"
+
 @app.post("/get-sidewalk-from-db")
 async def get_sidewalk_from_db_api(request: Request):
     projectId = await request.json()
     return get_sidewalk_from_db(projectId)
+
+@app.post("/get-bike-from-db")
+async def get_bike_from_db_api(request: Request):
+    projectId = await request.json()
+    bike_poly = get_bike_from_db(projectId)
+    return bike_poly
+
