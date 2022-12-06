@@ -945,69 +945,44 @@ async def get_bike_from_osm_api(request: Request):
     xmax = sure_float(data['bbox']["xmax"])
     ymax = sure_float(data['bbox']["ymax"]) 
 
-    G = ox.graph_from_bbox(ymin, ymax, xmin, xmax, network_type='bike')
-    gdf = ox.graph_to_gdfs(G, nodes=False, edges=True)
-    bike = json.loads(gdf.to_json())
+    overpass_url = "http://overpass-api.de/api/interpreter"
+    overpass_query_bike = """
+         [out:json];
+            way["bicycle"="designated"](%s,%s,%s,%s);
+            convert item ::=::,::geom=geom(),_osm_type=type();
+            out geom;
+     """ % (
+        ymin,
+        xmin,
+        ymax,
+        xmax,
+    )
 
+    response_bike = requests.get(overpass_url, params={"data": overpass_query_bike})
+
+    data_bike = response_bike.json()
+    
     connection = connect()
     cursor = connection.cursor()
 
     insert_query_bike= '''
-        INSERT INTO bike (project_id, oneway, highway, service_type, lanes, geom) VALUES (%s, %s, %s, %s, %s, ST_SetSRID(st_astext(st_geomfromgeojson(%s)), 4326));
-    '''
-    for f in bike['features']:
+        INSERT INTO bike (project_id,oneway,highway,service_type,lanes, geom) VALUES (%s,%s,%s,%s,%s, ST_SetSRID(st_astext(st_geomfromgeojson(%s)), 4326));
 
-        geom = json.dumps(f['geometry'])
+    '''
+
+    for elem in data_bike["elements"]:
+       
         oneway=None
-        if 'oneway' in f['properties']: oneway =f['properties']['oneway']
+        if 'oneway' in elem["tags"]: oneway = elem["tags"]['oneway']
         highway=None
-        if 'highway' in f['properties']: highway =f['properties']['highway']
+        if 'highway' in elem["tags"]: highway = elem["tags"]['highway']
         service_type=None
-        if 'service' in f['properties']: service_type =f['properties']['service']
+        if 'service_type' in elem["tags"]: service_type = elem["tags"]['service_type']
         lanes=None
-        if 'lanes' in f['properties']: lanes =f['properties']['lanes']
-        cursor.execute(insert_query_bike, (projectId, oneway, highway, service_type,lanes, geom, ))
-    
-    connection.commit()
-    cursor.close()
-    connection.close()
-
-    connection = connect()
-    cursor = connection.cursor()
-
-    update_query_bike= '''
-        update bike set geom = (CASE
-        when highway='primary' THEN
-        st_astext(st_transform(st_setsrid(ST_Collect(
-            ST_OffsetCurve(st_transform(ST_SetSRID(geom, 4326), 26986), 5.5, 'quad_segs=4 join=mitre mitre_limit=2.2'),
-            ST_OffsetCurve(st_transform(ST_SetSRID(geom, 4326), 26986), -5.5, 'quad_segs=4 join=mitre mitre_limit=2.2')
-        ),26986),4326))
-
-        when highway='secondary' THEN
-        st_astext(st_transform(st_setsrid(ST_Collect(
-            ST_OffsetCurve(st_transform(ST_SetSRID(geom, 4326), 26986), 4.5, 'quad_segs=4 join=mitre mitre_limit=2.2'),
-            ST_OffsetCurve(st_transform(ST_SetSRID(geom, 4326), 26986), -4.5, 'quad_segs=4 join=mitre mitre_limit=2.2')
-        ),26986),4326))
-
-        when highway='tertiary' THEN
-        st_astext(st_transform(st_setsrid(ST_Collect(
-            ST_OffsetCurve(st_transform(ST_SetSRID(geom, 4326), 26986), 3.5, 'quad_segs=4 join=mitre mitre_limit=2.2'),
-            ST_OffsetCurve(st_transform(ST_SetSRID(geom, 4326), 26986), -3.5, 'quad_segs=4 join=mitre mitre_limit=2.2')
-        ),26986),4326))
-
-        when highway='residential' THEN
-        st_astext(st_transform(st_setsrid(ST_Collect(
-            ST_OffsetCurve(st_transform(ST_SetSRID(geom, 4326), 26986), 2.5, 'quad_segs=4 join=mitre mitre_limit=2.2'),
-            ST_OffsetCurve(st_transform(ST_SetSRID(geom, 4326), 26986), -2.5, 'quad_segs=4 join=mitre mitre_limit=2.2')
-        ),26986),4326))
-
-        else  st_astext(geom)
-        END ) where project_id=%s;
-
-        delete from bike where geom is null;
-        ;
-    '''
-    cursor.execute(update_query_bike, (projectId, ))
+        if 'lanes' in elem["tags"]: lanes = elem["tags"]['lanes']
+        geom= json.dumps(elem['geometry'])
+       
+        cursor.execute(insert_query_bike, (projectId,oneway,highway,service_type,lanes, geom,))
     connection.commit()
     cursor.close()
     connection.close()
@@ -1016,16 +991,17 @@ async def get_bike_from_osm_api(request: Request):
     cursor = connection.cursor()
 
     insert_query_bike_polygon= '''
-        
+    
         INSERT INTO bike_polygon(project_id, geom)
         SELECT project_id, st_buffer(
             ST_SetSRID(geom, 4326)::geography,
             0.5 ,
             'endcap=round join=round')::geometry FROM bike where project_id=%s;
+
     '''
-    
+        
     cursor.execute(insert_query_bike_polygon, (projectId, ))
-    
+
     connection.commit()
     cursor.close()
     connection.close()
