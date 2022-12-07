@@ -53,6 +53,7 @@
 <script setup>
 import { useStore } from "vuex";
 import {
+  deleteComments,
   getbuildingsFromDB,
   getbuildingsFromOSM,
   storeGreeneryFromOSM,
@@ -75,6 +76,17 @@ import {
 
 const store = useStore();
 const emit = defineEmits("startPopulate")
+
+// drops the comments of the current project
+const dropCommentData = async () => {
+  // projectId
+  let thisProjectId = store.state.aoi.projectId;
+  let question = "Do you want to delete the comments of project: " + thisProjectId + "?";
+  let deleteCommentsAnswer = confirm(question);
+  if (deleteCommentsAnswer === true) {
+        deleteComments(thisProjectId)
+  }
+};
 
 const loadAllProjectObjectsFromOSM = async (mode) => {
   getbuildingsFromOSM(
