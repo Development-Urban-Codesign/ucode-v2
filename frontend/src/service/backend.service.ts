@@ -407,7 +407,8 @@ export async function getTramLineDataFromDB(projectId: string) {
 }
 
 export async function clearCache(){
-  HTTP.get("/admin/clear-cache")
+  const response = await HTTP.get("admin/clear-cache");
+  return response;
 }
 
 export async function getWaterFromOSM(bbox: BoundingBox,projectId: string) {

@@ -41,7 +41,7 @@ watch(
     if (routeQueries.user != null) {
       store.commit("aoi/setUserId", routeQueries.user);
     } else {
-      store.commit("aoi/setUserId", Math.round(new Date().getTime() / 1000)); // if no userId is set then the user gets the seconds since 1.1.1970 as ID
+      store.commit("aoi/setUserId", "_" + Math.round(new Date().getTime() / 1000)); // if no userId is set then the user gets the seconds since 1.1.1970 as ID
     }
   }
 );
