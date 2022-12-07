@@ -50,7 +50,7 @@ const populateMap = async () => {
   await sendWaterRequestTHREE();
   await createAoiPlane();
   // await sendTramLineRequest();
-  await sendTramLineRequestTHREE();
+  //await sendTramLineRequestTHREE();
   emit("addLayer", threeJsScene3d.layer)
   emit("addLayer", threeJsSceneFlat.layer, "routes")
   await sendSidewalkRequest();

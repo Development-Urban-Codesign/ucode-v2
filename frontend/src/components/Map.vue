@@ -240,6 +240,9 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface, beforeL
       addImageToMap(layer.paint["fill-pattern"]);
     }
   }
+  if(beforeLayer && map.getLayer(beforeLayer) == undefined){
+    beforeLayer=""
+  }
   map?.addLayer(layer,beforeLayer? beforeLayer: "");
   const layerHirarchy: any[] = []// = reactive<[{layer: any, orderId: Number}]>([{}])
 
