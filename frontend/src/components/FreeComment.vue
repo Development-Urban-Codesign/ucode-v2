@@ -73,6 +73,7 @@ function changePositionOfLastMarker(){
     allMarker.features[allMarker.features.length-1].geometry.coordinates = props.clickedCoordinates
     emit('updateSourceData', 'ownComments', allMarker)
 }
+
 function createComment() {
     store.commit('freecomment/setMoveComment', true)
     let marker = {
@@ -128,29 +129,71 @@ const saveComment = () => {
 
     emit('closeCommentDialog')
 }
+/************************************************/
+/*   handle Commenting Dialog for IOS, IPadOS   */
+/************************************************/
+const isIOSorIPadOS = () => {
+    var userAgent = navigator.userAgent.toLowerCase();
+    if(userAgent.match('iphone' || 'ipad')){
+        return true
+    } else {
+        return false
+    }
+}
 
-// TODOs
-// add a class depanding on the focus
-// https://javascript.info/focus-blur
-// add Animation when is focused or not 
+const preventDefault = (e:Event) => {
+    e.preventDefault();
+}
+
+watch(commentText, function () {
+    let input = document.getElementById('ta-input')
+    let body = document.body;
+
+    if(input && body && isIOSorIPadOS()){
+        if(commentText.value !== ''){
+            input.onblur = function() {
+                body?.classList.remove('expand');
+                body?.classList.remove('reduce');
+                window.removeEventListener('touchmove', preventDefault, false);
+            };
+            input.onfocus = function() {
+                body?.classList.remove('expand');
+                body?.classList.remove('reduce');
+                window.addEventListener('touchmove', preventDefault, { passive: false });
+            };
+        } 
+        if (commentText.value === '') {
+            input.onblur = function() {
+                body?.classList.remove('expand');
+                body?.classList.add('reduce');
+                window.removeEventListener('touchmove', preventDefault, false);
+            };
+            input.onfocus = function() {
+                body?.classList.remove('reduce');
+                body?.classList.add('expand');
+                window.addEventListener('touchmove', preventDefault, { passive: false });
+            };
+        }
+       
+    }
+})
 
 onMounted(() => {
     let input = document.getElementById('ta-input')
     let body = document.body;
 
-    if(input && body){
+    if(input && body && isIOSorIPadOS()){
         input.onblur = function() {
-            console.log("blur")
             body?.classList.remove('expand');
             body?.classList.add('reduce');
-            // body.classList.remove("body-height")
+            window.removeEventListener('touchmove', preventDefault, false);
+            
         };
 
         input.onfocus = function() {
-            console.log("focus")
             body?.classList.remove('reduce');
             body?.classList.add('expand');
-            // body.classList.add("body-height")
+            window.addEventListener('touchmove', preventDefault, { passive: false });
         };
     } 
 })
@@ -167,10 +210,10 @@ onMounted(() => {
 
 @keyframes expand-animation {
     0%   {height: 100vh;}
-    100% {height: 52vh;}
+    100% {height: 48vh;}
 }
 @keyframes reduce-animation {
-    0%   {height: 52vh;}
+    0%   {height: 48vh;}
     100% {height: 100vh;}
 }
 </style>
