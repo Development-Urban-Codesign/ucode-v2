@@ -120,6 +120,14 @@ export const ThreejsSceneOnly = (lng: number, lat: number, layerName: string) =>
         modelAsMercatorCoordinate,
         matrix
       );
+      // const cam = new THREE.Camera();
+      // const rootInverse = mainScene.matri transform.getInverse();
+      // cam.projectionMatrix = getProjectionMatrix(
+      //   modelAsMercatorCoordinate,
+      //   matrix
+      // );
+      // cam.projectionMatrixInverse = cam.projectionMatrix.invert(); // add since three@0.103.0
+      // debugger
       // console.log(matrix)
       // mainCamera.updateWorldMatrix(true, true)
       // console.log(mainCamera.position)
