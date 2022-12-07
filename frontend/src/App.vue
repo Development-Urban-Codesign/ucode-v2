@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts" setup>
-import { watch } from "vue";
+import { onMounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { RouterView, useRoute } from "vue-router";
 import { useStore } from "vuex";
@@ -59,13 +59,19 @@ watch(
 </script>
 
 <style >
-html,
+html{
+  margin: 0;
+  height: 100%;
+  overflow: hidden !important;
+}
+
 body {
   margin: 0;
-  overflow: hidden;
+  overflow: hidden !important;
   width: 100vw;
   height: 100vh;
   max-height: -webkit-fill-available;
+  max-height: -moz-available !important;
 }
 
 #app {
