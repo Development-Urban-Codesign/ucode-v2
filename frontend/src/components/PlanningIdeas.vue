@@ -4,8 +4,8 @@
     >
       <v-btn v-if = "store.state.ui.planningIdeasLoaded" :key="100"
         size="small" 
-        :color="activeBtn==100 ? 'grey': 'white'" 
-        rounded 
+        :variant="activeBtn==100 ? 'tonal': undefined" 
+        rounded="lg"
         flat 
         @click="activateSelectedPlanningIdea( planningData.routes); setActiveBtn(100)"
       >
@@ -16,10 +16,10 @@
         <v-btn 
           size="small"
           class="ml-2" 
-          rounded 
+          rounded="lg"
           flat 
           @click="activateSelectedPlanningIdea(route); setActiveBtn(route.properties.id)" 
-          :color="activeBtn==route.properties.id ? 'grey': 'white'"
+          :variant="activeBtn==route.properties.id ? 'tonal': undefined"
         >
           <v-icon :color="route.properties.color">
             mdi-checkbox-blank-circle
