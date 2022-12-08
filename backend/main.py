@@ -707,15 +707,14 @@ async def get_water_from_osm_api(request: Request):
     
     overpass_query_water = f"""
         [out:json];
-        way["amenity"="fountain"]({bbox});
+        way["natural"="water"]({bbox});
         relation["natural"="water"]({bbox});
-        
         (._;>;);
         out geom;
     """
     overpass_query_fountain = f"""
         [out:json];
-        way["natural"="water"]({bbox});
+        way["amenity"="fountain"]({bbox});
         (._;>;);
         out geom;
     """
@@ -1036,6 +1035,7 @@ async def get_bike_from_db_api(request: Request):
 
 @app.get("/admin/clear-cache")
 async def clear_cache():
+    print("Cache cleared!")
     get_buildings_from_db_cache_stats = get_buildings_from_db.cache_info()
     get_greenery_from_db_cache_stats = get_greenery_from_db.cache_info()
     get_trees_from_db_cache_stats = get_trees_from_db.cache_info()
@@ -1072,4 +1072,5 @@ async def clear_cache():
         "get_bike_lane_from_db_cache_stats": get_bike_lane_from_db_cache_stats,
         "result": "Cache cleared"
     }
+#    print(result)
     return result

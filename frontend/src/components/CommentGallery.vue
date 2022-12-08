@@ -90,13 +90,23 @@
         let otherComments = []
 
         const commentData = await getFilteredCommentsFromDB(projectId, userId)
-        // console.log(commentData.props.data)
+    //    console.log(commentData.props.data)
         response = commentData.props.data
         response.forEach(item => {
             item.properties.user_id !== userId?otherComments.push(item):myComments.push(item);
         })
-        myComments = myComments.sort((a, b) => { return new Date(a) - new Date(b); }).reverse()
-        otherComments = otherComments.sort((a, b) => { return new Date(a) - new Date(b); }).reverse()
+
+        myComments = myComments.sort((a,b)=> new Date(b.properties.created_at).getTime() - new Date(a.properties.created_at).getTime())
+        otherComments = otherComments.sort((a,b)=> new Date(b.properties.created_at).getTime() - new Date(a.properties.created_at).getTime())
+
+//        myComments = myComments.sort((a, b) => { return new Date(a) - new Date(b); }).reverse()
+//        otherComments = otherComments.sort((a, b) => { return new Date(a) - new Date(b); }).reverse()
+
+        // console.log("Meine Kommentare:")
+        // console.log(myComments)
+        // console.log("Andere Kommentare:")
+        // console.log(otherComments)
+
         commentList.value = myComments.concat(otherComments);
         commentsAreLoaded.value = true;
     }

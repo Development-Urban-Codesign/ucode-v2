@@ -1,24 +1,24 @@
 <template>
 
-  <v-col  cols="1" md="2" sm="3" style="position:absolute; left: 0; top:0; z-index:999; width:800px">
-    <v-btn color="#41b883" class="mt-2" @click="getCommentData">
-      Show comments
+  <v-col  cols="6" md="3"  style="position:absolute; left: 0; top:0; z-index:999; width:800px">
+    <v-btn color="#41b883" class="mt-2" @click="clearServerCache">
+      Clear server cache
     </v-btn>
     <!-- <v-btn color="success" class="ml-1" @click="getFilteredCommentData">
       Show filtered comments
     </v-btn> -->
     <v-btn color="#41b883" class="mt-2" @click="dropCommentData">
-      Drop comments
+      Delete project comments 
     </v-btn>
   </v-col>
 
-  <v-col cols="1" md="2" sm="3" style="position: absolute; right: 0; top: 0; z-index: 999">
+  <v-col cols="6" md="3"  style="position: absolute; right: 0; top: 0; z-index: 999">
 
     <v-btn color="#41b883" @click="loadAllProjectObjectsFromOSM()" class="mt-2">
-      Import OSM
+      Import from OSM
     </v-btn>
     <v-btn color="#41b883" @click="emit('startPopulate')" class="mt-2">
-      Load DB
+      Load from DB
     </v-btn>
     <v-select :items="['get', 'retrieve']" label="building" variant="outlined" @update:modelValue="sendBuildingRequest">
     </v-select>
@@ -53,6 +53,8 @@
 <script setup>
 import { useStore } from "vuex";
 import {
+  clearCache,
+  deleteComments,
   getbuildingsFromDB,
   getbuildingsFromOSM,
   storeGreeneryFromOSM,
@@ -74,7 +76,25 @@ import {
 } from "../service/backend.service";
 
 const store = useStore();
-const emit = defineEmits("startPopulate")
+const emit = defineEmits(["startPopulate"])
+
+const clearServerCache = async () => {
+  const result = await clearCache()
+  console.log(result.data)
+
+}
+
+// drops the comments of the current project
+const dropCommentData = async () => {
+  // projectId
+  let thisProjectId = store.state.aoi.projectId;
+  let question = "Do you want to delete the comments of project: " + thisProjectId + "?";
+  let deleteCommentsAnswer = confirm(question);
+  if (deleteCommentsAnswer === true) {
+        deleteComments(thisProjectId)
+  }
+};
+
 
 const loadAllProjectObjectsFromOSM = async (mode) => {
   getbuildingsFromOSM(
@@ -99,6 +119,30 @@ const loadAllProjectObjectsFromOSM = async (mode) => {
     store.state.aoi.projectSpecification.bbox,
     store.state.aoi.projectSpecification.project_id
   );
+
+// NEW: tram, water, sidewalks, bike
+
+  getTramLineFromOSM(
+    store.state.aoi.projectSpecification.bbox,
+    store.state.aoi.projectSpecification.project_id
+  );
+
+  getWaterFromOSM(
+    store.state.aoi.projectSpecification.bbox,
+    store.state.aoi.projectSpecification.project_id
+  );
+
+  getSideWalkFromOSM(
+    store.state.aoi.projectSpecification.bbox,
+    store.state.aoi.projectSpecification.project_id
+  );
+
+  getBikeFromOSM(
+    store.state.aoi.projectSpecification.bbox,
+    store.state.aoi.projectSpecification.project_id
+  );
+
+
 };
 
 const sendBuildingRequest = async (mode) => {
@@ -322,3 +366,9 @@ const sendBikeRequest = async (mode) => {
   }
 }
 </script>
+<style scoped>
+.v-btn{
+  min-width: fit-content;
+}
+
+</style>

@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts" setup>
-import { watch } from "vue";
+import { onMounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { RouterView, useRoute } from "vue-router";
 import { useStore } from "vuex";
@@ -41,7 +41,7 @@ watch(
     if (routeQueries.user != null) {
       store.commit("aoi/setUserId", routeQueries.user);
     } else {
-      store.commit("aoi/setUserId", Math.round(new Date().getTime() / 1000)); // if no userId is set then the user gets the seconds since 1.1.1970 as ID
+      store.commit("aoi/setUserId", "_" + Math.round(new Date().getTime() / 1000)); // if no userId is set then the user gets the seconds since 1.1.1970 as ID
     }
   }
 );
@@ -59,13 +59,19 @@ watch(
 </script>
 
 <style >
-html,
+html{
+  margin: 0;
+  height: 100%;
+  overflow: hidden !important;
+}
+
 body {
   margin: 0;
-  overflow: hidden;
+  overflow: hidden !important;
   width: 100vw;
   height: 100vh;
   max-height: -webkit-fill-available;
+  max-height: -moz-available !important;
 }
 
 #app {

@@ -28,7 +28,6 @@ import Quests from "@/components/Quests.vue";
 import FreeComment from "@/components/FreeComment.vue";
 import BottomNavigation from "@/components/BottomNavigation.vue";
 import CommentGallery from "@/components/CommentGallery.vue";
-import { deleteComments } from "@/service/backend.service";
 import { getCommentsFromDB } from "@/service/backend.service";
 import { getFilteredCommentsFromDB } from "@/service/backend.service";
 import type { ProjectSpecification } from "@/store/modules/aoi";
@@ -240,6 +239,9 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface, beforeL
       addImageToMap(layer.paint["fill-pattern"]);
     }
   }
+  if(beforeLayer && map.getLayer(beforeLayer) == undefined){
+    beforeLayer=""
+  }
   map?.addLayer(layer,beforeLayer? beforeLayer: "");
   const layerHirarchy: any[] = []// = reactive<[{layer: any, orderId: Number}]>([{}])
 
@@ -407,16 +409,6 @@ const getFilteredCommentData = async () => {
   
 };
 
-// drops the comments of the current project
-const dropCommentData = async () => {
-  // projectId
-  let thisProjectId = store.state.aoi.projectId;
-  let question = "Do you want to delete the comments of project: " + thisProjectId + "?";
-  let deleteCommentsAnswer = confirm(question);
-  if (deleteCommentsAnswer === true) {
-        deleteComments(thisProjectId)
-  }
-};
 
 //Show comment symbols on the map
 const getCommentData = async () => {
