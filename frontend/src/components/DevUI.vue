@@ -79,8 +79,8 @@ const store = useStore();
 const emit = defineEmits(["startPopulate"])
 
 const clearServerCache = async () => {
-  result = await clearCache()
-  console.log(result)
+  const result = await clearCache()
+  console.log(result.data)
 }
 
 // drops the comments of the current project

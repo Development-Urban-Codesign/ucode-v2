@@ -1073,5 +1073,4 @@ async def clear_cache():
         "get_bike_lane_from_db_cache_stats": get_bike_lane_from_db_cache_stats,
         "result": "Cache cleared"
     }
-#    print(result)
     return result
