@@ -102,10 +102,10 @@
 //        myComments = myComments.sort((a, b) => { return new Date(a) - new Date(b); }).reverse()
 //        otherComments = otherComments.sort((a, b) => { return new Date(a) - new Date(b); }).reverse()
 
-        console.log("Meine Kommentare:")
-        console.log(myComments)
-        console.log("Andere Kommentare:")
-        console.log(otherComments)
+        // console.log("Meine Kommentare:")
+        // console.log(myComments)
+        // console.log("Andere Kommentare:")
+        // console.log(otherComments)
 
         commentList.value = myComments.concat(otherComments);
         commentsAreLoaded.value = true;

@@ -1,6 +1,6 @@
 <template>
 
-  <v-col  cols="3" md="3" sx="12" style="position:absolute; left: 0; top:0; z-index:999; width:800px">
+  <v-col  cols="6" md="3"  style="position:absolute; left: 0; top:0; z-index:999; width:800px">
     <v-btn color="#41b883" class="mt-2" @click="clearServerCache">
       Clear server cache
     </v-btn>
@@ -12,7 +12,7 @@
     </v-btn>
   </v-col>
 
-  <v-col cols="3" md="3" sx="12" style="position: absolute; right: 0; top: 0; z-index: 999">
+  <v-col cols="6" md="3"  style="position: absolute; right: 0; top: 0; z-index: 999">
 
     <v-btn color="#41b883" @click="loadAllProjectObjectsFromOSM()" class="mt-2">
       Import from OSM
@@ -365,3 +365,9 @@ const sendBikeRequest = async (mode) => {
   }
 }
 </script>
+<style scoped>
+.v-btn{
+  min-width: fit-content;
+}
+
+</style>
