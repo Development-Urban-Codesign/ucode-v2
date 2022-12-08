@@ -61,15 +61,22 @@ watch(
 <style >
 html{
   margin: 0;
-  height: 100%;
+  /* height: 100%; */
   overflow: hidden !important;
+  touch-action: none;
 }
 
 body {
+  touch-action: none;
   margin: 0;
   overflow: hidden !important;
-  width: 100vw;
-  height: 100vh;
+  /* width: 100vw;
+  height: 100vh; */
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
   max-height: -webkit-fill-available;
   max-height: -moz-available !important;
 }

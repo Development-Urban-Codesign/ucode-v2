@@ -5,7 +5,7 @@
             Kommentieren
         </v-btn>
         <transition name="slide">
-            <v-card v-show="props.showCommentDialog" elevation="20">
+            <v-card v-show="props.showCommentDialog" id="hass" elevation="20">
                 <v-btn @click="cancelComment" icon="mdi-close" variant="plain" id="close-btn"/>
                 <p class="font-weight-bold text-body-1 call-to-action" >Platziere deinen Kommentar</p>
                 <div class="comment-text-area">
@@ -13,7 +13,7 @@
                         id="ta-input"
                         :class="commentText!==''?'show-send-btn':'hide-send-btn'"
                         variant="solo" 
-                        label="Kommentar" 
+                        placeholder="Kommentar"
                         color="primary" 
                         no-resize 
                         rows="4" 
@@ -32,10 +32,12 @@ import { useStore } from 'vuex';
 import { HTTP } from '@/utils/http-common';
 import { onMounted, reactive, ref, watch } from 'vue';
 import type { FeatureCollection } from 'geojson';
+import type internal from 'stream';
 const store = useStore()
 let commentText = ref<string>("")
 let isFocused = ref<boolean>(false)
 let allMarker = reactive<FeatureCollection>({ type: "FeatureCollection", features: [] })
+let taLineCount = ref<number>(0)
 
 const props = defineProps({
     clickedCoordinates: Array<Number>,
@@ -147,59 +149,84 @@ const preventDefault = (e:Event) => {
 
 watch(commentText, function () {
     let input = document.getElementById('ta-input')
-    let body = document.body;
+    input?.classList.add('hass');
 
-    if(input && body && isIOSorIPadOS()){
-        if(commentText.value !== ''){
-            input.onblur = function() {
-                body?.classList.remove('expand');
-                body?.classList.remove('reduce');
-                window.removeEventListener('touchmove', preventDefault, false);
-            };
-            input.onfocus = function() {
-                body?.classList.remove('expand');
-                body?.classList.remove('reduce');
-                window.addEventListener('touchmove', preventDefault, { passive: false });
-            };
-        } 
-        if (commentText.value === '') {
-            input.onblur = function() {
-                body?.classList.remove('expand');
-                body?.classList.add('reduce');
-                window.removeEventListener('touchmove', preventDefault, false);
-            };
-            input.onfocus = function() {
-                body?.classList.remove('reduce');
-                body?.classList.add('expand');
-                window.addEventListener('touchmove', preventDefault, { passive: false });
-            };
-        }
-       
+    // window.addEventListener('touchmove', preventDefault, { passive: false });
+    var lines = commentText.value.split(/\r|\r\n|\n/);
+    var count = lines.length;
+    console.log(count);
+    taLineCount.value = lines.length;
+    if(lines.length>4){
+        input?.classList.remove('hass');
     }
+    // let input = document.getElementById('ta-input')
+    // let body = document.body;
+
+    // if(input && body && isIOSorIPadOS()){
+    //     if(commentText.value !== ''){
+    //         input.onblur = function() {
+    //             body?.classList.remove('expand');
+    //             body?.classList.remove('reduce');
+    //             window.removeEventListener('touchmove', preventDefault, false);
+    //         };
+    //         input.onfocus = function() {
+    //             body?.classList.remove('expand');
+    //             body?.classList.remove('reduce');
+    //             window.addEventListener('touchmove', preventDefault, { passive: false });
+    //         };
+    //     } 
+    //     if (commentText.value === '') {
+    //         input.onblur = function() {
+    //             body?.classList.remove('expand');
+    //             body?.classList.add('reduce');
+    //             window.removeEventListener('touchmove', preventDefault, false);
+    //         };
+    //         input.onfocus = function() {
+    //             body?.classList.remove('reduce');
+    //             body?.classList.add('expand');
+    //             window.addEventListener('touchmove', preventDefault, { passive: false });
+    //         };
+    //     }
+       
+    // }
 })
 
 onMounted(() => {
     let input = document.getElementById('ta-input')
-    let body = document.body;
-
-    if(input && body && isIOSorIPadOS()){
-        input.onblur = function() {
-            body?.classList.remove('expand');
-            body?.classList.add('reduce');
-            window.removeEventListener('touchmove', preventDefault, false);
+    input?.classList.add('hass');
+    if(taLineCount.value>4){
+        input?.classList.remove('hass')
+    }
+    // window.addEventListener('touchmove', preventDefault, { passive: false });
+    // let input = document.getElementById('ta-input')
+    // let card = document.getElementById('hass');
+    // let ta = document.getElementById('ta-input');
+    // console.log(ta)
+    // let body = document.body;
+    // ta?.addEventListener('touchmove', preventDefault, { passive: false } );
+    // card?.addEventListener('touchmove', preventDefault, { passive: false });
+    // ta?.removeEventListener('touchmove', preventDefault, false );
+    // if(input && body && isIOSorIPadOS()){
+    //     input.onblur = function() {
+    //         body?.classList.remove('expand');
+    //         body?.classList.add('reduce');
+    //         // window.removeEventListener('touchmove', preventDefault, false);
             
-        };
+    //     };
 
-        input.onfocus = function() {
-            body?.classList.remove('reduce');
-            body?.classList.add('expand');
-            window.addEventListener('touchmove', preventDefault, { passive: false });
-        };
-    } 
+    //     input.onfocus = function() {
+    //         body?.classList.remove('reduce');
+    //         body?.classList.add('expand');
+    //         // window.addEventListener('touchmove', preventDefault, { passive: false });
+    //     };
+    // } 
 })
 </script>
 
 <style>
+.hass{
+    touch-action: none;
+}
 .expand{
     animation: expand-animation 0.2s ease-in-out 0s 1 forwards !important;
 }
@@ -221,11 +248,13 @@ onMounted(() => {
 <style scoped>
 .comment-container {
     display: flex;
+    touch-action: none;
     justify-content: center;
     width: 100%;
 }
 
 #comment-btn{
+    touch-action: none;
     order: -1 !important;
     z-index: 998;
     position: absolute;
@@ -233,15 +262,18 @@ onMounted(() => {
 }
 .v-card {
     position: relative;
+    overflow: hidden !important;
     display: flex;
     flex-direction: column;
     width: 100%;
     z-index: 1005;
     border-radius: 12px 12px 0px 0px;
     margin-bottom: 0px;
+    touch-action: none;
 }
 
 #close-btn{
+    touch-action: none;
     position: relative; 
     margin: 0em 0em 0em auto;
 }
@@ -251,14 +283,9 @@ onMounted(() => {
     margin-bottom: 0px !important;
 }
 .comment-text-area{
+    touch-action: none;
     display: flex;
     padding: 1em 0em 0em 1em;
-}
-
-.v-textarea{
-    margin-right: 1em;
-    border-radius: 1rem !important;
-    z-index: 1;
 }
 #send-btn{
     position: absolute;
@@ -286,6 +313,7 @@ onMounted(() => {
 } 
 
 .show-send-btn{
+    scrollbar-width: 0px;
     animation: slide-left 0.2s ease-in-out 0s 1 forwards;
 }
 
