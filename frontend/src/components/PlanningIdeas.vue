@@ -3,17 +3,19 @@
         class="mx-auto planning-ideas-options"
     >
       <v-btn v-if = "store.state.ui.planningIdeasLoaded" :key="100"
+        height="32px"
         size="small" 
         :variant="activeBtn==100 ? 'tonal': undefined" 
         rounded="lg"
         flat 
         @click="activateSelectedPlanningIdea( planningData.routes); setActiveBtn(100)"
       >
-            All
+            Alle
       </v-btn>
       <div v-for="route in planningData.routes.features" :key="route.properties.id">
         
         <v-btn 
+          height="32px"
           size="small"
           class="ml-2" 
           rounded="lg"
@@ -168,7 +170,7 @@ watch(store.state.ui, function (state) {
   position:sticky;
   bottom: 56px;
   margin-top: 5px;
-  padding: 5px;
+  padding: 0.5rem;
   z-index: 999;
   display: flex;
   flex-direction: row;

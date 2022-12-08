@@ -1,6 +1,6 @@
 <template>
     <div class="comment-container">
-        <v-btn id="comment-btn" size="large" rounded="pill" color="primary"
+        <v-btn id="comment-btn" size="large" height="48px" rounded="pill" color="primary"
             @touchstart="emit('getCenterOnMap')" @mousedown="emit('getCenterOnMap')" @click="createComment">
             Kommentieren
         </v-btn>
@@ -228,9 +228,8 @@ onMounted(() => {
 #comment-btn{
     order: -1 !important;
     z-index: 998;
-    margin-bottom: 0.5em;
     position: absolute;
-    bottom: calc(0.5em + 56px + 43px);
+    bottom: 8rem
 }
 .v-card {
     position: relative;
