@@ -81,6 +81,7 @@ const emit = defineEmits(["startPopulate"])
 const clearServerCache = async () => {
   const result = await clearCache()
   console.log(result.data)
+
 }
 
 // drops the comments of the current project

@@ -707,15 +707,14 @@ async def get_water_from_osm_api(request: Request):
     
     overpass_query_water = f"""
         [out:json];
-        way["amenity"="fountain"]({bbox});
+        way["natural"="water"]({bbox});
         relation["natural"="water"]({bbox});
-        
         (._;>;);
         out geom;
     """
     overpass_query_fountain = f"""
         [out:json];
-        way["natural"="water"]({bbox});
+        way["amenity"="fountain"]({bbox});
         (._;>;);
         out geom;
     """
@@ -1073,4 +1072,5 @@ async def clear_cache():
         "get_bike_lane_from_db_cache_stats": get_bike_lane_from_db_cache_stats,
         "result": "Cache cleared"
     }
+#    print(result)
     return result
