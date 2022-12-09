@@ -5,7 +5,7 @@
             Kommentieren
         </v-btn>
         <transition name="slide">
-            <v-card v-show="props.showCommentDialog" id="hass" elevation="20">
+            <v-card v-show="props.showCommentDialog" id="card" elevation="20">
                 <v-btn @click="cancelComment" icon="mdi-close" variant="plain" id="close-btn"/>
                 <p class="font-weight-bold text-body-1 call-to-action" >Platziere deinen Kommentar</p>
                 <div class="comment-text-area">
@@ -13,10 +13,11 @@
                         id="ta-input"
                         :class="commentText!==''?'show-send-btn':'hide-send-btn'"
                         variant="solo" 
-                        placeholder="Kommentar"
-                        color="primary" 
+                        label="Kommentar"
+                        color="primary"
+                        bg-color="rgb(248,248,248)"
                         no-resize 
-                        rows="4" 
+                        :rows="(taLineCount>4?'4':taLineCount)" 
                         ref="input"
                         :modelValue="commentText"
                         @update:modelValue="text => commentText = text"
@@ -37,7 +38,7 @@ const store = useStore()
 let commentText = ref<string>("")
 let isFocused = ref<boolean>(false)
 let allMarker = reactive<FeatureCollection>({ type: "FeatureCollection", features: [] })
-let taLineCount = ref<number>(0)
+let taLineCount = ref<number>(1)
 
 const props = defineProps({
     clickedCoordinates: Array<Number>,
@@ -143,105 +144,93 @@ const isIOSorIPadOS = () => {
     }
 }
 
-const preventDefault = (e:Event) => {
-    e.preventDefault();
-}
-
 watch(commentText, function () {
     let input = document.getElementById('ta-input')
-    input?.classList.add('hass');
+    let card = document.getElementById('card')
 
-    // window.addEventListener('touchmove', preventDefault, { passive: false });
     var lines = commentText.value.split(/\r|\r\n|\n/);
-    var count = lines.length;
-    console.log(count);
     taLineCount.value = lines.length;
-    if(lines.length>4){
-        input?.classList.remove('hass');
-    }
-    // let input = document.getElementById('ta-input')
-    // let body = document.body;
 
-    // if(input && body && isIOSorIPadOS()){
-    //     if(commentText.value !== ''){
-    //         input.onblur = function() {
-    //             body?.classList.remove('expand');
-    //             body?.classList.remove('reduce');
-    //             window.removeEventListener('touchmove', preventDefault, false);
-    //         };
-    //         input.onfocus = function() {
-    //             body?.classList.remove('expand');
-    //             body?.classList.remove('reduce');
-    //             window.addEventListener('touchmove', preventDefault, { passive: false });
-    //         };
-    //     } 
-    //     if (commentText.value === '') {
-    //         input.onblur = function() {
-    //             body?.classList.remove('expand');
-    //             body?.classList.add('reduce');
-    //             window.removeEventListener('touchmove', preventDefault, false);
-    //         };
-    //         input.onfocus = function() {
-    //             body?.classList.remove('reduce');
-    //             body?.classList.add('expand');
-    //             window.addEventListener('touchmove', preventDefault, { passive: false });
-    //         };
-    //     }
+    input?.classList.add('ta-not-scroll');
+    if(taLineCount.value>4){
+        input?.classList.remove('ta-not-scroll');
+        input?.classList.add('ta-scroll')
+    }
+
+
+    if(input && card && isIOSorIPadOS()){
+        if(commentText.value !== ''){
+            input.onblur = function() {
+                card?.classList.remove('expand');
+                card?.classList.remove('reduce');
+            };
+            input.onfocus = function() {
+                card?.classList.remove('expand');
+                card?.classList.remove('reduce');
+            };
+        } 
+        if (commentText.value === '') {
+            input.onblur = function() {
+                card?.classList.remove('expand');
+                card?.classList.add('reduce');
+            };
+            input.onfocus = function() {
+                card?.classList.remove('reduce');
+                card?.classList.add('expand');
+            };
+        }
        
-    // }
+    }
 })
 
 onMounted(() => {
     let input = document.getElementById('ta-input')
-    input?.classList.add('hass');
-    if(taLineCount.value>4){
-        input?.classList.remove('hass')
-    }
-    // window.addEventListener('touchmove', preventDefault, { passive: false });
-    // let input = document.getElementById('ta-input')
-    // let card = document.getElementById('hass');
-    // let ta = document.getElementById('ta-input');
-    // console.log(ta)
-    // let body = document.body;
-    // ta?.addEventListener('touchmove', preventDefault, { passive: false } );
-    // card?.addEventListener('touchmove', preventDefault, { passive: false });
-    // ta?.removeEventListener('touchmove', preventDefault, false );
-    // if(input && body && isIOSorIPadOS()){
-    //     input.onblur = function() {
-    //         body?.classList.remove('expand');
-    //         body?.classList.add('reduce');
-    //         // window.removeEventListener('touchmove', preventDefault, false);
-            
-    //     };
+    let card = document.getElementById('card')
 
-    //     input.onfocus = function() {
-    //         body?.classList.remove('reduce');
-    //         body?.classList.add('expand');
-    //         // window.addEventListener('touchmove', preventDefault, { passive: false });
-    //     };
-    // } 
+    input?.classList.add('ta-not-scroll');
+    if(taLineCount.value>4){
+        input?.classList.remove('ta-not-scroll')
+        input?.classList.add('ta-scroll')
+    }
+    
+    if(input && card && isIOSorIPadOS()){
+        input.onblur = function() {
+            card?.classList.remove('expand');
+            card?.classList.add('reduce');
+        };
+
+        input.onfocus = function() {
+            card?.classList.remove('reduce');
+            card?.classList.add('expand');
+        };
+    } 
 })
 </script>
 
 <style>
-.hass{
+.ta-not-scroll{
     touch-action: none;
 }
+
+.ta-scroll{
+    overscroll-behavior: none;
+}
+
 .expand{
-    animation: expand-animation 0.2s ease-in-out 0s 1 forwards !important;
+    animation: expand-animation 0.25s ease-in-out 0s 1 forwards !important;
 }
 
 .reduce{
-    animation: reduce-animation 0.2s ease-in-out 0s 1 forwards !important;
+    animation: reduce-animation 0.25s ease-in-out 0s 1 forwards !important;
 }
 
 @keyframes expand-animation {
-    0%   {height: 100vh;}
-    100% {height: 48vh;}
+    0%   {padding-bottom: 0rem;}
+    100% {padding-bottom: 296px;}
 }
 @keyframes reduce-animation {
-    0%   {height: 48vh;}
-    100% {height: 100vh;}
+    0%   {padding-bottom: 296px;}
+    100% {padding-bottom: 0rem;}
 }
 </style>
 
@@ -288,10 +277,17 @@ onMounted(() => {
     padding: 1em 0em 0em 1em;
 }
 #send-btn{
-    position: absolute;
-    bottom: 3em;
-    right: 2em;
+    position: relative;
+    margin-top: auto;
+    margin-bottom: 3em;
+    margin-right: 2em;
+    margin-left: -3.5rem;
 }
+
+.v-textarea{
+     margin-right: 1em;
+     z-index: 1;
+ }
 
 /* Animation */
 .slide-enter-active{
