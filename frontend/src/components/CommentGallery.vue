@@ -2,13 +2,13 @@
     <div class="comment-gallery-wrapper">
         <transition name="slide">
             <div v-if="(commentsAreLoaded && props.show)" className="comment-list">
-                
                 <v-card
                     v-for="comment in commentList"
-                    :subtitle="getRelativeTime(comment.properties.created_at)"
+                    elevation="3"
                 >
-                <p class="comment-text text-body-1">{{comment.properties.comment}}</p>
-                <v-chip v-if="comment.properties.user_id !=='anonymous'" size="small">Meine</v-chip>
+                    <div class="time-text text-body-1">{{getRelativeTime(comment.properties.created_at)}}</div>
+                    <div class="comment-text text-body-1">{{comment.properties.comment}}</div>
+                    <v-chip v-if="comment.properties.user_id !=='anonymous'" variant="elevated" color="primary" >Meine</v-chip>
                 </v-card>
             </div>
         </transition>
@@ -130,14 +130,14 @@
     position: fixed;
     top: 0px;
     width: 100vw;
-    height: calc(100% - 56px);
+    height: calc(100% - 56px + 12rem);
     z-index: 1001;
-    padding: 1em 0em;
+    padding: 0em 0em;
+    padding-bottom: 12rem;
     overflow-x: hidden !important;
     overflow-y: scroll !important;
     scrollbar-width: none !important; 
 }
-
 .backdrop{
     position: fixed;
     top: 0px;
@@ -149,32 +149,43 @@
     -ms-backdrop-filter: blur(24px);
     z-index: 1000;
 }
-
 .comment-list::-webkit-scrollbar {
   display: none;
 }
 
-.slide-enter-active{
-    transform: translateX(100%);
-    transition: transform .3s ease-in-out;
+/* Animation */
+/* Card      */
+.slide-enter-active {
+  animation: bounce-in 0.5s ease-out;
 }
-
-.slide-enter-to{
-  transform: translateX(0%);
+@keyframes bounce-in {
+  0% {
+    opacity: 0.2;
+    transform: translateY(12rem);
+  }
+  66% {
+    opacity: 0.733;
+    transform: translateY(-12rem);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0rem);
+  }
 }
 
  .slide-leave-active {
-    transform: translateX(0%);
-    transition: transform .3s ease-in-out;
+    opacity: 1;
+    transition: all .2s ease-in;
 }
 
 .slide-leave-to{
-    transform: translateX(100%);
+    opacity: 0;
 }
 
+/* Backdrop */
 .fade-enter-active{
     opacity: 0;
-    transition: opacity 0.1s ease-in-out;
+    transition: opacity 0.2s linear;
 }
 
 .fade-enter-to{
@@ -183,7 +194,7 @@
 
  .fade-leave-active {
     opacity: 1;
-    transition: opacity 0.1s ease-in-out;
+    transition: opacity 0.3s linear;
 }
 
 .fade-leave-to{
@@ -191,23 +202,26 @@
 }
 
 .v-card{
-    margin: 1em 0em;
+    margin: 1.5rem 0rem;
     margin-left: 50%;
+    padding: 1.5rem;
     transform: translateX(-50%);
-    width: 90% !important;
-    border-radius: 1em;
+    width: calc(100% - 3rem) !important;
+    border-radius: 18px;
 }
-
-.v-chip{
-    margin: 1em 0em 1em 1em;
+.time-text{
+    margin-bottom: 0.5rem;
 }
-
 .comment-text{
-    margin: 0em 1em 1em 1em;
+    min-height: 4.5rem;
     white-space: pre-line;
     overflow: hidden;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
+}
+.v-chip{
+    margin-top: 2rem;
+    color: white !important;
 }
 </style>
