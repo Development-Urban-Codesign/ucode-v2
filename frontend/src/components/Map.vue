@@ -1,21 +1,22 @@
 <template>
-    <div class="map-wrap" ref="mapContainer">
-      <div class="map" id="map">
-        <AOI v-if="mapStyleLoaded" @addLayer="addLayerToMap" @addImage="addImageToMap" @triggerRepaint="triggerRepaint" />
-        <Quests v-if="devMode"/>
-        <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
-            @navigateToPlanningIdea="navigateToPlanningIdea" />
-        <FreeComment :showCommentDialog="showCommentDialog" @deleteCommentLayer="deleteCommentLayer" @centerMapOnLocation="centerMapOnLocation"
-          @addComment="addCommentToMap" @getCenterOnMap="getMapCenter"
-          :clickedCoordinates="commentClicks.commentCoordinates" @updateSourceData="updateSourceData" @closeCommentDialog="closeCommentDialog"/>
-        <CommentGallery :show="tabIndex=='discussion'"/>
-        <BottomNavigation @tabIndexChanged="switchView" :tabIndex="tabIndex"/>
-        <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
-          @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
-          :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
-        <Comment @removePulseLayer="removePulseLayerFromMap" />
-      </div>
+  <div class="map-wrap" ref="mapContainer">
+    <div class="map" id="map">
+      <AOI v-if="mapStyleLoaded" @addLayer="addLayerToMap" @addImage="addImageToMap" @triggerRepaint="triggerRepaint" />
+      <Quests v-if="devMode" />
+      <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
+        @navigateToPlanningIdea="navigateToPlanningIdea" />
+      <FreeComment :showCommentDialog="showCommentDialog" @deleteCommentLayer="deleteCommentLayer"
+        @centerMapOnLocation="centerMapOnLocation" @addComment="addCommentToMap" @getCenterOnMap="getMapCenter"
+        :clickedCoordinates="commentClicks.commentCoordinates" @updateSourceData="updateSourceData"
+        @closeCommentDialog="closeCommentDialog" />
+      <CommentGallery :show="tabIndex == 'discussion'" />
+      <BottomNavigation @tabIndexChanged="switchView" :tabIndex="tabIndex" />
+      <Contribution @addPopup="addPopupToMap" @addDrawControl="addDrawControl" @addDrawnLine="addDrawnLine"
+        @removeDrawnLine="removeDrawnLine" @removeDrawControl="removeDrawControl"
+        :clickedCoordinates="mapClicks.clickedCoordinates" :lineDrawCreated="lineDrawCreated" />
+      <Comment @removePulseLayer="removePulseLayerFromMap" />
     </div>
+  </div>
 </template>
 
 
@@ -36,7 +37,7 @@ import { pulseLayer } from "@/utils/pulseLayer";
 import { MapboxLayer } from "@deck.gl/mapbox/typed";
 import { ScenegraphLayer } from "@deck.gl/mesh-layers/typed";
 import * as turf from '@turf/turf';
-import { Map, type CustomLayerInterface, type Feature, type IControl, type LayerSpecification, type LngLatBoundsLike, type LngLatLike, type Popup } from "maplibre-gl";
+import maplibregl,{ Map, type CustomLayerInterface, type Feature, type IControl, type LayerSpecification, type LngLatBoundsLike, type LngLatLike, type Popup } from "maplibre-gl";
 import { computed, onMounted, onUnmounted, reactive, ref, shallowRef, watch } from "vue";
 import { useStore } from "vuex";
 import { deckLightingEffect } from "@/utils/deckLighting";
@@ -55,6 +56,7 @@ let mapStyleLoaded = ref(false)
 let tabIndex = ref("planning")
 let showCommentDialog = ref(false)
 //let activeMarker = reactive<any>({});
+let raycastLayer: any
 
 
 
@@ -85,7 +87,6 @@ onMounted(() => {
     maxPitch: store.state.map.maxPitch,
     attributionControl: false
   });
-
   
   map.on("load", function () {
     mapStyleLoaded.value = true
@@ -109,8 +110,19 @@ onMounted(() => {
     HTTP.get("").then((response) => {
       // console.log(response);
     })
-
     //  getCommentData()
+  });
+  map.on('mousemove', e => {
+    // debugger
+    // console.log(e.point)
+    //@ts-ignore
+    // ThreejsScene.ThreeJsScene.raycast(e.point, false)
+    // let layer = map.getLayer("threeJsSceneFlat")
+    // console.log(raycastLayer)
+    raycastLayer.raycast(e.point, false)
+    // layer.implementation.raycast(e.point,false)
+    // debugger
+
 
   });
   map.on('click', function (mapClick) {
@@ -128,7 +140,7 @@ onMounted(() => {
     lineDrawCreated.value = 1
   })
 
-
+  
   map.on('mousedown', 'ownComments', (e) => {
     // Prevent the default map drag behavior.
     if (!store.state.freecomment.moveComment) {
@@ -224,7 +236,11 @@ store.commit("map/addLayer", {
 
 
 const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface, beforeLayer?: string) => {
-  // console.log(layer.id)
+  //  console.log(layer.id)
+  if (layer.id == "threeJsSceneFlat") {
+    raycastLayer = layer
+    // console.log("layer set")
+  }
   const addedlayer = map.getLayer(layer.id)
   if (typeof addedlayer !== 'undefined') {
     removeLayerFromMap(layer.id)
@@ -239,10 +255,10 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface, beforeL
       addImageToMap(layer.paint["fill-pattern"]);
     }
   }
-  if(beforeLayer && map.getLayer(beforeLayer) == undefined){
-    beforeLayer=""
+  if (beforeLayer && map.getLayer(beforeLayer) == undefined) {
+    beforeLayer = ""
   }
-  map?.addLayer(layer,beforeLayer? beforeLayer: "");
+  map?.addLayer(layer, beforeLayer ? beforeLayer : "");
   const layerHirarchy: any[] = []// = reactive<[{layer: any, orderId: Number}]>([{}])
 
   const buildinglayer = map.getLayer("overpass_buildings")
@@ -292,7 +308,7 @@ const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface, beforeL
   }
   const ThreeJsScene3d = map.getLayer("threeJsScene3d")
   if (typeof ThreeJsScene3d !== 'undefined') {
-    layerHirarchy.push({ layer: ThreeJsScene3d, orderId:  2})
+    layerHirarchy.push({ layer: ThreeJsScene3d, orderId: 2 })
   }
   const ThreeJsSceneFlat = map.getLayer("threeJsSceneFlat")
   if (typeof ThreeJsSceneFlat !== 'undefined') {
@@ -406,7 +422,7 @@ const getFilteredCommentData = async () => {
   const commentLayer = await getFilteredCommentsFromDB(store.state.aoi.projectId, store.state.aoi.userId);
   console.log(commentLayer)
   addLayerToMap(commentLayer as unknown as CustomLayerInterface)
-  
+
 };
 
 
@@ -511,7 +527,7 @@ onUnmounted(() => {
 .map-wrap {
   position: relative;
   width: 100%;
-  height: 100%; 
+  height: 100%;
   /* height: calc(var(--vh, 1vh) * 100); */
 }
 

@@ -14,13 +14,12 @@ export class ThreeJsScene extends Scene {
     super();
     this.setup();
   }
-
+   
   setup() {
-
+    
     // this.fog = new FogExp2(0xffffff,.1)
   }
 }
-
 
 
 export function getProjectionMatrix(
@@ -28,7 +27,7 @@ export function getProjectionMatrix(
   matrix: glMatrix.mat4
 ): THREE.Matrix4 {
   //  const sceneRotate = [0, 0, 0];
-  const sceneRotate = [Math.PI / 2, Math.PI / 2, 0];
+  const sceneRotate = [0, 0, 0];
   // transformation parameters to position, rotate and scale the 3D scene onto the map
   const modelTransform = {
     translateX: modelAsMercatorCoordinate.x,
@@ -84,9 +83,14 @@ export const ThreejsSceneOnly = (lng: number, lat: number, layerName: string) =>
   // dirLight.color.setHSL(0.1, 1, 0.95);
   dirLight.position.set(-2, 3, 1);
   dirLight.position.multiplyScalar(1);
-
+  let cameraTransform: any
+  let raycaster: any
+  let mainMap: any
   const mainScene = new ThreeJsScene();
-  const mainCamera = new THREE.Camera();
+  const mainCamera = new THREE.PerspectiveCamera(45, 1, 1, 1000);
+  const helper = new THREE.CameraHelper(mainCamera);
+  mainScene.add(helper);
+
   let mainRenderer = new THREE.WebGLRenderer();
   mainScene.add(hemiLight);
   mainScene.add(dirLight);
@@ -103,7 +107,18 @@ export const ThreejsSceneOnly = (lng: number, lat: number, layerName: string) =>
     type: "custom",
     renderingMode: "3d",
     onAdd: function (map: Map, gl: any) {
-      // use the Mapbox GL JS map canvas for three.js
+      
+      mainMap = map
+
+      const { x, y, z } = modelAsMercatorCoordinate;
+      const s = modelAsMercatorCoordinate.meterInMercatorCoordinateUnits();
+      const scale = new THREE.Matrix4().makeScale(s, s, -s);
+      const rotation = new THREE.Matrix4().multiplyMatrices(
+        new THREE.Matrix4().makeRotationX(-0.5 * Math.PI),
+        new THREE.Matrix4().makeRotationY(Math.PI / 2));
+
+      cameraTransform = new THREE.Matrix4().multiplyMatrices(scale, rotation).setPosition(x, y, z);
+
 
       mainRenderer = new THREE.WebGLRenderer({
         canvas: map.getCanvas(),
@@ -113,30 +128,59 @@ export const ThreejsSceneOnly = (lng: number, lat: number, layerName: string) =>
 
       mainRenderer.outputEncoding = THREE.sRGBEncoding;
       mainRenderer.autoClear = false;
+
+      raycaster = new THREE.Raycaster();
+      raycaster.near = -1;
+      raycaster.far = 1e6;
+
     },
 
     render: function (gl, matrix) {
-      mainCamera.projectionMatrix = getProjectionMatrix(
-        modelAsMercatorCoordinate,
-        matrix
-      );
-      // const cam = new THREE.Camera();
-      // const rootInverse = mainScene.matri transform.getInverse();
-      // cam.projectionMatrix = getProjectionMatrix(
-      //   modelAsMercatorCoordinate,
-      //   matrix
-      // );
-      // cam.projectionMatrixInverse = cam.projectionMatrix.invert(); // add since three@0.103.0
-      // debugger
-      // console.log(matrix)
-      // mainCamera.updateWorldMatrix(true, true)
-      // console.log(mainCamera.position)
-      // mainRenderer.state.reset();
+
+      mainCamera.projectionMatrix = new THREE.Matrix4()
+        .fromArray(matrix)
+        .multiply(cameraTransform);
+
+      
       mainRenderer.resetState();
       mainRenderer.render(mainScene, mainCamera);
       // console.count("triggerRepaint")
       //this.map.triggerRepaint();
     },
+    //@ts-ignore
+    raycast (point: any, isClick: any) {
+      var mouse = new THREE.Vector2();
+      // debugger
+      // // scale mouse pixel position to a percentage of the screen's width and height
+      mouse.x = (point.x / mainMap.transform.width) * 2 - 1;
+      mouse.y = 1 - (point.y / mainMap.transform.height) * 2;
+    
+      const camInverseProjection = mainCamera.projectionMatrix.invert();
+      const cameraPosition = new THREE.Vector3().applyMatrix4(camInverseProjection);
+      const mousePosition = new THREE.Vector3(mouse.x, mouse.y, 1).applyMatrix4(camInverseProjection);
+      const viewDirection = mousePosition.clone().sub(cameraPosition).normalize();
+    
+      raycaster.set(cameraPosition, viewDirection);
+    
+      // calculate objects intersecting the picking ray
+      var intersects = raycaster.intersectObjects(mainScene.children, true);
+      if(intersects.length >0){
+        console.log(intersects[0])
+      }
+      
+      
+      // $('#info').empty();
+      // if (intersects.length) {
+      //   for (let i = 0; i < intersects.length; ++i) {
+      //     $('#info').append(' ' + JSON.stringify(intersects[i].distance));
+      //     isClick && console.log(intersects[i]);
+      //   }
+    
+      //   isClick && $('#info').append(';');
+      // }
+    },
+  
+    
   };
   return { layer: customLayer, scene: mainScene };
 };

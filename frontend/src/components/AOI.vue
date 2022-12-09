@@ -132,8 +132,6 @@ const sendGreeneryRequestTHREE = async () => {
 };
 const sendWaterRequestTHREE = async () => {
   const waterJson: FeatureCollection = await getWaterFromDB(store.state.aoi.projectSpecification.project_id);
-  // console.log(waterJson)
-
   addPolygonsFromCoordsAr({
     scene: threeJsSceneFlat.scene,
     bbox: store.state.aoi.projectSpecification.bbox,
