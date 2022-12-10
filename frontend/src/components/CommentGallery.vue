@@ -6,7 +6,7 @@
                     v-for="comment in commentList"
                     elevation="3"
                 >
-                    <div class="time-text text-body-1">{{getRelativeTime(comment.properties.created_at)}}</div>
+                    <div class="time-text text-body-2 text-disabled">{{getRelativeTime(comment.properties.created_at)}}</div>
                     <div class="comment-text text-body-1">{{comment.properties.comment}}</div>
                     <v-chip v-if="comment.properties.user_id !=='anonymous'" variant="elevated" color="primary" >Meine</v-chip>
                 </v-card>
@@ -130,10 +130,10 @@
     position: fixed;
     top: 0px;
     width: 100vw;
-    height: calc(100% - 56px + 12rem);
+    height: calc(100% - 56px + 10rem);
     z-index: 1001;
     padding: 0em 0em;
-    padding-bottom: 12rem;
+    padding-bottom: 10rem;
     overflow-x: hidden !important;
     overflow-y: scroll !important;
     scrollbar-width: none !important; 
@@ -156,16 +156,17 @@
 /* Animation */
 /* Card      */
 .slide-enter-active {
-  animation: bounce-in 0.5s ease-out;
+    opacity: 0.2;
+    animation: bounce-in 0.6s ease-in-out;
 }
 @keyframes bounce-in {
   0% {
     opacity: 0.2;
-    transform: translateY(12rem);
+    transform: translateY(10rem);
   }
   66% {
     opacity: 0.733;
-    transform: translateY(-12rem);
+    transform: translateY(-10rem);
   }
   100% {
     opacity: 1;
