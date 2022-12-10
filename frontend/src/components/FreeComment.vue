@@ -17,7 +17,8 @@
                         color="primary"
                         bg-color="rgb(248,248,248)"
                         no-resize
-                        rows="4"
+                        auto-grow
+                        rows="1"
                         max-rows="4"
                         ref="input"
                         :modelValue="commentText"
@@ -148,6 +149,10 @@ const isIOSorIPadOS = () => {
 //@ts-ignore
 function has_scrollbar(elem)
 {
+    var clientHeight = elem.clientHeight;
+    if(clientHeight < 120){
+        return false
+    }
     //@ts-ignore
     if (elem.clientHeight < elem.scrollHeight)
         return true
@@ -159,6 +164,7 @@ watch(commentText, function () {
     
     let input = document.getElementById('ta-input')
     let card = document.getElementById('card')
+    console.log(has_scrollbar(input))
     
     if(has_scrollbar(input)){
         input?.classList.remove('ta-not-scroll');
