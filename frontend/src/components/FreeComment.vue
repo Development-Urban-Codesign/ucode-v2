@@ -17,8 +17,7 @@
                         color="primary"
                         bg-color="rgb(248,248,248)"
                         no-resize
-                        auto-grow
-                        rows="1"
+                        rows="4"
                         max-rows="4"
                         ref="input"
                         :modelValue="commentText"
@@ -36,6 +35,7 @@ import { HTTP } from '@/utils/http-common';
 import { onMounted, reactive, ref, watch } from 'vue';
 import type { FeatureCollection } from 'geojson';
 import type internal from 'stream';
+import comment from '@/store/modules/comment';
 const store = useStore()
 let commentText = ref<string>("")
 let isFocused = ref<boolean>(false)
@@ -145,14 +145,27 @@ const isIOSorIPadOS = () => {
         return false
     }
 }
+//@ts-ignore
+function has_scrollbar(elem)
+{
+    //@ts-ignore
+    if (elem.clientHeight < elem.scrollHeight)
+        return true
+    else
+        return false
+}
 
 watch(commentText, function () {
+    
     let input = document.getElementById('ta-input')
     let card = document.getElementById('card')
-
-    if(commentText.value){
+    
+    if(has_scrollbar(input)){
         input?.classList.remove('ta-not-scroll');
         input?.classList.add('ta-scroll')
+    } else {
+        input?.classList.add('ta-not-scroll');
+        input?.classList.remove('ta-scroll')
     }
 
 
@@ -185,10 +198,12 @@ onMounted(() => {
     let input = document.getElementById('ta-input')
     let card = document.getElementById('card')
 
-    input?.classList.add('ta-not-scroll');
-    if(commentText.value){
-        input?.classList.remove('ta-not-scroll')
+    if(has_scrollbar(input)){
+        input?.classList.remove('ta-not-scroll');
         input?.classList.add('ta-scroll')
+    } else {
+        input?.classList.add('ta-not-scroll');
+        input?.classList.remove('ta-scroll')
     }
     
     if(input && card && isIOSorIPadOS()){
@@ -207,11 +222,11 @@ onMounted(() => {
 
 <style>
 .ta-not-scroll{
-    touch-action: none;
+    touch-action: none !important;
 }
 
 .ta-scroll{
-    overscroll-behavior: none;
+    overscroll-behavior: none !important;
     overflow-y: scroll !important;
 }
 
