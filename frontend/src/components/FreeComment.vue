@@ -16,8 +16,10 @@
                         label="Kommentar"
                         color="primary"
                         bg-color="rgb(248,248,248)"
-                        no-resize 
-                        :rows="(taLineCount>4?'4':taLineCount)" 
+                        no-resize
+                        auto-grow
+                        rows="1"
+                        max-rows="4"
                         ref="input"
                         :modelValue="commentText"
                         @update:modelValue="text => commentText = text"
@@ -148,11 +150,7 @@ watch(commentText, function () {
     let input = document.getElementById('ta-input')
     let card = document.getElementById('card')
 
-    var lines = commentText.value.split(/\r|\r\n|\n/);
-    taLineCount.value = lines.length;
-
-    input?.classList.add('ta-not-scroll');
-    if(taLineCount.value>4){
+    if(commentText.value){
         input?.classList.remove('ta-not-scroll');
         input?.classList.add('ta-scroll')
     }
@@ -188,7 +186,7 @@ onMounted(() => {
     let card = document.getElementById('card')
 
     input?.classList.add('ta-not-scroll');
-    if(taLineCount.value>4){
+    if(commentText.value){
         input?.classList.remove('ta-not-scroll')
         input?.classList.add('ta-scroll')
     }
@@ -214,6 +212,7 @@ onMounted(() => {
 
 .ta-scroll{
     overscroll-behavior: none;
+    overflow-y: scroll !important;
 }
 
 .expand{
