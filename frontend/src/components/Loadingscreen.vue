@@ -47,7 +47,7 @@ animate();
 
 <style scoped>
 .loading-screen-wrapper {
-  background-color: #ffffff;
+  background-color: #FAF8F6;
   width: 100%;
   height: 100%;
   position: absolute;

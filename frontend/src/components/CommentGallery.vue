@@ -2,18 +2,39 @@
     <div class="comment-gallery-wrapper">
         <transition name="slide">
             <div v-if="(commentsAreLoaded && props.show)" className="comment-list">
+                
                 <v-card
                     v-for="comment in commentList"
                     elevation="3"
                 >
-                    <div class="time-text text-body-2 text-disabled">{{getRelativeTime(comment.properties.created_at)}}</div>
+                    <transition name="fade">
+                        <div v-if="commentsAreLoaded" class="time-text text-body-2 text-disabled">{{getRelativeTime(comment.properties.created_at)}}</div>
+                    </transition>
                     <div class="comment-text text-body-1">{{comment.properties.comment}}</div>
-                    <v-chip v-if="comment.properties.user_id !=='anonymous'" variant="elevated" color="primary" >Meine</v-chip>
+                    <div class="action-area">
+                        <v-chip v-if="comment.properties.user_id !=='anonymous'" variant="elevated" color="primary" >Meine</v-chip>
+                        <v-btn
+                            class="btn-end"
+                            variant="plain"
+                            size="small"
+                            :icon="comment.properties.user_id !=='anonymous'?'mdi-pencil':'mdi-heart'"
+                        ></v-btn>
+                        <v-btn
+                            class="btn-end"
+                            variant="plain"
+                            size="small"
+                            :icon="comment.properties.user_id !=='anonymous'?'mdi-delete':'mdi-thumb-down'"
+                        ></v-btn>
+                    </div>
                 </v-card>
             </div>
         </transition>
         <transition  name="fade">
-            <div v-if="props.show" className="backdrop"></div>
+            <div v-if="props.show" className="backdrop">
+                <div v-if="(!commentsAreLoaded && props.show)" class="comment-list">
+                    <CardSkeleton v-for="index in 4" :key="index"></CardSkeleton>
+                </div>
+            </div>
         </transition>
     </div>
 </template>
@@ -22,6 +43,9 @@
     import { onMounted, ref, watch } from 'vue';
     import { useStore } from "vuex";
     import { getFilteredCommentsFromDB } from "../service/backend.service";
+    import CardSkeleton from "@/components/CardSkeleton.vue";
+import { Data } from 'apache-arrow';
+import { number } from '@intlify/core-base';
 
     const store = useStore(); 
     const projectId = store.state.aoi.projectSpecification.project_id;
@@ -82,12 +106,17 @@
             return 'vor ' + Math.round(elapsed/msPerYear) +ending;    
         }
     }
+    const delay = (time) => {
+        return new Promise(resolve => setTimeout(resolve, time));
+    }
 
     const sendCommentRequest = async () => {
         commentsAreLoaded.value = false;
         let response = []
         let myComments = []
         let otherComments = []
+        var start = await performance.now();
+        // await delay(2000)
 
         const commentData = await getFilteredCommentsFromDB(projectId, userId)
     //    console.log(commentData.props.data)
@@ -108,7 +137,14 @@
         // console.log(otherComments)
 
         commentList.value = myComments.concat(otherComments);
-        commentsAreLoaded.value = true;
+
+        var loadingTime = performance.now() - start
+        if(loadingTime - start < 300){
+            await delay(300 - loadingTime)
+        }
+        commentsAreLoaded.value = true; 
+        
+ 
     }
 
     onMounted(() => {
@@ -152,24 +188,57 @@
 .comment-list::-webkit-scrollbar {
   display: none;
 }
+.v-card{
+    margin: 1.5rem 0rem;
+    margin-left: 50%;
+    padding: 1.5rem;
+    transform: translateX(-50%);
+    width: calc(100% - 3rem) !important;
+    border-radius: 18px;
+}
+.time-text{
+    margin-bottom: 0.5rem;
+}
+.comment-text{
+    min-height: 4.5rem;
+    white-space: pre-line;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+.action-area{
+    margin-top: 2rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+.v-chip{
+    color: white !important;
+    margin: 0rem auto 0rem 0rem;
+}
+.btn-end{
+    font-size: 1rem;
+    margin-left: 1rem;
+}
 
 /* Animation */
 /* Card      */
 .slide-enter-active {
-    opacity: 0.2;
-    animation: bounce-in 0.6s ease-in-out;
+    animation: bounce-in;
+    animation-duration: 0.5s;
+    animation-delay: 0.4s;
 }
 @keyframes bounce-in {
   0% {
-    opacity: 0.2;
-    transform: translateY(10rem);
+    transform: translateY(0rem);
+    animation-timing-function: cubic-bezier(0.33333, 0.66667, 0.66667, 1)
   }
-  66% {
-    opacity: 0.733;
+  76% {
     transform: translateY(-10rem);
+    animation-timing-function: cubic-bezier(0.33333, 0, 0.66667, 0.33333)
   }
   100% {
-    opacity: 1;
     transform: translateY(0rem);
   }
 }
@@ -202,27 +271,5 @@
     opacity: 0;
 }
 
-.v-card{
-    margin: 1.5rem 0rem;
-    margin-left: 50%;
-    padding: 1.5rem;
-    transform: translateX(-50%);
-    width: calc(100% - 3rem) !important;
-    border-radius: 18px;
-}
-.time-text{
-    margin-bottom: 0.5rem;
-}
-.comment-text{
-    min-height: 4.5rem;
-    white-space: pre-line;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-}
-.v-chip{
-    margin-top: 2rem;
-    color: white !important;
-}
+
 </style>
