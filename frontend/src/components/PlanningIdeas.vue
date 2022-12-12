@@ -9,6 +9,8 @@
         rounded="lg"
         flat 
         @click="activateSelectedPlanningIdea( planningData.routes); setActiveBtn(100)"
+        class="custom-font"
+        
       >
             Alle
       </v-btn>
@@ -189,6 +191,10 @@ watch(store.state.ui, function (state) {
   color: #df4947;
   color: #82e139;
   color: #225de6;
+}
+.custom-font {
+  font-family: 'mona sans';
+  font-weight: 900
 }
 
 </style>

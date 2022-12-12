@@ -7,6 +7,7 @@ import '../node_modules/maplibre-gl/dist/maplibre-gl.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import { loadFonts } from './plugins/webfontloader'
 import { i18n } from "./plugins/i18n"
+import './assets/sass/style.scss'
 
 loadFonts()
 
