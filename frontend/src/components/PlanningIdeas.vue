@@ -194,7 +194,7 @@ watch(store.state.ui, function (state) {
 }
 .custom-font {
   font-family: 'mona sans';
-  font-weight: 900
+  font-weight: 500
 }
 
 </style>
