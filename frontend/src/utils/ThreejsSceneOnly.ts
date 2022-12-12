@@ -4,8 +4,9 @@ import maplibregl, {
   type LngLatLike,
 } from "maplibre-gl";
 import * as THREE from "three";
-import { FogExp2, Scene } from "three";
+import { Scene } from "three";
 import type * as glMatrix from "gl-matrix";
+//import { relativeCoordInWorldPoint } from "./ThreejsGeometryCreation";
 
 
 
@@ -14,9 +15,9 @@ export class ThreeJsScene extends Scene {
     super();
     this.setup();
   }
-   
+
   setup() {
-    
+
     // this.fog = new FogExp2(0xffffff,.1)
   }
 }
@@ -86,6 +87,7 @@ export const ThreejsSceneOnly = (lng: number, lat: number, layerName: string) =>
   let cameraTransform: any
   let raycaster: any
   let mainMap: any
+  let box: THREE.Mesh
   const mainScene = new ThreeJsScene();
   const mainCamera = new THREE.PerspectiveCamera(45, 1, 1, 1000);
   const helper = new THREE.CameraHelper(mainCamera);
@@ -107,7 +109,7 @@ export const ThreejsSceneOnly = (lng: number, lat: number, layerName: string) =>
     type: "custom",
     renderingMode: "3d",
     onAdd: function (map: Map, gl: any) {
-      
+
       mainMap = map
 
       const { x, y, z } = modelAsMercatorCoordinate;
@@ -132,55 +134,52 @@ export const ThreejsSceneOnly = (lng: number, lat: number, layerName: string) =>
       raycaster = new THREE.Raycaster();
       raycaster.near = -1;
       raycaster.far = 1e6;
+      raycaster.layers.set(1);
+
+      const geometry = new THREE.BoxGeometry(10, 10, 10);
+      const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+      box = new THREE.Mesh(geometry, material);
+      mainScene.add(box);
 
     },
 
     render: function (gl, matrix) {
 
-      mainCamera.projectionMatrix = new THREE.Matrix4()
-        .fromArray(matrix)
-        .multiply(cameraTransform);
+      mainCamera.projectionMatrix = new THREE.Matrix4().fromArray(matrix).multiply(cameraTransform);
 
-      
       mainRenderer.resetState();
       mainRenderer.render(mainScene, mainCamera);
       // console.count("triggerRepaint")
       //this.map.triggerRepaint();
     },
     //@ts-ignore
-    raycast (point: any, isClick: any) {
+    raycast(point: any, isClick: any) {
       var mouse = new THREE.Vector2();
       // debugger
       // // scale mouse pixel position to a percentage of the screen's width and height
       mouse.x = (point.x / mainMap.transform.width) * 2 - 1;
       mouse.y = 1 - (point.y / mainMap.transform.height) * 2;
-    
+
       const camInverseProjection = mainCamera.projectionMatrix.invert();
       const cameraPosition = new THREE.Vector3().applyMatrix4(camInverseProjection);
       const mousePosition = new THREE.Vector3(mouse.x, mouse.y, 1).applyMatrix4(camInverseProjection);
       const viewDirection = mousePosition.clone().sub(cameraPosition).normalize();
-    
+
       raycaster.set(cameraPosition, viewDirection);
-    
+
       // calculate objects intersecting the picking ray
       var intersects = raycaster.intersectObjects(mainScene.children, true);
-      if(intersects.length >0){
-        console.log(intersects[0].point)
+      if (intersects.length > 0) {
+        console.log(intersects.length)
+        box.position.x = intersects[0].point.x
+        box.position.z = intersects[0].point.z
+        box.position.y = intersects[0].point.y
+        mainMap.triggerRepaint()
+        
       }
-      
-      
-      // $('#info').empty();
-      // if (intersects.length) {
-      //   for (let i = 0; i < intersects.length; ++i) {
-      //     $('#info').append(' ' + JSON.stringify(intersects[i].distance));
-      //     isClick && console.log(intersects[i]);
-      //   }
-    
-      //   isClick && $('#info').append(';');
-      // }
     },
-  
-    
+
+
   };
   return { layer: customLayer, scene: mainScene };
 };

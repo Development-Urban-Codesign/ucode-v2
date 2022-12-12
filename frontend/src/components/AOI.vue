@@ -146,7 +146,7 @@ const sendWaterRequestTHREE = async () => {
 const createAoiPlane = async () => {
   // console.log("AOIPlane")
   const data: FeatureCollection = {
-    'type': 'FeatureCollection',//redo as polygon..be smart
+    'type': 'FeatureCollection',
     'features': [
       {
         'type': 'Feature',
@@ -158,7 +158,9 @@ const createAoiPlane = async () => {
             [store.state.aoi.projectSpecification.bbox.xmax, store.state.aoi.projectSpecification.bbox.ymax],
             [store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymax]]]
         },
-        'properties': {}
+        'properties': {
+          'layer': 1
+        }
       }
     ]
   }

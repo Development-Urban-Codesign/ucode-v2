@@ -112,19 +112,6 @@ onMounted(() => {
     })
     //  getCommentData()
   });
-  map.on('mousemove', e => {
-    // debugger
-    // console.log(e.point)
-    //@ts-ignore
-    // ThreejsScene.ThreeJsScene.raycast(e.point, false)
-    // let layer = map.getLayer("threeJsSceneFlat")
-    // console.log(raycastLayer)
-    raycastLayer.raycast(e.point, false)
-    // layer.implementation.raycast(e.point,false)
-    // debugger
-
-
-  });
   map.on('click', function (mapClick) {
     // @ts-ignore
     mapClicks.clickedCoordinates = [mapClick.lngLat.lng, mapClick.lngLat.lat]
@@ -148,6 +135,7 @@ onMounted(() => {
     }
     e.preventDefault();
     map.on('mousemove', onMoveComment);
+    map.on('mousemove', onMoveCommentTHREE);
     map.once('mouseup', onUp);
   });
 
@@ -158,6 +146,7 @@ onMounted(() => {
     }
     e.preventDefault();
     map.on('touchmove', onMoveComment);
+    map.on('touchmove', onMoveCommentTHREE);
     map.once('touchend', onUp);
 
   })
@@ -167,9 +156,12 @@ function updateSourceData(sourceId: string, data: any) {
 }
 function onUp() {
   map.off('mousemove', onMoveComment);
+  map.off('mousemove', onMoveCommentTHREE);
+  map.off('touchmove', onMoveCommentTHREE);
   map.off('touchmove', onMoveComment);
 }
 function onMoveComment(e: { lngLat: { lng: number; lat: number; }; }) { commentClicks.commentCoordinates = [e.lngLat.lng, e.lngLat.lat]; }
+function onMoveCommentTHREE(e: { point: any; }) {raycastLayer.raycast(e.point, false) }
 
 function centerMapOnLocation(location: LngLatLike) { map.panTo(location); }
 

@@ -61,7 +61,7 @@ export function addPolygonsFromCoordsAr(settings: THREEGeoSettings): void {
   // console.log(geoms)
   geoms.forEach((geom, index) => {
     polygeom = BufferGeometryUtils.mergeBufferGeometries(geom)
-    let material = new THREE.MeshStandardMaterial({ color: geoms.length == 1 ? settings.color : settings.color[index], side: DoubleSide, roughness: 1 })
+    let material = new THREE.MeshStandardMaterial({ color: geoms.length == 1 ? settings.color : settings.color[index], side: THREE.FrontSide, roughness: 1 })
 
     const mesh = new THREE.Mesh(polygeom, material);
     if (settings.extrude == .99) {
@@ -71,6 +71,9 @@ export function addPolygonsFromCoordsAr(settings: THREEGeoSettings): void {
     }
     else {
       mesh.translateY(settings.extrude)
+    }
+    if(settings.geoJson.features[0].properties?.layer){
+      mesh.layers.enable(settings.geoJson.features[0].properties?.layer)
     }
     settings.scene.add(mesh)
   })
@@ -111,12 +114,17 @@ export function addGeoOnPointsToThreejsScene(
   );
 }
 function worldUnitMultiplator(bbox: BoundingBox) {
-  let wrapperCords = localCordsFromWorldCords(maplibregl.LngLat.convert([bbox.xmin, bbox.ymin]), 0);
+  let wrapperCords = mercatorCoords(maplibregl.LngLat.convert([bbox.xmin, bbox.ymin]), 0);
   console.log(1 / wrapperCords.meterInMercatorCoordinateUnits())
 }
+// export function relativeCoordInWorldPoint(coordinate: THREE.Vector3) {
+//   let absolutePosition: THREE.Vector2 = new THREE.Vector2((coordinate.y - wrapperCords.y) * wrapperCords.meterInMercatorCoordinateUnits(),(coordinate.x - wrapperCords.x) * wrapperCords.meterInMercatorCoordinateUnits())
+//   let coord = new maplibregl.MercatorCoordinate(coordinate.x,coordinate.y,coordinate.z)
+//   console.log(coord.toLngLat())
+// }
 function worldPointInRelativeCoord(LngLatPoint: LngLatLike, bbox: BoundingBox) {
-  let wrapperCords = localCordsFromWorldCords(maplibregl.LngLat.convert([bbox.xmin, bbox.ymin]), 0);
-  let objectCords = localCordsFromWorldCords(LngLatPoint, 0);
+  let wrapperCords = mercatorCoords(maplibregl.LngLat.convert([bbox.xmin, bbox.ymin]), 0); // could be global variable, changes only with different project
+  let objectCords = mercatorCoords(LngLatPoint, 0);
 
   const relativePosition: THREE.Vector3 = new THREE.Vector3(
 
@@ -241,16 +249,16 @@ function generateLocalCoordinates(
         hasRandomSize ? hasRandomSize[0] : 1,
         hasRandomSize ? hasRandomSize[1] : 1
       );
-      let cords = localCordsFromWorldCords(
+      let cords = mercatorCoords(
         maplibregl.LngLat.convert([bbox.xmin, bbox.ymin]),
         _geoJson.features[index].properties.estimatedheight || 0
       );
       let localPos = {
         position: [
-          ((localCordsFromWorldCords(element, _geoJson.features[index].properties.estimatedheight || 0).x - cords.x) * 1) /
+          ((mercatorCoords(element, _geoJson.features[index].properties.estimatedheight || 0).x - cords.x) * 1) /
           cords.meterInMercatorCoordinateUnits(),
           _geoJson.features[index].properties.estimatedheight+0.5 || 0,
-          ((cords.y - localCordsFromWorldCords(element, _geoJson.features[index].properties.estimatedheight || 0).y) * 1) /
+          ((cords.y - mercatorCoords(element, _geoJson.features[index].properties.estimatedheight || 0).y) * 1) /
           cords.meterInMercatorCoordinateUnits(),
         ],
         rotation: rot,
@@ -280,7 +288,7 @@ function getRndNumber(min: number, max: number): number {
   return Math.random() * (max - min) + min;
 }
 
-export function localCordsFromWorldCords(
+export function mercatorCoords(
   worldCords: LngLatLike,
   height : number
 ): MercatorCoordinate {
