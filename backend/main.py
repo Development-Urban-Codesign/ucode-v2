@@ -61,9 +61,7 @@ origins = [
     "https://api.v2.urban-codesign.com",
     "https://v2.urban-codesign.com",
     "http://localhost",
-    "http://localhost:8080",
-    "http://192.168.0.42:8080",
-    "http://192.168.0.123:8080"
+    "http://localhost:8080"
 ]
 
 app.add_middleware(

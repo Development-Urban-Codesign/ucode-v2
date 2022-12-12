@@ -107,7 +107,7 @@ function createComment() {
         'layout': {
             'icon-image': 'comment.png', // reference the image
             'icon-size': 0.25,
-            'icon-offset': [130, 25],
+            'icon-offset': [65, 13],
             'icon-anchor': "bottom",
             'icon-allow-overlap': true,
             // 'icon-ignore-placement': true
