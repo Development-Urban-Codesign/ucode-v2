@@ -165,7 +165,7 @@ export const ThreejsSceneOnly = (lng: number, lat: number, layerName: string) =>
       // calculate objects intersecting the picking ray
       var intersects = raycaster.intersectObjects(mainScene.children, true);
       if(intersects.length >0){
-        console.log(intersects[0])
+        console.log(intersects[0].point)
       }
       
       
