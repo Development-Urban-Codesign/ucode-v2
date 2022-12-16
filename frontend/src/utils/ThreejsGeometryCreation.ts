@@ -1,13 +1,13 @@
 import type { BoundingBox } from "@/store/modules/aoi";
-import type { Feature, FeatureCollection, Geometry, Position, Properties } from "@turf/turf";
-import maplibregl, { MercatorCoordinate, type Coordinates, type LngLatLike } from "maplibre-gl";
-import { BufferGeometry, DoubleSide, Vector2, type Group } from "three";
+import type { Feature, FeatureCollection, Geometry, Position } from "@turf/turf";
+import maplibregl, { MercatorCoordinate, type LngLatLike } from "maplibre-gl";
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
+import { BufferGeometry, DoubleSide, Vector2, type Group } from "three";
 import { Line2 } from 'three/examples/jsm/lines/Line2.js';
+import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
-import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js'
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 type TransformationWrapper = {
   position: number[];
@@ -32,7 +32,7 @@ export function addPolygonsFromCoordsAr(settings: THREEGeoSettings): void {
     geoms = createGeometryForBuildings(settings)
   }
   else {
-    settings.geoJson.features.forEach((feature: Feature) => {
+    settings.geoJson.features.forEach(function polygonsToGeometries(feature: Feature){
       if (feature.geometry.type !== "Polygon" || feature.geometry.coordinates.length == 0) {
         return
       }
@@ -58,7 +58,6 @@ export function addPolygonsFromCoordsAr(settings: THREEGeoSettings): void {
       geometry.rotateX(Math.PI / 2)
     })
   }
-  // console.log(geoms)
   geoms.forEach((geom, index) => {
     polygeom = BufferGeometryUtils.mergeBufferGeometries(geom)
     let material = new THREE.MeshStandardMaterial({ color: geoms.length == 1 ? settings.color : settings.color[index], side: DoubleSide, roughness: 1 })
@@ -287,24 +286,20 @@ export function localCordsFromWorldCords(
   return maplibregl.MercatorCoordinate.fromLngLat(worldCords, height);
 }
 function createSinglePolygon(feature: Feature<any>, bbox: BoundingBox) {
-  const vertAr: THREE.Vector2[] = []
-  feature.geometry.coordinates[0].forEach((coord: Position) => {
-    let pos: THREE.Vector3 = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), bbox)
-    vertAr.push(new THREE.Vector2(pos.x, pos.z))
-    // console.count("loop")
+  const vertAr: THREE.Vector2[] = feature.geometry.coordinates[0].map((coord: Position) => {
+    const pos: THREE.Vector3 = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), bbox)
+    return new THREE.Vector2(pos.x, pos.z)
   })
+
   const shape = new THREE.Shape(vertAr);
   //Create holes in geometry
   if (feature.geometry.coordinates.length > 1) {
     for (let index = 1; index < feature.geometry.coordinates.length; index++) {
-      
-      let pathPoints: THREE.Vector2[] = []
-      feature.geometry.coordinates[index].forEach((coord: Position) => {
-        let pos: THREE.Vector3 = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), bbox)// console.log(pos)
-        pathPoints.push(new THREE.Vector2(pos.x, pos.z))
+      const pathPoints: THREE.Vector2[] = feature.geometry.coordinates[index].map((coord: Position) => {
+        const pos: THREE.Vector3 = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), bbox)
+        return new THREE.Vector2(pos.x, pos.z)
       })
-      let path = new THREE.Path(pathPoints)
-      shape.holes[index - 1] = path
+      shape.holes.push(new THREE.Path(pathPoints));
     }
   }
   return shape
@@ -369,9 +364,14 @@ export function addLineFromCoordsAr(settings: THREEGeoSettings): void {//Lines n
   // let geometry: BufferGeometry = new THREE.BufferGeometry()
   matLine.side = THREE.DoubleSide
   settings.geoJson.features.forEach((feature: Feature) => {
-    const points: number[] = []
-    feature.geometry.coordinates.forEach((coord: Position) => {
-      let point = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), settings.bbox)
+    const points: number[] = [];
+    const geometry = feature.geometry as Geometry;
+    geometry.coordinates.forEach((coord) => {
+      const coordinate = coord as Position;
+      let point = worldPointInRelativeCoord(
+        new maplibregl.LngLat(coordinate[0], coordinate[1]),
+        settings.bbox
+      );
 
 
       points.push(point.x, point.y, point.z)
