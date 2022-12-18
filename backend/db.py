@@ -74,19 +74,12 @@ def add_comment(userId, projectId, comment, lng, lat):
   cursor.close()
   connection.close()
 
-def add_fulfillment(quest_id, projectId):
+def add_fulfillment(questId, userId):
   connection = connect()
   cursor = connection.cursor()
-
-  ## Setup table
-  # insert_query_setup_table ='''
-  #   create table if not exists quests (id serial primary key, fulfillment integer);
-  # '''
-  # cursor.execute(insert_query_setup_table)
-
   insert_query_quests_fulfillment= f'''
     
-    update quests set fulfillment = fulfillment + 1 where id={quest_id} and project_id='{projectId}';
+    update quests_user set fulfillment = fulfillment + 1 where quest_id={questId} and user_id='{userId}';
   '''
   
   cursor.execute(insert_query_quests_fulfillment, ())
@@ -166,7 +159,7 @@ def get_comments(projectId):
   cursor.execute(get_comment_query)
   comments = cursor.fetchall()[0][0]
   cursor.close()
-  connection.close()
+  connection.close
   return comments
 
 def get_filtered_comments(projectId,userId):
@@ -182,22 +175,15 @@ def get_filtered_comments(projectId,userId):
   cursor.execute(get_comment_query)
   comments = cursor.fetchall()[0][0]
 
-  ##TH
-  ## hier für jeden Beitrag den Usernamen löschen/ersetzen NN, der nicht der User selbst ist
-  ## comments ist eine JSON
-
+  # rename all usernames with "anonymous" when not the current user
   for f in comments["features"]:
-        #print(f)
         currentUser = f["properties"]["user_id"]
-#        print ( "UserId: " + str(userId) + " currentUser: " + str(currentUser))
         if str(userId) != str(currentUser):
           f["properties"]["user_id"] = "anonymous"
 
   cursor.close()
   connection.close()
   return comments
-
-
 
 
 def like_comment(commentid, projectId):
@@ -293,18 +279,112 @@ def get_driving_lane_polygon_from_db(projectId):
   connection.close()
   return driving_lane_polygon
 
+
+def prepare_quests_user_table(projectId,userId):
+  connection = connect()
+  cursor = connection.cursor()
+
+# 1. If and how many quests are defined fpr this project?
+
+  get_quests_from_db_query=f'''
+    SELECT COUNT(quest_id) FROM quests WHERE project_id='{projectId}';
+  '''
+  cursor.execute(get_quests_from_db_query)
+  number_of_quests_tuple = cursor.fetchall()
+  number_of_quests = int(number_of_quests_tuple[0][0]) 
+  if number_of_quests < 1:
+    return "No quests available for this project" 
+
+# 2. Are there any quests with fulfimments stored for the current user?
+
+  get_fulfillments_from_db_query=f'''
+    SELECT COUNT(fulfillment) FROM quests_user WHERE user_id='{userId}' and project_id='{projectId}';
+  '''
+  cursor.execute(get_fulfillments_from_db_query)
+  number_of_fulfillments_tuple = cursor.fetchall()
+  number_of_fulfillments = int(number_of_fulfillments_tuple[0][0]) 
+
+# 3. If there are no stored fulfiullments, then create new rows with fulfillment = 0 
+
+  if number_of_fulfillments < 1: 
+    # jetzt die Tabelle mit den Questfulfillments updaten
+    get_quests_from_db_query=f'''
+      SELECT * FROM quests WHERE project_id='{projectId}';
+      '''
+    cursor.execute(get_quests_from_db_query)
+    quests = cursor.fetchall()
+    #print(quests)
+    # ireriere über die quest-liste
+    for f in quests:
+      #print(f)
+      quest_id = int(f[0])
+      print(quest_id)
+      add_quest_user_query = f'''
+      insert into quests_user (quest_id, project_id, user_id,fulfillment) values ('{quest_id}','{projectId}','{userId}',0);
+      '''
+      cursor.execute(add_quest_user_query)
+    
+    feedback = "New entries created"
+  else:
+    feedback = "Entries existed before"
+
+  connection.commit()
+  cursor.close()
+  connection.close()
+  return feedback
+
 def get_quests_from_db(projectId):
   connection = connect()
   cursor = connection.cursor()
+  # get_quests_from_db_query=f'''
+  # select * from quests where project_id = '{projectId}';
+  # '''
+
   get_quests_from_db_query=f'''
-  select * from quests where project_id = '{projectId}';
+  select json_build_object('quest_id', quest_id, 'content',content, 'type',type,'goal',goal, 'order_id', order_id, 'project_id',project_id) from quests where project_id = '{projectId}';
   '''
   cursor.execute(get_quests_from_db_query)
   quests = cursor.fetchall()
-  
+  ## BUG: die einzelnen quests sind doppelt indented: wieso?
   cursor.close()
   connection.close()
   return quests
+
+#  Returns a JSON with the combined descritions of the quests for the cuurent project and the fulfillemt values for the current user
+# This is important for creating a UI qwhich shows the user, how many quests his still has to do 
+def get_quests_and_fulfillment_from_db(projectId,userId):
+  connection = connect()
+  cursor = connection.cursor()
+  get_quests_from_db_query=f'''
+  select json_build_object('quest_id', quest_id, 'content',content, 'type',type,'goal',goal, 'order_id', order_id, 'project_id',project_id) from quests where project_id = '{projectId}';
+  '''
+  cursor.execute(get_quests_from_db_query)
+  quests = cursor.fetchall()
+
+  get_fulfillment_query=f'''
+    select quest_id,fulfillment from quests_user where user_id = '{userId}' and project_id='{projectId}';
+    '''
+  cursor.execute(get_fulfillment_query)
+  fulfillment_tuple = cursor.fetchall()
+  fulfillment_dict= dict(fulfillment_tuple)
+  print(fulfillment_dict)
+  print("Type fo fulfillment: " + str(type(fulfillment_dict)))
+  cursor.close()
+  connection.close()
+  
+  counter = 0
+  quest_with_fulfillment = {} 
+
+  for f in quests:
+    quest_entry= f[0]
+    quest_with_fulfillment[counter] = quest_entry
+    quest_id = quest_with_fulfillment[counter]["quest_id"]
+    fulfillment_value = fulfillment_dict[quest_id]
+    quest_with_fulfillment[counter]["fulfillment"] = fulfillment_value
+    counter = counter + 1
+
+  return quest_with_fulfillment
+
 
 def drop_greenery_table(projectId):
   connection = connect()

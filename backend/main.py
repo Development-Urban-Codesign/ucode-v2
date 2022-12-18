@@ -27,7 +27,9 @@ from db import (
     get_driving_lane_from_db,
     get_driving_lane_polygon_from_db,
     add_fulfillment,
+    prepare_quests_user_table,
     get_quests_from_db,
+    get_quests_and_fulfillment_from_db,
     get_driving_lane_polygon_from_db,
     drop_greenery_table,
     drop_building_table,
@@ -91,13 +93,17 @@ async def root():
         raise HTTPException(status_code=500, detail=f"Something went wrong: {err}")
 
 @app.get("/project-specification")
-async def get_project_specification_from_db_api(projectId: str = None):
+async def get_project_specification_from_db_api(projectId: str):
     return get_project_specification_from_db(projectId)
-   
-@app.post("/add-quest-fulfillment")
-async def add_fulfillment_api(request: Request):
-    data = await request.json()
-    add_fulfillment(data["questid"], data["projectId"])
+       
+@app.get("/prepare-quests-user-table")
+async def prepare_quests_user_table_api(projectId: str, userId:str):
+    response = prepare_quests_user_table(projectId,userId)
+    return response
+
+@app.get("/add-quest-fulfillment")
+async def add_fulfillment_api(questId: int, userId: str):
+    add_fulfillment(questId, userId)
     return "fulfillment has been updated"
     
 @app.post("/get-greenery-from-osm")
@@ -305,9 +311,6 @@ async def get_buildings_from_osm_api(request: Request):
     cursorr.close()
     connectionn.close()
 
-    
-    
-    
     connection = connect()
     cursor = connection.cursor()
        # INSERT INTO building (wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
@@ -397,6 +400,16 @@ async def get_buildings_from_db_api(request: Request):
 async def get_quests_from_db_api(request: Request):
     projectId = await request.json()
     return get_quests_from_db(projectId)
+
+@app.get("/get-quests-from-db")
+async def get_quests_from_db_api(projectId: str):
+    return get_quests_from_db(projectId)
+
+##TH new quest request with userId in order to get the fullfillment-data from the user and provide it wit
+@app.get("/get-quests-and-fulfillment-from-db")
+async def get_quests_and_fulfillment_from_db_api(projectId: str, userId: str):
+    return get_quests_and_fulfillment_from_db(projectId, userId)
+
 
 @app.post("/get-trees-from-osm")
 async def get_trees_from_osm_api(request: Request):
