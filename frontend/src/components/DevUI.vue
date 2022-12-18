@@ -10,6 +10,11 @@
     <v-btn color="#41b883" class="mt-2" @click="dropCommentData">
       Delete project comments 
     </v-btn>
+    <v-btn color="#41b883" class="mt-2" @click="ShoQuestsFulfillment">
+      Show quest data 
+    </v-btn>
+
+
   </v-col>
 
   <v-col cols="6" md="3"  style="position: absolute; right: 0; top: 0; z-index: 999">
@@ -71,8 +76,8 @@ import {
   getSideWalkFromOSM,
   getBikeFromOSM,
   getSidewalkFromDB,
-  getBikeFromDB
-
+  getBikeFromDB,
+  getQuestsFulfillmentFromDB
 } from "../service/backend.service";
 
 const store = useStore();
@@ -83,6 +88,13 @@ const clearServerCache = async () => {
   console.log(result.data)
 
 }
+
+const ShoQuestsFulfillment = async () => {
+  let message = getQuestsFulfillmentFromDB(store.state.aoi.projectId,store.state.aoi.userId)
+  console.log(message)
+}  
+
+
 
 // drops the comments of the current project
 const dropCommentData = async () => {

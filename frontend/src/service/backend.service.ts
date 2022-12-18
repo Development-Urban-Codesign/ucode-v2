@@ -23,6 +23,16 @@ export async function getQuestsFromDB(projectId: string) {
   const response = await HTTP.post("get-quests-from-db", projectId);
   return response.data;
 }
+
+export async function getQuestsFulfillmentFromDB(projectId: string, userId: string){
+  const response = await HTTP.get("get-quests-and-fulfillment-from-db",{
+    params: {
+      projectId: projectId,
+      userId: userId}
+    })
+  return response;
+  }
+
 export async function getbuildingsDataFromDB(projectId: string) {
   buildingresponse = await HTTP.post("get-buildings-from-db", projectId);
   return buildingresponse.data;

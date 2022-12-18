@@ -356,7 +356,7 @@ def get_quests_and_fulfillment_from_db(projectId,userId):
   connection = connect()
   cursor = connection.cursor()
   get_quests_from_db_query=f'''
-  select json_build_object('quest_id',quest_id, 'content',content,'type',type,'goal',goal,'order_id',order_id,'project_id',project_id) from quests where project_id = '{projectId}';
+  select json_build_object('quest_id',quest_id, 'content',content,'type',type,'goal',goal,'order_id',order_id,'project_id',project_id) from quests where project_id = '{projectId}' order by order_id;
   '''
   cursor.execute(get_quests_from_db_query)
   quests = cursor.fetchall()
@@ -371,10 +371,8 @@ def get_quests_and_fulfillment_from_db(projectId,userId):
   print("Type fo fulfillment: " + str(type(fulfillment_dict)))
   cursor.close()
   connection.close()
-  
   counter = 0
   quest_with_fulfillment = {} 
-
   for f in quests:
     quest_entry= f[0]
     quest_with_fulfillment[counter] = quest_entry
