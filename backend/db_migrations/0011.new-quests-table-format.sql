@@ -1,8 +1,8 @@
 ALTER TABLE comment 
 ADD COLUMN IF NOT EXISTS quest_id INTEGER;
-create table if not exists quests_user (query_id INTEGER, user_id TEXT, fulfillment smallint);
+create table if not exists quests_user (quest_id INTEGER, user_id TEXT, fulfillment smallint);
 drop table if exists quests;
-create table quests (query_id serial primary key NOT NULL, content json NOT NULL, type smallint, goal smallint, order_id smallint, project_id TEXT);
+create table quests (quest_id serial primary key NOT NULL, content json NOT NULL, type smallint, goal smallint, order_id smallint, project_id TEXT);
 INSERT INTO quests (project_id, content, type, goal, order_id) VALUES ('0', '{"detailedDescription":"","title":"","description":"Schau dir den Planungsraum an und nutze das Linien-Werkzeug, um eine Route einzuzeichnen, die du regelmäßig benutzt, um dich im Planungsgebiet zu bewegen."}', '1', '1', '1');
 INSERT INTO quests (project_id, content, type, goal, order_id) VALUES ('0', '{"detailedDescription":"","title":"","description":"Markiere mindestens 3 Orte, die durch die aktuelle Planung aufgewertet werden oder welche von einer der drei Varianten profitieren. Nutze die Kommentarfunktion um die Bereiche zu markieren. Erläutere kurz."}', '1', '3', '2');
 INSERT INTO quests (project_id, content, type, goal, order_id) VALUES ('0', '{"detailedDescription":"","title":"","description":"Markiere nun mindestens 3 Orte, wo du Konfliktpotential durch die Planungsvarianten siehst oder wo noch etwas verbessert werden kann. Bitte beschreibe deine Auswahl."}', '1', '3', '3');
