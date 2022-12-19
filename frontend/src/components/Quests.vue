@@ -64,8 +64,8 @@ type Quest = { name: any; isActive: boolean; id: number; bgColor?:string }
 
 // check if the quests_user table is ready 
 //let stateQuests = 
-let stateQuests = await prepareQuestsUserTable(store.state.aoi.projectId, store.state.aoi.userId)
-console.log(stateQuests)
+await prepareQuestsUserTable(store.state.aoi.projectId, store.state.aoi.userId)
+
 
 function setupQuests(questsData:any[]) {
   for (let i = 0; i < questsData.length; i++) {
