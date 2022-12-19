@@ -288,7 +288,7 @@ def prepare_quests_user_table(projectId,userId):
   connection = connect()
   cursor = connection.cursor()
 
-# 1. If and how many quests are defined fpr this project?
+# 1. If and how many quests are defined for this project?
 
   get_quests_from_db_query=f'''
     SELECT COUNT(quest_id) FROM quests WHERE project_id='{projectId}';
@@ -308,7 +308,7 @@ def prepare_quests_user_table(projectId,userId):
   number_of_fulfillments_tuple = cursor.fetchall()
   number_of_fulfillments = int(number_of_fulfillments_tuple[0][0]) 
 
-# 3. If there are no stored fulfiullments, then create new rows with fulfillment = 0 
+# 3. If there are no stored fulfillments, then create new rows with fulfillment = 0 
 
   if number_of_fulfillments < 1: 
     # jetzt die Tabelle mit den Questfulfillments updaten
@@ -317,7 +317,8 @@ def prepare_quests_user_table(projectId,userId):
       '''
     cursor.execute(get_quests_from_db_query)
     quests = cursor.fetchall()
-    # ireriere über die quest-liste
+    
+    # iterate over quest list
     for f in quests:
       quest_id = int(f[0])
       add_quest_user_query = f'''
