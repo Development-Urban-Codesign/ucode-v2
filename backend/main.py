@@ -103,8 +103,8 @@ async def prepare_quests_user_table_api(projectId: str, userId:str):
 
 @app.get("/add-quest-fulfillment")
 async def add_fulfillment_api(questId: int, userId: str):
-    add_fulfillment(questId, userId)
-    return "fulfillment has been updated"
+    response = add_fulfillment(questId, userId)
+    return response
     
 @app.post("/get-greenery-from-osm")
 async def get_greenery_from_osm_api(request: Request):

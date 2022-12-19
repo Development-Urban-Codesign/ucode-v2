@@ -77,16 +77,21 @@ def add_comment(userId, projectId, comment, lng, lat):
 def add_fulfillment(questId, userId):
   connection = connect()
   cursor = connection.cursor()
-  insert_query_quests_fulfillment= f'''
-    
+  insert_query_quests_fulfillment= f'''  
     update quests_user set fulfillment = fulfillment + 1 where quest_id={questId} and user_id='{userId}';
   '''
-  
   cursor.execute(insert_query_quests_fulfillment, ())
+
+  get_fulfillment_value = f'''  
+    select fulfillment from quests_user where quest_id={questId} and user_id='{userId}';
+  '''
+  cursor.execute(get_fulfillment_value)
+  updated_fulfillment_tuple = cursor.fetchall()
+  updated_fulfillment =  int(updated_fulfillment_tuple[0][0]) 
   connection.commit()
   cursor.close()
   connection.close()
-
+  return updated_fulfillment
 
 @lru_cache
 def get_greenery_from_db(projectId):
