@@ -70,6 +70,7 @@ const createEmptyThreeJsScene = async () => {
 
 const sendBuildingRequestTHREE = async () => {
   const buildingData = await getbuildingsDataFromDB(store.state.aoi.projectSpecification.project_id);
+  buildingData.features[0].properties.layer = 1
   addPolygonsFromCoordsAr({
     scene: threeJsScene3d.scene,
     bbox: store.state.aoi.projectSpecification.bbox,
@@ -154,9 +155,9 @@ const createAoiPlane = async () => {
           'type': 'Polygon',
           'coordinates':
             [[[store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin],
-            [store.state.aoi.projectSpecification.bbox.xmax, store.state.aoi.projectSpecification.bbox.ymin],
+            [store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymax],
             [store.state.aoi.projectSpecification.bbox.xmax, store.state.aoi.projectSpecification.bbox.ymax],
-            [store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymax]]]
+            [store.state.aoi.projectSpecification.bbox.xmax, store.state.aoi.projectSpecification.bbox.ymin]]]
         },
         'properties': {
           'layer': 1
