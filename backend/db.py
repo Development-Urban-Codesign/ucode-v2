@@ -142,7 +142,6 @@ def add_drawn_line(projectId,comment, width, color, geom):
   connection.close()
 
 def delete_comments(projectId):
-  print(projectId)
   connection = connect()
   cursor = connection.cursor()
   delete_comments_query =f''' delete from comment where project_id='{projectId}';'''
@@ -318,12 +317,9 @@ def prepare_quests_user_table(projectId,userId):
       '''
     cursor.execute(get_quests_from_db_query)
     quests = cursor.fetchall()
-    #print(quests)
     # ireriere über die quest-liste
     for f in quests:
-      #print(f)
       quest_id = int(f[0])
-      print(quest_id)
       add_quest_user_query = f'''
       insert into quests_user (quest_id, project_id, user_id,fulfillment) values ('{quest_id}','{projectId}','{userId}',0);
       '''
@@ -372,8 +368,6 @@ def get_quests_and_fulfillment_from_db(projectId,userId):
   cursor.execute(get_fulfillment_query)
   fulfillment_tuple = cursor.fetchall()
   fulfillment_dict= dict(fulfillment_tuple)
-  print(fulfillment_dict)
-  print("Type fo fulfillment: " + str(type(fulfillment_dict)))
   cursor.close()
   connection.close()
   counter = 0
