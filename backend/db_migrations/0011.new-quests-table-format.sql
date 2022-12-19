@@ -1,6 +1,7 @@
 ALTER TABLE comment 
 ADD COLUMN IF NOT EXISTS quest_id INTEGER;
-create table if not exists quests_user (quest_id INTEGER, user_id TEXT, fulfillment smallint);
+drop table if exists quests_user;
+create table quests_user (quest_id INTEGER, user_id TEXT, project_id TEXT, fulfillment smallint);
 drop table if exists quests;
 create table quests (quest_id serial primary key NOT NULL, content json NOT NULL, type smallint, goal smallint, order_id smallint, project_id TEXT);
 INSERT INTO quests (project_id, content, type, goal, order_id) VALUES ('0', '{"detailedDescription":"","title":"","description":"Schau dir den Planungsraum an und nutze das Linien-Werkzeug, um eine Route einzuzeichnen, die du regelmäßig benutzt, um dich im Planungsgebiet zu bewegen."}', '1', '1', '1');

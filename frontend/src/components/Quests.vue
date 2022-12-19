@@ -63,7 +63,7 @@ let introText = ref();
 type Quest = { name: any; isActive: boolean; id: number; bgColor?:string }
 
 // check if the quests_user table is ready 
-let stateQuests = prepareQuestTable(store.state.aoi.projectId, store.state.aoi.userId,)
+let stateQuests = prepareQuestTable(store.state.aoi.projectId, store.state.aoi.userId)
 console.log(stateQuests)
 
 function setupQuests(questsData:any[]) {
