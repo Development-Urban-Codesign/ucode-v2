@@ -10,7 +10,7 @@ import { IconLayer, TextLayer } from '@deck.gl/layers/typed';
 import type { Feature, FeatureCollection, Geometries } from "@turf/turf";
 let buildingresponse: any
 
-export async function prepareQuestTable(projectId: string, userId: string) {
+export async function prepareQuestsUserTable(projectId: string, userId: string) {
   const response = await HTTP.get("prepare-quests-user-table",{
     params: {
       projectId: projectId,
