@@ -20,9 +20,35 @@ type Mesh = {
   material: [];
 };
 export interface THREEGeoSettings {
-  scene: THREE.Scene, bbox: BoundingBox, geoJson: FeatureCollection, color: string | string[], height: number, extrude: number
+  scene: THREE.Scene | undefined, bbox: BoundingBox, geoJson: FeatureCollection, color: string | string[], height: number, extrude: number
 }
 
+export function addImageAtLocation(settings: THREEGeoSettings): void {
+  const texture = new THREE.TextureLoader().load('comment.png');
+  // new THREE.ImageBitmapLoader()
+  // 				.load( 'comment.png', function ( imageBitmap ) {
+
+  // 					const texture = new THREE.CanvasTexture( imageBitmap );
+  const material = new THREE.MeshBasicMaterial({ map: texture,transparent: true, side: DoubleSide });
+
+  /* ImageBitmap should be disposed when done with it
+     Can't be done until it's actually uploaded to WebGLTexture */
+
+  // imageBitmap.close();
+  const geometry = new THREE.PlaneGeometry(10, 10);
+  // geometry.rotateX(Math.PI)
+  geometry.translate(4, 0, 0)
+  const plane = new THREE.Mesh(geometry, material);
+  // plane.rotateX(Math.PI)
+  plane.position.y = 5
+  let coord = settings.geoJson.features[0].geometry.coordinates
+  let pos = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), settings.bbox)
+  plane.position.x = pos.x
+  plane.position.z = pos.z
+  settings.scene.add(plane)
+}
+//             )
+// }
 export function addPolygonsFromCoordsAr(settings: THREEGeoSettings): void {
   let polygeom = new THREE.BufferGeometry()
   //let shapes: THREE.Shape[] =[]
@@ -61,7 +87,7 @@ export function addPolygonsFromCoordsAr(settings: THREEGeoSettings): void {
   // console.log(geoms)
   geoms.forEach((geom, index) => {
     polygeom = BufferGeometryUtils.mergeBufferGeometries(geom)
-    let material = new THREE.MeshStandardMaterial({ color: geoms.length == 1 ? settings.color : settings.color[index], side: THREE.FrontSide, roughness: 1 })
+    let material = new THREE.MeshStandardMaterial({ color: geoms.length == 1 ? settings.color : settings.color[index], side:DoubleSide, roughness: 1 })
 
     const mesh = new THREE.Mesh(polygeom, material);
     if (settings.extrude == .99) {
@@ -72,7 +98,7 @@ export function addPolygonsFromCoordsAr(settings: THREEGeoSettings): void {
     else {
       mesh.translateY(settings.extrude)
     }
-    if(settings.geoJson.features[0].properties?.layer){
+    if (settings.geoJson.features[0].properties?.layer) {
       mesh.layers.enable(settings.geoJson.features[0].properties?.layer)
     }
     settings.scene.add(mesh)
@@ -198,7 +224,7 @@ function createMeshInstance(
     material,
     localSceneCoordinates.length
   );
-  
+
   localSceneCoordinates.forEach((localSceneCoordinate, index) => {
     let scale = new THREE.Vector3(1, 1, 1);
     let rotation = new THREE.Quaternion();
@@ -257,7 +283,7 @@ function generateLocalCoordinates(
         position: [
           ((mercatorCoords(element, _geoJson.features[index].properties.estimatedheight || 0).x - cords.x) * 1) /
           cords.meterInMercatorCoordinateUnits(),
-          _geoJson.features[index].properties.estimatedheight+0.5 || 0,
+          _geoJson.features[index].properties.estimatedheight + 0.5 || 0,
           ((cords.y - mercatorCoords(element, _geoJson.features[index].properties.estimatedheight || 0).y) * 1) /
           cords.meterInMercatorCoordinateUnits(),
         ],
@@ -290,7 +316,7 @@ function getRndNumber(min: number, max: number): number {
 
 export function mercatorCoords(
   worldCords: LngLatLike,
-  height : number
+  height: number
 ): MercatorCoordinate {
   return maplibregl.MercatorCoordinate.fromLngLat(worldCords, height);
 }
@@ -305,7 +331,7 @@ function createSinglePolygon(feature: Feature<any>, bbox: BoundingBox) {
   //Create holes in geometry
   if (feature.geometry.coordinates.length > 1) {
     for (let index = 1; index < feature.geometry.coordinates.length; index++) {
-      
+
       let pathPoints: THREE.Vector2[] = []
       feature.geometry.coordinates[index].forEach((coord: Position) => {
         let pos: THREE.Vector3 = worldPointInRelativeCoord(new maplibregl.LngLat(coord[0], coord[1]), bbox)// console.log(pos)

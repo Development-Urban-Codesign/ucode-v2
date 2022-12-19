@@ -36,7 +36,7 @@ const store = useStore()
 let commentText = ref<string>("")
 let isFocused = ref<boolean>(false)
 let allMarker = reactive<FeatureCollection>({ type: "FeatureCollection", features: [] })
-
+let marker: any
 const props = defineProps({
     clickedCoordinates: Array<Number>,
     showCommentDialog: {
@@ -70,13 +70,13 @@ function changePositionOfLastMarker(){
     //console.log("changePosition")
     //@ts-ignore
     
-    allMarker.features[allMarker.features.length-1].geometry.coordinates = props.clickedCoordinates
+    marker.geometry.coordinates = props.clickedCoordinates
     emit('updateSourceData', 'ownComments', allMarker)
 }
 
 function createComment() {
     store.commit('freecomment/setMoveComment', true)
-    let marker = {
+    marker = {
         type: "Feature",
         geometry: {
             type: "Point",

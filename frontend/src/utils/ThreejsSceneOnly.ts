@@ -151,6 +151,14 @@ export const ThreejsSceneOnly = (lng: number, lat: number, layerName: string) =>
       mainRenderer.render(mainScene, mainCamera);
       // console.count("triggerRepaint")
       //this.map.triggerRepaint();
+      const camInverseProjection = mainCamera.projectionMatrix.invert();
+      const cameraPosition = new THREE.Vector3().applyMatrix4(camInverseProjection);
+      if(layerName == 'threeJsSceneComments'){
+        mainScene.children.forEach((child) =>{
+          child.lookAt(cameraPosition)
+          // console.log(cameraPosition)
+        })
+      }
     },
     //@ts-ignore
     raycast(point: any, isClick: any) {

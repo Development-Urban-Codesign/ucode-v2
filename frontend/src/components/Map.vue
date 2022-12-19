@@ -6,7 +6,7 @@
       <PlanningIdeas v-if="mapStyleLoaded" @activateSelectedPlanningIdea="activateSelectedPlanningIdeaInMap"
         @navigateToPlanningIdea="navigateToPlanningIdea" />
       <FreeComment :showCommentDialog="showCommentDialog" @deleteCommentLayer="deleteCommentLayer"
-        @centerMapOnLocation="centerMapOnLocation" @addComment="addCommentToMap" @getCenterOnMap="getMapCenter"
+        @centerMapOnLocation="centerMapOnLocation" @addComment="addCommentToMapThreeJs" @getCenterOnMap="getMapCenter"
         :clickedCoordinates="commentClicks.commentCoordinates" @updateSourceData="updateSourceData"
         @closeCommentDialog="closeCommentDialog" />
       <CommentGallery :show="tabIndex == 'discussion'" />
@@ -41,12 +41,14 @@ import maplibregl,{ Map, type CustomLayerInterface, type Feature, type IControl,
 import { computed, onMounted, onUnmounted, reactive, ref, shallowRef, watch } from "vue";
 import { useStore } from "vuex";
 import { deckLightingEffect } from "@/utils/deckLighting";
+import { addImageAtLocation } from "@/utils/ThreejsGeometryCreation";
+import { ThreejsSceneOnly } from "@/utils/ThreejsSceneOnly";
 
 
 const store = useStore();
 
 const devMode = computed(() => store.getters["ui/devMode"]);
-
+let threeSceneOwnComments: any
 const mapContainer = shallowRef(null);
 let map: Map = {} as Map;
 const mapClicks = reactive({ clickedCoordinates: [] })
@@ -85,7 +87,8 @@ onMounted(() => {
     minZoom: store.state.map.minZoom,
     maxZoom: store.state.map.maxZoom,
     maxPitch: store.state.map.maxPitch,
-    attributionControl: false
+    attributionControl: false,
+    antialias: true
   });
   
   map.on("load", function () {
@@ -168,9 +171,11 @@ function centerMapOnLocation(location: LngLatLike) { map.panTo(location); }
 function getMapCenter() { commentClicks.commentCoordinates = ([map.getCenter().lng, map.getCenter().lat]); }
 
 function deleteCommentLayer() {
-  map.removeLayer('ownComments')
-  map.removeSource('ownComments')
-  map.removeImage('comment.png')
+
+  map.removeLayer('threeJsSceneComments')
+  // map.removeLayer('ownComments')
+  // map.removeSource('ownComments')
+  // map.removeImage('comment.png')
 }
 const triggerRepaint = () => {
   map.triggerRepaint()
@@ -188,17 +193,43 @@ function deleteOwnComment() {
   map.removeImage('comment.png')
 }
 
+const addCommentToMapThreeJs = (source: any, layer: any) => {
+  if(map.getLayer("threeJsSceneComments") == undefined){
+  threeSceneOwnComments = ThreejsSceneOnly(store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin, "threeJsSceneComments")
+  
+  showCommentDialog.value = true
+  addImageAtLocation({
+    scene: threeSceneOwnComments.scene,
+    bbox: store.state.aoi.projectSpecification.bbox,
+    geoJson: source.geojson['data'],
+    color: "#E8E8E8",
+    height: 0,
+    extrude: .01
+  })
+  addLayerToMap(threeSceneOwnComments.layer)
+  }
+  else{
+    showCommentDialog.value = true
+  addImageAtLocation({
+    scene: threeSceneOwnComments.scene,
+    bbox: store.state.aoi.projectSpecification.bbox,
+    geoJson: source.geojson['data'],
+    color: "#E8E8E8",
+    height: 0,
+    extrude: .01
+  })
+  }}
 const addCommentToMap = (source: any, layer: any) => {
 
   showCommentDialog.value = true
 
-  // if (map.getSource(source.id) !== undefined) {
-  //   // console.log("already in use")
-  //   addSourceToMap(source)
-  //   //@ts-ignore TODO Dobo help
-  //   activeMarker = map.getSource('ownComments')._data;
-  //   return
-  // }
+  if (map.getSource(source.id) !== undefined) {
+    // console.log("already in use")
+    addSourceToMap(source)
+    //@ts-ignore TODO Dobo help
+    activeMarker = map.getSource('ownComments')._data;
+    return
+  }
   addSourceToMap(source)
   map?.loadImage('comment.png', (error, image) => {
     if (error) throw error;
