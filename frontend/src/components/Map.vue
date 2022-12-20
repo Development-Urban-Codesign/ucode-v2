@@ -118,7 +118,7 @@ onMounted(() => {
   map.on('click', function (mapClick) {
     // @ts-ignore
     mapClicks.clickedCoordinates = [mapClick.lngLat.lng, mapClick.lngLat.lat]
-
+    
     if (store.state.comment.toggle) {
       //@ts-ignore
       addLayerToMap(pulseLayer(store.state.pulse.pulseCoordinates.geometry.coordinates))
@@ -131,24 +131,24 @@ onMounted(() => {
   })
 
   
-  map.on('mousedown', 'ownComments', (e) => {
+  map.on('mousedown', (e) => {
     // Prevent the default map drag behavior.
     if (!store.state.freecomment.moveComment) {
       return
     }
     e.preventDefault();
-    map.on('mousemove', onMoveComment);
+    // map.on('mousemove', onMoveComment);
     map.on('mousemove', onMoveCommentTHREE);
     map.once('mouseup', onUp);
   });
 
-  map.on('touchstart', 'ownComments', (e) => {
+  map.on('touchstart', (e) => {
     if (e.points.length !== 1) return;
     if (!store.state.freecomment.moveComment) {
       return
     }
     e.preventDefault();
-    map.on('touchmove', onMoveComment);
+    // map.on('touchmove', onMoveComment);
     map.on('touchmove', onMoveCommentTHREE);
     map.once('touchend', onUp);
 
@@ -158,10 +158,10 @@ function updateSourceData(sourceId: string, data: any) {
   map.getSource(sourceId)?.setData(data)
 }
 function onUp() {
-  map.off('mousemove', onMoveComment);
+  // map.off('mousemove', onMoveComment);
   map.off('mousemove', onMoveCommentTHREE);
   map.off('touchmove', onMoveCommentTHREE);
-  map.off('touchmove', onMoveComment);
+  // map.off('touchmove', onMoveComment);
 }
 function onMoveComment(e: { lngLat: { lng: number; lat: number; }; }) { commentClicks.commentCoordinates = [e.lngLat.lng, e.lngLat.lat]; }
 function onMoveCommentTHREE(e: { point: any; }) {raycastLayer.raycast(e.point, false) }
@@ -172,7 +172,7 @@ function getMapCenter() { commentClicks.commentCoordinates = ([map.getCenter().l
 
 function deleteCommentLayer() {
 
-  map.removeLayer('threeJsSceneComments')
+  map.removeLayer('ownComments')
   // map.removeLayer('ownComments')
   // map.removeSource('ownComments')
   // map.removeImage('comment.png')
@@ -194,9 +194,10 @@ function deleteOwnComment() {
 }
 
 const addCommentToMapThreeJs = (source: any, layer: any) => {
-  if(map.getLayer("threeJsSceneComments") == undefined){
-  threeSceneOwnComments = ThreejsSceneOnly(store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin, "threeJsSceneComments")
-  
+  if(map.getLayer("ownComments") == undefined){
+  threeSceneOwnComments = ThreejsSceneOnly(store.state.aoi.projectSpecification.bbox.xmin, store.state.aoi.projectSpecification.bbox.ymin, "ownComments")
+  raycastLayer = threeSceneOwnComments.layer
+    
   showCommentDialog.value = true
   addImageAtLocation({
     scene: threeSceneOwnComments.scene,
@@ -262,10 +263,7 @@ store.commit("map/addLayer", {
 
 const addLayerToMap = (layer: LayerSpecification | CustomLayerInterface, beforeLayer?: string) => {
   //  console.log(layer.id)
-  if (layer.id == "threeJsSceneFlat") {
-    raycastLayer = layer
-    // console.log("layer set")
-  }
+  
   const addedlayer = map.getLayer(layer.id)
   if (typeof addedlayer !== 'undefined') {
     removeLayerFromMap(layer.id)

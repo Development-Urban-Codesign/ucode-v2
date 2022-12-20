@@ -9,7 +9,7 @@ import type * as glMatrix from "gl-matrix";
 //import { relativeCoordInWorldPoint } from "./ThreejsGeometryCreation";
 
 
-
+let ThreeScenes: ThreeJsScene[] = []
 export class ThreeJsScene extends Scene {
   constructor() {
     super();
@@ -84,10 +84,11 @@ export const ThreejsSceneOnly = (lng: number, lat: number, layerName: string) =>
   // dirLight.color.setHSL(0.1, 1, 0.95);
   dirLight.position.set(-2, 3, 1);
   dirLight.position.multiplyScalar(1);
+  let camInverseProjection: THREE.Matrix4
+  let cameraPosition: THREE.Vector3
   let cameraTransform: any
   let raycaster: any
   let mainMap: any
-  let box: THREE.Mesh
   const mainScene = new ThreeJsScene();
   const mainCamera = new THREE.PerspectiveCamera(45, 1, 1, 1000);
   const helper = new THREE.CameraHelper(mainCamera);
@@ -136,24 +137,20 @@ export const ThreejsSceneOnly = (lng: number, lat: number, layerName: string) =>
       raycaster.far = 1e6;
       raycaster.layers.set(1);
 
-      const geometry = new THREE.BoxGeometry(10, 10, 10);
-      const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-      box = new THREE.Mesh(geometry, material);
-      mainScene.add(box);
 
     },
 
     render: function (gl, matrix) {
-
       mainCamera.projectionMatrix = new THREE.Matrix4().fromArray(matrix).multiply(cameraTransform);
-
+      // console.log("matrix")
+      // console.log(matrix)
       mainRenderer.resetState();
       mainRenderer.render(mainScene, mainCamera);
       // console.count("triggerRepaint")
       //this.map.triggerRepaint();
-      const camInverseProjection = mainCamera.projectionMatrix.invert();
-      const cameraPosition = new THREE.Vector3().applyMatrix4(camInverseProjection);
-      if(layerName == 'threeJsSceneComments'){
+      camInverseProjection = mainCamera.projectionMatrix.invert();
+      cameraPosition = new THREE.Vector3().applyMatrix4(camInverseProjection);
+      if(layerName == 'ownComments'){
         mainScene.children.forEach((child) =>{
           child.lookAt(cameraPosition)
           // console.log(cameraPosition)
@@ -161,33 +158,39 @@ export const ThreejsSceneOnly = (lng: number, lat: number, layerName: string) =>
       }
     },
     //@ts-ignore
-    raycast(point: any, isClick: any) {
+    raycast(point: any) {
       var mouse = new THREE.Vector2();
       // debugger
       // // scale mouse pixel position to a percentage of the screen's width and height
       mouse.x = (point.x / mainMap.transform.width) * 2 - 1;
       mouse.y = 1 - (point.y / mainMap.transform.height) * 2;
-
-      const camInverseProjection = mainCamera.projectionMatrix.invert();
-      const cameraPosition = new THREE.Vector3().applyMatrix4(camInverseProjection);
+      
       const mousePosition = new THREE.Vector3(mouse.x, mouse.y, 1).applyMatrix4(camInverseProjection);
       const viewDirection = mousePosition.clone().sub(cameraPosition).normalize();
 
       raycaster.set(cameraPosition, viewDirection);
 
       // calculate objects intersecting the picking ray
-      var intersects = raycaster.intersectObjects(mainScene.children, true);
-      if (intersects.length > 0) {
-        console.log(intersects.length)
-        box.position.x = intersects[0].point.x
-        box.position.z = intersects[0].point.z
-        box.position.y = intersects[0].point.y
-        mainMap.triggerRepaint()
-        
-      }
+      // var intersects = raycaster.intersectObjects(mainScene.children, true);
+      // console.log("Layers: " + ThreeScenes.length )
+      for (const scene of ThreeScenes) {
+        var intersects = raycaster.intersectObjects(scene.children, true);
+        if (intersects.length > 0) {
+          // console.log(mainScene.children)
+          const obj = mainScene.children[mainScene.children.length-1]
+          obj.position.x = intersects[0].point.x
+          obj.position.z = intersects[0].point.z
+          obj.position.y = intersects[0].point.y
+          mainMap.triggerRepaint()
+          break;
+        }
+       
+      };
+      
     },
 
 
   };
+  ThreeScenes.push(mainScene)
   return { layer: customLayer, scene: mainScene };
 };

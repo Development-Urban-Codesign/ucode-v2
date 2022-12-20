@@ -37,7 +37,7 @@ export function addImageAtLocation(settings: THREEGeoSettings): void {
   // imageBitmap.close();
   const geometry = new THREE.PlaneGeometry(10, 10);
   // geometry.rotateX(Math.PI)
-  geometry.translate(4, 0, 0)
+  geometry.translate(2.7, 4.7, 0)
   const plane = new THREE.Mesh(geometry, material);
   // plane.rotateX(Math.PI)
   plane.position.y = 5
@@ -423,7 +423,7 @@ export function addLineFromCoordsAr(settings: THREEGeoSettings): void {//Lines n
     const line = new Line2(lineGeo, matLine);
     line.computeLineDistances()
     line.updateMorphTargets()
-    settings.scene.add(line);
+    settings.scene?.add(line);
   })
 }
 export function addLineFromCoordsAr1(settings: THREEGeoSettings): void {//workaround until lines work
@@ -441,7 +441,7 @@ export function addLineFromCoordsAr1(settings: THREEGeoSettings): void {//workar
       const mesh = new THREE.Mesh(geom, material)
       mesh.name = feature.properties?.route_name
       mesh.translateY(settings.height)
-      settings.scene.add(mesh);
+      settings.scene?.add(mesh);
       // console.count("addMesh")
     }
     else if (feature.geometry.type == "LineString") {
@@ -453,7 +453,7 @@ export function addLineFromCoordsAr1(settings: THREEGeoSettings): void {//workar
     const mesh = new THREE.Mesh(geom, material)
     mesh.name = settings.geoJson.features[0].properties?.id
     mesh.translateY(settings.height)
-    settings.scene.add(mesh);
+    settings.scene?.add(mesh);
   }
 }
 
