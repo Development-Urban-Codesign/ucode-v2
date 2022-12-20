@@ -1,7 +1,7 @@
 <template>
   <div class="loading-screen-wrapper">
     <transition name="scale">
-      <v-img v-if="true" max-height="60" class="UcodeLogo" src="UCODE_Logo.png"></v-img>
+      <v-img v-if="true" max-height="60" class="UcodeLogo" src="UCODE_Logo_black.png"></v-img>
     </transition>  
     <div class="LoadingText  text-body-1 text-medium-emphasis">
       <transition-group name="fade">
@@ -18,7 +18,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 
-const loadingTexts = ["Bäume pflanzen...", "Grünflächen pflegen...", "Gebäude planen...", "Straßen markieren..."]
+const loadingTexts = ["Bäume pflanzen...", "Grünflächen pflegen...", "Gebäude planen...", "Straßen markieren...", "Ampeln aufstellen...", "Wasserbecken füllen...", "Orte markieren...","", "...gleich geschafft...","", "...die Internetverbindung scheint langsam...", "... haben Sie noch einen Moment Geduld, falls die Seite nicht lädt, probieren sie bitte einen anderen Browser!"]
 const curLoadingText = ref("Karte wird befüllt...")
 let i = 0
 const showLoadingText = ref(true)
@@ -38,8 +38,8 @@ async function animate() {
       clearInterval(interval)
       i = 0
     }
+  }, 1000);
 
-  }, 750);
 
 }
 animate();
@@ -47,7 +47,7 @@ animate();
 
 <style scoped>
 .loading-screen-wrapper {
-  background-color: #FAF8F6;
+  background-color: #7FA8B5;
   width: 100%;
   height: 100%;
   position: absolute;
@@ -59,7 +59,7 @@ animate();
 
 .UcodeLogo {
   margin-top: 50px;
-  animation: append-animate 0.8s ease-out;
+  animation: append-animate 0.5s ease-out;
 }
 
 .LoadingText {
@@ -78,7 +78,7 @@ animate();
 		opacity: 0;
 	}
   75% {
-		transform: scale(1.25);
+		transform: scale(1.05);
 		opacity: 0.75;
 	}
 	100% {
