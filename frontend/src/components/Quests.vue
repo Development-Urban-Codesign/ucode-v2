@@ -45,6 +45,7 @@
 <script lang="ts" setup>
 import { useStore } from "vuex";
 import { HTTP } from "@/utils/http-common";
+import { prepareQuestsUserTable } from "@/service/backend.service";
 import { getQuestsFromDB } from "../service/backend.service";
 import { onMounted, reactive, ref } from "vue";
 onMounted(() => {
@@ -60,6 +61,11 @@ let quests = reactive<Quest[]>([]);
 let introText = ref();
 
 type Quest = { name: any; isActive: boolean; id: number; bgColor?:string }
+
+// check if the quests_user table is ready 
+//let stateQuests = 
+await prepareQuestsUserTable(store.state.aoi.projectId, store.state.aoi.userId)
+
 
 function setupQuests(questsData:any[]) {
   for (let i = 0; i < questsData.length; i++) {

@@ -5,15 +5,36 @@
                 
                 <v-card
                     v-for="comment in commentList"
-                    :subtitle="getRelativeTime(comment.properties.created_at)"
+                    elevation="3"
                 >
-                <p class="comment-text text-body-1">{{comment.properties.comment}}</p>
-                <v-chip v-if="comment.properties.user_id !=='anonymous'" size="small">Meine</v-chip>
+                    <transition name="fade">
+                        <div v-if="commentsAreLoaded" class="time-text text-body-2 text-disabled">{{getRelativeTime(comment.properties.created_at)}}</div>
+                    </transition>
+                    <div class="comment-text text-body-1">{{comment.properties.comment}}</div>
+                    <div class="action-area">
+                        <v-chip v-if="comment.properties.user_id !=='anonymous'" variant="elevated" color="primary" >Meine</v-chip>
+                        <v-btn
+                            class="btn-end"
+                            variant="plain"
+                            size="small"
+                            :icon="comment.properties.user_id !=='anonymous'?'mdi-pencil':'mdi-heart'"
+                        ></v-btn>
+                        <v-btn
+                            class="btn-end"
+                            variant="plain"
+                            size="small"
+                            :icon="comment.properties.user_id !=='anonymous'?'mdi-delete':'mdi-thumb-down'"
+                        ></v-btn>
+                    </div>
                 </v-card>
             </div>
         </transition>
         <transition  name="fade">
-            <div v-if="props.show" className="backdrop"></div>
+            <div v-if="props.show" className="backdrop">
+                <div v-if="(!commentsAreLoaded && props.show)" class="comment-list">
+                    <CardSkeleton v-for="index in 4" :key="index"></CardSkeleton>
+                </div>
+            </div>
         </transition>
     </div>
 </template>
@@ -22,6 +43,9 @@
     import { onMounted, ref, watch } from 'vue';
     import { useStore } from "vuex";
     import { getFilteredCommentsFromDB } from "../service/backend.service";
+    import CardSkeleton from "@/components/CardSkeleton.vue";
+import { Data } from 'apache-arrow';
+import { number } from '@intlify/core-base';
 
     const store = useStore(); 
     const projectId = store.state.aoi.projectSpecification.project_id;
@@ -82,12 +106,17 @@
             return 'vor ' + Math.round(elapsed/msPerYear) +ending;    
         }
     }
+    const delay = (time) => {
+        return new Promise(resolve => setTimeout(resolve, time));
+    }
 
     const sendCommentRequest = async () => {
         commentsAreLoaded.value = false;
         let response = []
         let myComments = []
         let otherComments = []
+        var start = await performance.now();
+        // await delay(2000)
 
         const commentData = await getFilteredCommentsFromDB(projectId, userId)
     //    console.log(commentData.props.data)
@@ -108,7 +137,14 @@
         // console.log(otherComments)
 
         commentList.value = myComments.concat(otherComments);
-        commentsAreLoaded.value = true;
+
+        var loadingTime = performance.now() - start
+        if(loadingTime - start < 300){
+            await delay(300 - loadingTime)
+        }
+        commentsAreLoaded.value = true; 
+        
+ 
     }
 
     onMounted(() => {
@@ -130,14 +166,14 @@
     position: fixed;
     top: 0px;
     width: 100vw;
-    height: calc(100% - 56px);
+    height: calc(100% - 56px + 10rem);
     z-index: 1001;
-    padding: 1em 0em;
+    padding: 0em 0em;
+    padding-bottom: 10rem;
     overflow-x: hidden !important;
     overflow-y: scroll !important;
     scrollbar-width: none !important; 
 }
-
 .backdrop{
     position: fixed;
     top: 0px;
@@ -149,32 +185,77 @@
     -ms-backdrop-filter: blur(24px);
     z-index: 1000;
 }
-
 .comment-list::-webkit-scrollbar {
   display: none;
 }
-
-.slide-enter-active{
-    transform: translateX(100%);
-    transition: transform .3s ease-in-out;
+.v-card{
+    margin: 1.5rem 0rem;
+    margin-left: 50%;
+    padding: 1.5rem;
+    transform: translateX(-50%);
+    width: calc(100% - 3rem) !important;
+    border-radius: 18px;
+}
+.time-text{
+    margin-bottom: 0.5rem;
+}
+.comment-text{
+    min-height: 4.5rem;
+    white-space: pre-line;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+.action-area{
+    margin-top: 2rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+.v-chip{
+    color: white !important;
+    margin: 0rem auto 0rem 0rem;
+}
+.btn-end{
+    font-size: 1rem;
+    margin-left: 1rem;
 }
 
-.slide-enter-to{
-  transform: translateX(0%);
+/* Animation */
+/* Card      */
+.slide-enter-active {
+    animation: bounce-in;
+    animation-duration: 0.5s;
+    animation-delay: 0.4s;
+}
+@keyframes bounce-in {
+  0% {
+    transform: translateY(0rem);
+    animation-timing-function: cubic-bezier(0.33333, 0.66667, 0.66667, 1)
+  }
+  76% {
+    transform: translateY(-10rem);
+    animation-timing-function: cubic-bezier(0.33333, 0, 0.66667, 0.33333)
+  }
+  100% {
+    transform: translateY(0rem);
+  }
 }
 
  .slide-leave-active {
-    transform: translateX(0%);
-    transition: transform .3s ease-in-out;
+    opacity: 1;
+    transition: all .2s ease-in;
 }
 
 .slide-leave-to{
-    transform: translateX(100%);
+    opacity: 0;
 }
 
+/* Backdrop */
 .fade-enter-active{
     opacity: 0;
-    transition: opacity 0.1s ease-in-out;
+    transition: opacity 0.2s linear;
 }
 
 .fade-enter-to{
@@ -183,31 +264,12 @@
 
  .fade-leave-active {
     opacity: 1;
-    transition: opacity 0.1s ease-in-out;
+    transition: opacity 0.3s linear;
 }
 
 .fade-leave-to{
     opacity: 0;
 }
 
-.v-card{
-    margin: 1em 0em;
-    margin-left: 50%;
-    transform: translateX(-50%);
-    width: 90% !important;
-    border-radius: 1em;
-}
 
-.v-chip{
-    margin: 1em 0em 1em 1em;
-}
-
-.comment-text{
-    margin: 0em 1em 1em 1em;
-    white-space: pre-line;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-}
 </style>

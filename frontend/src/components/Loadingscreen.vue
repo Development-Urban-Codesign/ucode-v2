@@ -1,8 +1,9 @@
 <template>
   <div class="loading-screen-wrapper">
-    <v-img max-height="60" class="UcodeLogo" src="UCODE_Logo.png"></v-img>
-
-    <div class="LoadingText">
+    <transition name="scale">
+      <v-img v-if="true" max-height="60" class="UcodeLogo" src="UCODE_Logo.png"></v-img>
+    </transition>  
+    <div class="LoadingText  text-body-1 text-medium-emphasis">
       <transition-group name="fade">
         <div class="LoadingText" v-if="showLoadingText">
           <div>
@@ -46,15 +47,19 @@ animate();
 
 <style scoped>
 .loading-screen-wrapper {
-  background-color: #81ABBC;
+  background-color: #FAF8F6;
   width: 100%;
   height: 100%;
   position: absolute;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
   z-index: 9999;
 }
 
 .UcodeLogo {
   margin-top: 50px;
+  animation: append-animate 0.8s ease-out;
 }
 
 .LoadingText {
@@ -62,10 +67,27 @@ animate();
   bottom: 0;
   width: 100%;
   text-align: center;
-  font-size: large;
   min-height: 50px;
 }
 
+/* Animation */
+/* Logo      */
+@keyframes append-animate {
+	0% {
+		transform: scale(0.5);
+		opacity: 0;
+	}
+  75% {
+		transform: scale(1.25);
+		opacity: 0.75;
+	}
+	100% {
+		transform: scale(1);
+		opacity: 1;	
+	}
+}
+
+/* Text */
 .fade-enter-active {
   transition: all .3s ease-in;
 }
@@ -83,4 +105,6 @@ animate();
   opacity: 0;
   transform: translateY(-10px);
 }
+
+
 </style>

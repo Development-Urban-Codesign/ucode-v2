@@ -1,11 +1,11 @@
 <template>
     <div class="comment-container">
-        <v-btn id="comment-btn" size="large" rounded="pill" color="primary"
+        <v-btn id="comment-btn" size="large" height="48px" rounded="pill" color="primary"
             @touchstart="emit('getCenterOnMap')" @mousedown="emit('getCenterOnMap')" @click="createComment">
             Kommentieren
         </v-btn>
         <transition name="slide">
-            <v-card v-show="props.showCommentDialog" elevation="20">
+            <v-card v-show="props.showCommentDialog" id="card" elevation="20">
                 <v-btn @click="cancelComment" icon="mdi-close" variant="plain" id="close-btn"/>
                 <p class="font-weight-bold text-body-1 call-to-action" >Platziere deinen Kommentar</p>
                 <div class="comment-text-area">
@@ -13,10 +13,13 @@
                         id="ta-input"
                         :class="commentText!==''?'show-send-btn':'hide-send-btn'"
                         variant="solo" 
-                        label="Kommentar" 
-                        color="primary" 
-                        no-resize 
-                        rows="4" 
+                        label="Kommentar"
+                        color="primary"
+                        bg-color="rgb(248,248,248)"
+                        no-resize
+                        auto-grow
+                        rows="1"
+                        max-rows="4"
                         ref="input"
                         :modelValue="commentText"
                         @update:modelValue="text => commentText = text"
@@ -36,7 +39,7 @@ const store = useStore()
 let commentText = ref<string>("")
 let isFocused = ref<boolean>(false)
 let allMarker = reactive<FeatureCollection>({ type: "FeatureCollection", features: [] })
-let marker: any
+    let marker: any
 const props = defineProps({
     clickedCoordinates: Array<Number>,
     showCommentDialog: {
@@ -101,7 +104,7 @@ function createComment() {
         'layout': {
             'icon-image': 'comment.png', // reference the image
             'icon-size': 0.25,
-            'icon-offset': [130, 25],
+            'icon-offset': [65, 13],
             'icon-anchor': "bottom",
             'icon-allow-overlap': true,
             // 'icon-ignore-placement': true
@@ -141,37 +144,53 @@ const isIOSorIPadOS = () => {
     }
 }
 
-const preventDefault = (e:Event) => {
-    e.preventDefault();
+function has_scrollbar(elem:HTMLElement)
+{
+    var clientHeight = elem.clientHeight;
+    debugger
+    if(clientHeight < 120){
+        return false
+    }
+    if (elem.clientHeight < elem.scrollHeight)
+        return true
+    else
+        return false
 }
 
 watch(commentText, function () {
-    let input = document.getElementById('ta-input')
-    let body = document.body;
+    
+    let input = document.getElementById('ta-input')!
+    let card = document.getElementById('card')
+    console.log(has_scrollbar(input))
+    
+    if(has_scrollbar(input)){
+        input?.classList.remove('ta-not-scroll');
+        input?.classList.add('ta-scroll')
+    } else {
+        input?.classList.add('ta-not-scroll');
+        input?.classList.remove('ta-scroll')
+    }
 
-    if(input && body && isIOSorIPadOS()){
+
+    if(input && card && isIOSorIPadOS()){
         if(commentText.value !== ''){
             input.onblur = function() {
-                body?.classList.remove('expand');
-                body?.classList.remove('reduce');
-                window.removeEventListener('touchmove', preventDefault, false);
+                card?.classList.remove('expand');
+                card?.classList.remove('reduce');
             };
             input.onfocus = function() {
-                body?.classList.remove('expand');
-                body?.classList.remove('reduce');
-                window.addEventListener('touchmove', preventDefault, { passive: false });
+                card?.classList.remove('expand');
+                card?.classList.remove('reduce');
             };
         } 
         if (commentText.value === '') {
             input.onblur = function() {
-                body?.classList.remove('expand');
-                body?.classList.add('reduce');
-                window.removeEventListener('touchmove', preventDefault, false);
+                card?.classList.remove('expand');
+                card?.classList.add('reduce');
             };
             input.onfocus = function() {
-                body?.classList.remove('reduce');
-                body?.classList.add('expand');
-                window.addEventListener('touchmove', preventDefault, { passive: false });
+                card?.classList.remove('reduce');
+                card?.classList.add('expand');
             };
         }
        
@@ -179,70 +198,88 @@ watch(commentText, function () {
 })
 
 onMounted(() => {
-    let input = document.getElementById('ta-input')
-    let body = document.body;
+    let input = document.getElementById('ta-input')!
+    let card = document.getElementById('card')
 
-    if(input && body && isIOSorIPadOS()){
+    if(has_scrollbar(input)){
+        input?.classList.remove('ta-not-scroll');
+        input?.classList.add('ta-scroll')
+    } else {
+        input?.classList.add('ta-not-scroll');
+        input?.classList.remove('ta-scroll')
+    }
+    
+    if(input && card && isIOSorIPadOS()){
         input.onblur = function() {
-            body?.classList.remove('expand');
-            body?.classList.add('reduce');
-            window.removeEventListener('touchmove', preventDefault, false);
-            
+            card?.classList.remove('expand');
+            card?.classList.add('reduce');
         };
 
         input.onfocus = function() {
-            body?.classList.remove('reduce');
-            body?.classList.add('expand');
-            window.addEventListener('touchmove', preventDefault, { passive: false });
+            card?.classList.remove('reduce');
+            card?.classList.add('expand');
         };
     } 
 })
 </script>
 
 <style>
+.ta-not-scroll{
+    touch-action: none !important;
+}
+
+.ta-scroll{
+    overscroll-behavior: none !important;
+    overflow-y: scroll !important;
+}
+
 .expand{
-    animation: expand-animation 0.2s ease-in-out 0s 1 forwards !important;
+    animation: expand-animation 0.25s ease-in-out 0s 1 forwards !important;
 }
 
 .reduce{
-    animation: reduce-animation 0.2s ease-in-out 0s 1 forwards !important;
+    animation: reduce-animation 0.25s ease-in-out 0s 1 forwards !important;
 }
 
 @keyframes expand-animation {
-    0%   {height: 100vh;}
-    100% {height: 48vh;}
+    0%   {padding-bottom: 0rem;}
+    100% {padding-bottom: 296px;}
 }
 @keyframes reduce-animation {
-    0%   {height: 48vh;}
-    100% {height: 100vh;}
+    0%   {padding-bottom: 296px;}
+    100% {padding-bottom: 0rem;}
 }
 </style>
 
 <style scoped>
 .comment-container {
     display: flex;
+    touch-action: none;
     justify-content: center;
     width: 100%;
 }
 
 #comment-btn{
+    touch-action: none;
     order: -1 !important;
     z-index: 998;
-    margin-bottom: 0.5em;
     position: absolute;
-    bottom: calc(0.5em + 56px + 43px);
+    bottom: 8rem
 }
 .v-card {
     position: relative;
+    overflow: hidden !important;
     display: flex;
     flex-direction: column;
     width: 100%;
     z-index: 1005;
     border-radius: 12px 12px 0px 0px;
     margin-bottom: 0px;
+    touch-action: none;
 }
 
 #close-btn{
+    touch-action: none;
     position: relative; 
     margin: 0em 0em 0em auto;
 }
@@ -252,20 +289,22 @@ onMounted(() => {
     margin-bottom: 0px !important;
 }
 .comment-text-area{
+    touch-action: none;
     display: flex;
     padding: 1em 0em 0em 1em;
 }
+#send-btn{
+    position: relative;
+    margin-top: auto;
+    margin-bottom: 3em;
+    margin-right: 2em;
+    margin-left: -3.5rem;
+}
 
 .v-textarea{
-    margin-right: 1em;
-    border-radius: 1rem !important;
-    z-index: 1;
-}
-#send-btn{
-    position: absolute;
-    bottom: 3em;
-    right: 2em;
-}
+     margin-right: 1em;
+     z-index: 1;
+ }
 
 /* Animation */
 .slide-enter-active{
@@ -287,6 +326,7 @@ onMounted(() => {
 } 
 
 .show-send-btn{
+    scrollbar-width: 0px;
     animation: slide-left 0.2s ease-in-out 0s 1 forwards;
 }
 

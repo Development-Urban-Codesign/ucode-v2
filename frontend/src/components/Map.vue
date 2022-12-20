@@ -231,11 +231,13 @@ const addCommentToMap = (source: any, layer: any) => {
     return
   }
   addSourceToMap(source)
-  map?.loadImage('comment.png', (error, image) => {
-    if (error) throw error;
-    map?.addImage('comment.png', image!);
-    addLayerToMap(layer)
-  });
+  if (!map.hasImage('comment.png')) {
+    map?.loadImage('comment.png', (error, image) => {
+      if (error) throw error;
+      map?.addImage('comment.png', image!);
+      addLayerToMap(layer)
+    });
+  }
   //@ts-ignore TODO Dobo help
   //activeMarker = map.getSource('ownComments')._data;
 }
@@ -246,7 +248,7 @@ store.commit("map/addLayer", {
   'source': "ownComments",
   'layout': {
     'icon-image': 'comment.png', // reference the image
-    'icon-size': 0.25,
+    'icon-size': 1,
     'icon-offset': [130, 25],
     'icon-anchor': "bottom",
     'icon-allow-overlap': true,

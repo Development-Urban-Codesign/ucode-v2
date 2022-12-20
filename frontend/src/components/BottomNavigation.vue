@@ -1,12 +1,12 @@
 <template>
-    <v-bottom-navigation grow :elevation="6" color="primary" :model-value="tabIndex" @update:modelValue="handleValueChange">
+    <v-bottom-navigation grow mode="shift" :elevation="6" color="secondary" :model-value="tabIndex" @update:modelValue="handleValueChange">
         <v-btn value="planning" >
             <v-icon>mdi-message-draw</v-icon>
-            Planung
+            <span>Planung</span>
         </v-btn>
         <v-btn value="discussion">
             <v-icon>mdi-comment-text-multiple</v-icon>
-            Diskussion 
+            <span>Diskussion</span> 
         </v-btn>
     </v-bottom-navigation>
     

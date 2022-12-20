@@ -27,7 +27,9 @@ from db import (
     get_driving_lane_from_db,
     get_driving_lane_polygon_from_db,
     add_fulfillment,
+    prepare_quests_user_table,
     get_quests_from_db,
+    get_quests_and_fulfillment_from_db,
     get_driving_lane_polygon_from_db,
     drop_greenery_table,
     drop_building_table,
@@ -61,7 +63,7 @@ origins = [
     "https://api.v2.urban-codesign.com",
     "https://v2.urban-codesign.com",
     "http://localhost",
-    "http://localhost:8080",
+    "http://localhost:8080"
 ]
 
 app.add_middleware(
@@ -91,14 +93,18 @@ async def root():
         raise HTTPException(status_code=500, detail=f"Something went wrong: {err}")
 
 @app.get("/project-specification")
-async def get_project_specification_from_db_api(projectId: str = None):
+async def get_project_specification_from_db_api(projectId: str):
     return get_project_specification_from_db(projectId)
-   
-@app.post("/add-quest-fulfillment")
-async def add_fulfillment_api(request: Request):
-    data = await request.json()
-    add_fulfillment(data["questid"], data["projectId"])
-    return "fulfillment has been updated"
+       
+@app.get("/prepare-quests-user-table")
+async def prepare_quests_user_table_api(projectId: str, userId:str):
+    response = prepare_quests_user_table(projectId,userId)
+    return response
+
+@app.get("/add-quest-fulfillment")
+async def add_fulfillment_api(questId: int, userId: str):
+    response = add_fulfillment(questId, userId)
+    return response
     
 @app.post("/get-greenery-from-osm")
 async def get_greenery_from_osm_api(request: Request):
@@ -305,9 +311,6 @@ async def get_buildings_from_osm_api(request: Request):
     cursorr.close()
     connectionn.close()
 
-    
-    
-    
     connection = connect()
     cursor = connection.cursor()
        # INSERT INTO building (wallcolor,wallmaterial, roofcolor,roofmaterial,roofshape,roofheight, height, floors, estimatedheight, geom) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326));
@@ -397,6 +400,16 @@ async def get_buildings_from_db_api(request: Request):
 async def get_quests_from_db_api(request: Request):
     projectId = await request.json()
     return get_quests_from_db(projectId)
+
+@app.get("/get-quests-from-db")
+async def get_quests_from_db_api(projectId: str):
+    return get_quests_from_db(projectId)
+
+##TH new quest request with userId in order to get the fullfillment-data from the user and provide it wit
+@app.get("/get-quests-and-fulfillment-from-db")
+async def get_quests_and_fulfillment_from_db_api(projectId: str, userId: str):
+    return get_quests_and_fulfillment_from_db(projectId, userId)
+
 
 @app.post("/get-trees-from-osm")
 async def get_trees_from_osm_api(request: Request):
@@ -917,9 +930,9 @@ async def get_side_walk_from_osm_api(request: Request):
 
         delete FROM sidewalk where highway SIMILAR TO %s;
 
-        delete FROM sidewalk AS a
-        USING driving_lane_polygon AS b
-        WHERE a.project_id=%s AND st_contains(b.geom, a.geom);
+        DELETE FROM sidewalk a
+            USING sidewalk b 
+            WHERE a.project_id=%s and a.id > b.id AND st_equals(a.geom, b.geom);
     '''
     
     cursor.execute(delete_query_sidewalk_if_are_inside_main_road, ('%%secondary%%|%%tertiary%%|%%unclassified%%|%%corridor%%|%%trunk_link%%|%%elevato%r%|%%pedestrian%%|%%residential%%|%%primary%%|%%living_street%%', projectId, ))
