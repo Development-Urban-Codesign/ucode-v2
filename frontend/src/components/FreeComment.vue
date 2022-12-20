@@ -71,8 +71,6 @@ watch(()=> props.clickedCoordinates? props.clickedCoordinates : null, changePosi
 function changePositionOfLastMarker(){
     if(!store.state.freecomment.moveComment){return}
     //console.log("changePosition")
-    //@ts-ignore
-    
     marker.geometry.coordinates = props.clickedCoordinates
     emit('updateSourceData', 'ownComments', allMarker)
 }
@@ -86,7 +84,6 @@ function createComment() {
             coordinates: props.clickedCoordinates
         }
     }
-    //@ts-ignore
     allMarker.features.push(marker)
     
 
@@ -147,7 +144,6 @@ const isIOSorIPadOS = () => {
 function has_scrollbar(elem:HTMLElement)
 {
     var clientHeight = elem.clientHeight;
-    debugger
     if(clientHeight < 120){
         return false
     }
