@@ -186,6 +186,10 @@ def get_filtered_comments_with_status(projectId,userId):
         if str(userId) != str(currentUser):
           f["properties"]["user_id"] = "anonymous"
 
+
+  # now add voting status fpr the current user to each comment, which was voted from the user
+  
+
   cursor.close()
   connection.close()
   return comments
