@@ -125,7 +125,7 @@ const sendGreeneryRequestTHREE = async () => {
     geoJson: greeneryJson,
     color: "#9EBB64",
     height: 0,
-    extrude: 0.1
+    extrude: 0.15
   })
 
 
@@ -140,7 +140,7 @@ const sendWaterRequestTHREE = async () => {
     geoJson: waterJson,
     color: "#64A4BB",
     height: 0,
-    extrude: 0.12
+    extrude: 0.2
   })
 
 
@@ -206,7 +206,7 @@ const sendDrivingLaneRequestTHREE = async () => {
     geoJson: drivingLanedata.polygon,
     color: "#262829",
     height: 0,
-    extrude: 0.15
+    extrude: 0.3
   })
   store.commit("map/addSource", {
     id: "driving_lane",
@@ -352,7 +352,7 @@ const sendSidewalkRequest = async () =>{
     geoJson: sidewalkData.data,
     color: "#bdb8aa",
     height: 0,
-    extrude: 0.131
+    extrude: 0.25
   })
 }
 
@@ -365,7 +365,7 @@ const sendBikeRequest = async () =>{
     geoJson: bikeData.data,
     color: "#f75d52",
     height: 0,
-    extrude: 0.155
+    extrude: 0.32
   })  
    
 }
