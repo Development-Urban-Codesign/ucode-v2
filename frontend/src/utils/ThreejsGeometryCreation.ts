@@ -101,7 +101,10 @@ export function addPolygonsFromCoordsAr(settings: THREEGeoSettings): void {
     if (settings.geoJson.features[0].properties?.layer) {
       mesh.layers.enable(settings.geoJson.features[0].properties?.layer)
     }
-    settings.scene.add(mesh)
+    if(settings.height != 0){
+      mesh.translateY(settings.height)
+    }
+    settings.scene?.add(mesh)
   })
 
 }
